@@ -167,13 +167,3 @@ locations, the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a 
 games module, file drag and drop, graphical game boards (games run as text in the desktop Games app), portable desks and desk chairs, lamp variants (one floodlight), inline base64 images, typing
 animations, refuelling generators from fuel trucks or nozzles, the Arma 3 deployment type setting (Reforger
 placeable items).
-
-## Development
-
-- `L:\RACE-Reforger\bin\rr.cmd validate <repo>`: script gate.
-- `tools/register_resources.sh [--resave-all]`: registers new resources and writes IDs through headless
-  Workbench, resolves `{?}path` references (`tools/resolve_refs.py`), gives overrides their original GUID
-  (`tools/fix_overrides.py`).
-- `Assets/ROOT_AE3/Source/build_models.py`: builds and exports the device models in Blender.
-- `tools/gen_textures.py`: writes the tiling device textures `Assets/ROOT_AE3/Data/Textures/AE3_*_BCR.png`.
-- `ROOT_AE3_RegisterResourcesPlugin` `-ae3Items=<prefab|prefab...>`: prints inventory size, volume, storage and preview values.
