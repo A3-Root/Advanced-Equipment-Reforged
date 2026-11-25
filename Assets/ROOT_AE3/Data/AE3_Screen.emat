@@ -1,0 +1,7 @@
+MatPBRBasic {
+ Color 1 1 1 1
+ BCRMap "$rendertarget"
+ Emissive 1 1 1 1
+ EmissiveLV 1
+ EmissiveMap "$rendertarget"
+}

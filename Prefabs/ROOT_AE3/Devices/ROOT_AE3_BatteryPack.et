@@ -1,0 +1,139 @@
+GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
+ ID "6AF041BB116266FC"
+ components {
+  MeshObject "{6AF041BB117D932C}" {
+   Object "{6FBCBDC6ECBC17C8}Assets/ROOT_AE3/ROOT_AE3_BatteryPack/ROOT_AE3_BatteryPack.xob"
+   Materials {
+    MaterialAssignClass "{6AF041BB11626405}" {
+     SourceMaterial "AE3_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264EC}" {
+     SourceMaterial "AE3_Plastic_Olive"
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264E2}" {
+     SourceMaterial "AE3_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264FD}" {
+     SourceMaterial "AE3_Keys"
+     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264F7}" {
+     SourceMaterial "AE3_Screen"
+     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264CF}" {
+     SourceMaterial "AE3_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264C9}" {
+     SourceMaterial "AE3_SolarCells"
+     AssignedMaterial "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264C0}" {
+     SourceMaterial "AE3_Rubber"
+     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
+    }
+   }
+  }
+  ROOT_AE3_ConnectionComponent "{6AF041BB116267E1}" {
+  }
+  ROOT_AE3_DeviceComponent "{6AF041BB1162672F}" {
+   m_eType BATTERY
+   m_sDeviceName ""
+  }
+  ROOT_AE3_PowerComponent "{6AF041BB11626705}" {
+   m_eRole BATTERY
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 2000
+   m_fCapacityKWh 0.6
+   m_fRechargeW 300
+   m_fFuelCapacityL 0
+   m_fBurnLph 0
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 1
+  }
+  RigidBody "{6AF041BB116264AD}" {
+   LayerPreset "ItemFireView"
+   Mass 12
+   ModelGeometry 1
+  }
+  SCR_EditableEntityComponent "{6AF041BB11626798}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11626666}" {
+    Name "Battery Pack (Advanced Equipment)"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611E4E762}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+     Name "Battery Pack"
+    }
+    ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
+     Weight 12
+     SizeSetupStrategy Manual
+     ItemDimensions 10 10 10
+     ItemVolume 500
+    }
+    CustomAttributes {
+     PreviewRenderAttributes "{6AF2EA5011A63F0C}" {
+      CameraOrbitAngles -25 30 0
+      CameraDistanceToItem 2.7
+      FOV 10
+     }
+    }
+    m_Size SLOT_2x2
+    m_SlotType SLOT_LOADOUT_STORAGE
+   }
+  }
+  ActionsManagerComponent "{508AB5952B584B2E}" {
+   ActionContexts {
+    UserActionContext "{6AF041BB11626640}" {
+     ContextName "ae3"
+     Position PointInfo "{6AF041BB1162662C}" {
+      Offset 0 0.25 0
+     }
+     Radius 0.6
+    }
+   }
+   additionalActions {
+    ROOT_AE3_PowerAction "{6AF0880E11EACD0A}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF0880E11EACD1E}" {
+      Name "ROOT_AE3_PowerAction"
+     }
+    }
+    ROOT_AE3_ConnectPowerAction "{6AF041BB1162660E}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB11626605}" {
+      Name "ROOT_AE3_ConnectPowerAction"
+     }
+    }
+    ROOT_AE3_StatusAction "{6AF041BB11626616}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB11626611}" {
+      Name "ROOT_AE3_StatusAction"
+     }
+    }
+   }
+  }
+ }
+}

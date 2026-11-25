@@ -1,0 +1,73 @@
+# =========================
+# Enfusion / Workbench
+# =========================
+*.rdb
+resourceDatabase.rdb
+UserMaps.desc
+*.tmp
+*.bak
+releases/ROOT_AE3-*.zip
+
+# =========================
+# Server configs (credentials)
+# =========================
+server.json
+server.local.json
+server_new.json
+!server.example.json
+
+# =========================
+# Documentation / Wiki / Text
+# =========================
+*.md
+!README*.md
+!wiki/*
+!wiki/**/*.md
+!docs/**/*.md
+!.github/PULL_REQUEST_TEMPLATE.md
+!releases/CHANGELOG.md
+!.code-wiki/
+!.code-wiki/**
+TODO
+logs/**/*
+reference_files
+cache
+
+# =========================
+# Python
+# =========================
+__pycache__/
+
+# =========================
+# System / Environment
+# =========================
+.env
+!.env.example
+*.code-workspace
+.vscode/**/*
+.vs/
+*.suo
+*.user
+*.exe
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# =========================
+# Logs
+# =========================
+*.log
+
+# AI agent files
+CLAUDE.md
+CLAUDE.md.bak
+AGENTS.md
+.claude/
+.codex/
+.agents/
+
+# Workbench model import cache
+*.txo
+
+# Blender backups
+*.blend1

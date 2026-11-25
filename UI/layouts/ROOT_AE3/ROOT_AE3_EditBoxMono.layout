@@ -1,0 +1,26 @@
+FrameWidgetClass {
+ Name "Root"
+ {
+  EditBoxWidgetClass "{6AF02DE4116BAE33}" {
+   Name "Edit"
+   Slot FrameWidgetSlot "{6AF02DE4116BAE18}" {
+    Anchor 0 0 1 1
+    PositionX 0
+    OffsetLeft 0
+    PositionY 0
+    OffsetTop 0
+    SizeX 0
+    OffsetRight 0
+    SizeY 0
+    OffsetBottom 0
+   }
+   Clipping True
+   Color 1 1 1 1
+   style blank
+   "Font Size" 16
+   FontProperties FontProperties "{6AF02DE4116BAEC2}" {
+    Font "{0E041C5B1F27DCEA}ui/fonts/robotomono_msdf_28.fnt"
+   }
+  }
+ }
+}

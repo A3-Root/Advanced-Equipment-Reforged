@@ -1,0 +1,90 @@
+GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
+ ID "6AF041BB1162B790"
+ components {
+  MeshObject "{6AF041BB1162BD23}" {
+   Object "{C886A982424854B3}Assets/ROOT_AE3/ROOT_AE3_UsbStick/ROOT_AE3_UsbStick.xob"
+   Materials {
+    MaterialAssignClass "{6AF041BB1162B4B9}" {
+     SourceMaterial "AE3_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B482}" {
+     SourceMaterial "AE3_Plastic_Olive"
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B49A}" {
+     SourceMaterial "AE3_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B497}" {
+     SourceMaterial "AE3_Keys"
+     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B490}" {
+     SourceMaterial "AE3_Screen"
+     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B76B}" {
+     SourceMaterial "AE3_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B764}" {
+     SourceMaterial "AE3_SolarCells"
+     AssignedMaterial "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162B77E}" {
+     SourceMaterial "AE3_Rubber"
+     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
+    }
+   }
+  }
+  ROOT_AE3_DeviceComponent "{6AF041BB1162B7E4}" {
+   m_eType USB_DRIVE
+   m_sDeviceName ""
+  }
+  ROOT_AE3_UsbDriveComponent "{6AF041BB1162B7CC}" {
+   m_sPortProp "{3CB164F06FC982E4}Prefabs/ROOT_AE3/Devices/ROOT_AE3_UsbStick_Prop.et"
+  }
+  RigidBody "{6AF041BB1162B74F}" {
+   LayerPreset "ItemFireView"
+   Mass 0.02
+   ModelGeometry 1
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162B7AD}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162B7BC}" {
+    Name "Flash Drive (Advanced Equipment)"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_XS THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611E45ABF}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+     Name "Flash Drive"
+    }
+    ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
+     Weight 0.02
+     SizeSetupStrategy Manual
+     ItemDimensions 2 2 2
+     ItemVolume 10
+    }
+    CustomAttributes {
+     PreviewRenderAttributes "{6AF2EA5011A6934E}" {
+      CameraOrbitAngles -45 30 0
+      CameraDistanceToItem 0.5
+      FOV 10
+     }
+    }
+    m_Size SLOT_1x1
+    m_SlotType SLOT_LOADOUT_STORAGE
+   }
+  }
+ }
+}

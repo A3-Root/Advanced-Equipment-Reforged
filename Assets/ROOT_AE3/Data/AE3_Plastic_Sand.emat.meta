@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{8C92E50E701258E7}Assets/ROOT_AE3/Data/AE3_Plastic_Sand.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

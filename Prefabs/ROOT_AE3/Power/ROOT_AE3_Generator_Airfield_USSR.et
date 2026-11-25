@@ -1,0 +1,88 @@
+GenericEntity : "{2FCB46C395C9CBE7}Prefabs/Props/Airport/GeneratorAirfield_USSR_01/GeneratorAirfield_USSR_01.et" {
+ ID "6AF041BB116320BD"
+ components {
+  Persistence "{6AF0826A11E0CC00}" {
+  }
+  SoundComponent "{6AF082F611E12C42}" {
+   Filenames {
+    "{87D6CA558837535A}Sounds/Props/Airport/GeneratorAirfield/Props_GeneratorAirfield_USSR.acp"
+   }
+  }
+  ROOT_AE3_ConnectionComponent "{6AF041BB11632065}" {
+  }
+  ROOT_AE3_DeviceComponent "{6AF041BB116321B2}" {
+   m_eType GENERATOR
+   m_sDeviceName "Airfield Generator USSR"
+  }
+  ROOT_AE3_DeviceSoundComponent "{6AF082F611E12C2C}" {
+   m_sLoopEvent "SOUND_GENERATOR_LP"
+  }
+  ROOT_AE3_PowerComponent "{6AF041BB1163219F}" {
+   m_eRole GENERATOR
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 400000
+   m_fCapacityKWh 0
+   m_fRechargeW 0
+   m_fFuelCapacityL 470
+   m_fBurnLph 48
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 0
+  }
+  SCR_EditableEntityComponent "{6AF041BB11632072}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11632044}" {
+    Name "Airfield Generator USSR (Advanced Equipment)"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_M THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611EA178E}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  StaticSoundComponent "{5A16790ADDF0B744}" {
+   Enabled 0
+  }
+  ActionsManagerComponent "{5A16790ADDF0B728}" {
+   ActionContexts {
+    UserActionContext "{6AF041BB11632000}" {
+     ContextName "ae3"
+     Position PointInfo "{6AF041BB11632017}" {
+      Offset 0 0.8 0
+     }
+     Radius 1.2
+    }
+   }
+   additionalActions {
+    ROOT_AE3_PowerAction "{6AF041BB116320E2}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB116320F5}" {
+      Name "ROOT_AE3_PowerAction"
+     }
+    }
+    ROOT_AE3_RefuelAction "{6AF041BB116320C7}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB116320C1}" {
+      Name "ROOT_AE3_RefuelAction"
+     }
+    }
+    ROOT_AE3_StatusAction "{6AF041BB116320AF}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB116320AB}" {
+      Name "ROOT_AE3_StatusAction"
+     }
+    }
+   }
+  }
+ }
+}

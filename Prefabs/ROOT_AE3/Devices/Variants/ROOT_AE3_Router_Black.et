@@ -1,0 +1,24 @@
+GenericEntity : "{970C853CDA5C984F}Prefabs/ROOT_AE3/Devices/ROOT_AE3_Router.et" {
+ ID "6AF08C671B2DDEE8"
+ components {
+  MeshObject "{6AF041BB1162E7B8}" {
+   Materials {
+    MaterialAssignClass "{6AF041BB1162F92A}" {
+     AssignedMaterial "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162F80F}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162F81C}" {
+    Name "Router Black (Advanced Equipment)"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+     Name "Router Black"
+    }
+   }
+  }
+ }
+}

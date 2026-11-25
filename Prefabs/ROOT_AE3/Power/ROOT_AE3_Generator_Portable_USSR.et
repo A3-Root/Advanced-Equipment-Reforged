@@ -1,0 +1,88 @@
+GenericEntity : "{FCBEDECB2A39B6BC}Prefabs/Props/Military/Generators/GeneratorPortable_USSR_01.et" {
+ ID "6AF041BB1163F17B"
+ components {
+  Persistence "{6AF0826A11E07843}" {
+  }
+  SoundComponent "{6AF082F611E1C74A}" {
+   Filenames {
+    "{B32068D3B876A98E}Sounds/Props/Military/Generators/Props_PortableGenerator_Soviet.acp"
+   }
+  }
+  ROOT_AE3_ConnectionComponent "{6AF041BB1163F617}" {
+  }
+  ROOT_AE3_DeviceComponent "{6AF041BB1163F620}" {
+   m_eType GENERATOR
+   m_sDeviceName "Portable Generator USSR"
+  }
+  ROOT_AE3_DeviceSoundComponent "{6AF082F611E1C759}" {
+   m_sLoopEvent "SOUND_GENERATOR_LP"
+  }
+  ROOT_AE3_PowerComponent "{6AF041BB1163F60E}" {
+   m_eRole GENERATOR
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 5000
+   m_fCapacityKWh 0
+   m_fRechargeW 0
+   m_fFuelCapacityL 5
+   m_fBurnLph 1.5
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 0
+  }
+  SCR_EditableEntityComponent "{6AF041BB1163F6E7}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1163F6F8}" {
+    Name "Portable Generator USSR (Advanced Equipment)"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611EA4197}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  StaticSoundComponent "{54F46129DBCF6FD3}" {
+   Enabled 0
+  }
+  ActionsManagerComponent "{529A99F8B5243CC2}" {
+   ActionContexts {
+    UserActionContext "{6AF041BB1163F6DD}" {
+     ContextName "ae3"
+     Position PointInfo "{6AF041BB1163F6D3}" {
+      Offset 0 0.8 0
+     }
+     Radius 0.6
+    }
+   }
+   additionalActions {
+    ROOT_AE3_PowerAction "{6AF041BB1163F6BC}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB1163F68F}" {
+      Name "ROOT_AE3_PowerAction"
+     }
+    }
+    ROOT_AE3_RefuelAction "{6AF041BB1163F683}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB1163F69D}" {
+      Name "ROOT_AE3_RefuelAction"
+     }
+    }
+    ROOT_AE3_StatusAction "{6AF041BB1163F16A}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB1163F167}" {
+      Name "ROOT_AE3_StatusAction"
+     }
+    }
+   }
+  }
+ }
+}

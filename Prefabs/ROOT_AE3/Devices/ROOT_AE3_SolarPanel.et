@@ -1,0 +1,115 @@
+GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
+ ID "6AF041BB1162D711"
+ components {
+  Persistence "{6AF0826A11E34C42}" {
+  }
+  MeshObject "{6AF041BB1162C222}" {
+   Object "{62BAD99BA4375EC1}Assets/ROOT_AE3/ROOT_AE3_SolarPanel/ROOT_AE3_SolarPanel.xob"
+   Materials {
+    MaterialAssignClass "{6AF041BB1162D443}" {
+     SourceMaterial "AE3_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D42A}" {
+     SourceMaterial "AE3_Plastic_Olive"
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D422}" {
+     SourceMaterial "AE3_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D43C}" {
+     SourceMaterial "AE3_Keys"
+     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D436}" {
+     SourceMaterial "AE3_Screen"
+     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D430}" {
+     SourceMaterial "AE3_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D40D}" {
+     SourceMaterial "AE3_SolarCells"
+     AssignedMaterial "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D407}" {
+     SourceMaterial "AE3_Rubber"
+     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
+    }
+   }
+  }
+  ROOT_AE3_ConnectionComponent "{6AF041BB1162D4AE}" {
+  }
+  ROOT_AE3_DeviceComponent "{6AF041BB1162D4FA}" {
+   m_eType SOLAR
+   m_sDeviceName ""
+  }
+  ROOT_AE3_PowerComponent "{6AF041BB1162D4C8}" {
+   m_eRole SOLAR
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 150
+   m_fCapacityKWh 0.4
+   m_fRechargeW 0
+   m_fFuelCapacityL 0
+   m_fBurnLph 0
+   m_fPanelTilt 35
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 1
+  }
+  RigidBody "{6AF041BB1162D415}" {
+   LayerPreset "BuildingFireView"
+   Mass 30
+   ModelGeometry 1
+   Static 1
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162D4B7}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162D487}" {
+    Name "Solar Panel (Advanced Equipment)"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611E472E3}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  ActionsManagerComponent "{6AF041BB1162D491}" {
+   ActionContexts {
+    UserActionContext "{6AF041BB1162D762}" {
+     ContextName "ae3"
+     Position PointInfo "{6AF041BB1162D772}" {
+      Offset 0 0.5 -0.3
+     }
+     Radius 0.6
+    }
+   }
+   additionalActions {
+    ROOT_AE3_PowerAction "{6AF1792811EF4B22}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF1792811EF4B12}" {
+      Name "ROOT_AE3_PowerAction"
+     }
+    }
+    ROOT_AE3_StatusAction "{6AF041BB1162D73C}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF041BB1162D70C}" {
+      Name "ROOT_AE3_StatusAction"
+     }
+    }
+   }
+  }
+  RplComponent "{6AF041BB1162D71E}" {
+  }
+ }
+}

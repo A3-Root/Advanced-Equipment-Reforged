@@ -1,0 +1,24 @@
+GenericEntity : "{84677A5327CD4C61}Prefabs/ROOT_AE3/Devices/ROOT_AE3_PortableServer.et" {
+ ID "6AF08C671B2D00EC"
+ components {
+  MeshObject "{6AF041BB11620821}" {
+   Materials {
+    MaterialAssignClass "{6AF041BB116202D1}" {
+     AssignedMaterial "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB11621DCD}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11621DD8}" {
+    Name "Portable Server Black (Advanced Equipment)"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+     Name "Portable Server Black"
+    }
+   }
+  }
+ }
+}

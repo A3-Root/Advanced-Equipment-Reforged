@@ -1,0 +1,8 @@
+GameProject {
+ ID "AdvancedEquipmentReforged"
+ GUID "6AF006170E8DA444"
+ TITLE "Advanced-Equipment-Reforged"
+ Dependencies {
+  "58D0FB3206B6F859"
+ }
+}

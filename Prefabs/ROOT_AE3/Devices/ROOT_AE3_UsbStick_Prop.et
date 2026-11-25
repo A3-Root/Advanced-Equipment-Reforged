@@ -1,0 +1,46 @@
+GenericEntity {
+ ID "6AF041BB11629130"
+ components {
+  MeshObject "{6AF041BB11629F38}" {
+   Object "{C886A982424854B3}Assets/ROOT_AE3/ROOT_AE3_UsbStick/ROOT_AE3_UsbStick.xob"
+   Materials {
+    MaterialAssignClass "{6AF041BB1162916B}" {
+     SourceMaterial "AE3_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB11629177}" {
+     SourceMaterial "AE3_Plastic_Olive"
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162914E}" {
+     SourceMaterial "AE3_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162914B}" {
+     SourceMaterial "AE3_Keys"
+     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat"
+    }
+    MaterialAssignClass "{6AF041BB11629145}" {
+     SourceMaterial "AE3_Screen"
+     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162915C}" {
+     SourceMaterial "AE3_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat"
+    }
+    MaterialAssignClass "{6AF041BB11629159}" {
+     SourceMaterial "AE3_SolarCells"
+     AssignedMaterial "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat"
+    }
+    MaterialAssignClass "{6AF041BB11629153}" {
+     SourceMaterial "AE3_Rubber"
+     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
+    }
+   }
+  }
+  RplComponent "{6AF041BB11629120}" {
+  }
+  Hierarchy "{6AF041BB11629134}" {
+  }
+ }
+}

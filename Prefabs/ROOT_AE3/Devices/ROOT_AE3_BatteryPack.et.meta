@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{41B2C75A0CB1EFC7}Prefabs/ROOT_AE3/Devices/ROOT_AE3_BatteryPack.et"
+ Configurations {
+  EntityTemplateResourceClass PC {
+  }
+  EntityTemplateResourceClass XBOX_ONE : PC {
+  }
+  EntityTemplateResourceClass XBOX_SERIES : PC {
+  }
+  EntityTemplateResourceClass PS4 : PC {
+  }
+  EntityTemplateResourceClass PS5 : PC {
+  }
+  EntityTemplateResourceClass HEADLESS : PC {
+  }
+ }
+}

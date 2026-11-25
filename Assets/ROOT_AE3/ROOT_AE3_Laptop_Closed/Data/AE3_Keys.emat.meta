@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{18300588E19F6678}Assets/ROOT_AE3/ROOT_AE3_Laptop_Closed/Data/AE3_Keys.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

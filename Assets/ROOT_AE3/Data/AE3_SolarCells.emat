@@ -1,0 +1,6 @@
+MatPBRBasic {
+ Color 1 1 1 1
+ BCRMap "{EB06C7FCD4C7C16F}Assets/ROOT_AE3/Data/Textures/AE3_SolarCells_BCR.edds"
+ NMOMap "{0D074FB526BA3473}Assets/_SharedData/Metal/ST_Metal_Fine01_1m_NMO.edds"
+ MetalnessScale 0.6
+}

@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{E453335884C398BC}Assets/ROOT_AE3/ROOT_AE3_BatteryPack/Data/AE3_Plastic_Olive.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

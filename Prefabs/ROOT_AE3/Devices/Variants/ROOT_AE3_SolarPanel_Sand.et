@@ -1,0 +1,17 @@
+GenericEntity : "{64D68C86AFC359FB}Prefabs/ROOT_AE3/Devices/ROOT_AE3_SolarPanel.et" {
+ ID "6AF08C671BD27576"
+ components {
+  MeshObject "{6AF041BB1162C222}" {
+   Materials {
+    MaterialAssignClass "{6AF041BB1162D443}" {
+     AssignedMaterial "{8C92E50E701258E7}Assets/ROOT_AE3/Data/AE3_Plastic_Sand.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162D4B7}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162D487}" {
+    Name "Solar Panel Sand (Advanced Equipment)"
+   }
+  }
+ }
+}
