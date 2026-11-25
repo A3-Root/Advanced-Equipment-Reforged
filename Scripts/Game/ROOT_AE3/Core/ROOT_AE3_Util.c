@@ -231,6 +231,15 @@ class ROOT_AE3_Util
 	}
 
 	//------------------------------------------------------------------------------------------------
+	static float BoolNum(bool b)
+	{
+		if (b)
+			return 1;
+
+		return 0;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Parses "a.b.c.d". Returns false on bad format.
 	static bool ParseIp(string ip, out int a, out int b, out int c, out int d)
 	{

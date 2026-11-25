@@ -3,20 +3,21 @@ GenericEntity : "{84677A5327CD4C61}Prefabs/ROOT_AE3/Devices/ROOT_AE3_PortableSer
  components {
   MeshObject "{6AF041BB11620821}" {
    Materials {
-    MaterialAssignClass "{6AF041BB116202D1}" {
+    MaterialAssignClass "{6AF041BB116202B8}" {
      AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
     }
    }
   }
   SCR_EditableEntityComponent "{6AF041BB11621DCD}" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11621DD8}" {
-    Name "Portable Server Olive (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_PortableServer_Olive_Name"
+    m_Image "{74927CE3DDFF700A}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_PortableServer_Olive.edds"
    }
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
     ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
-     Name "Portable Server Olive"
+     Name "#ROOT_AE3-Item_PortableServer_Olive_Name"
     }
    }
   }

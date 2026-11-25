@@ -15,13 +15,14 @@ GenericEntity : "{6E95A480D5E97564}Prefabs/ROOT_AE3/Devices/ROOT_AE3_Laptop.et" 
   }
   SCR_EditableEntityComponent "{6AF041BB11622A0D}" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11622A18}" {
-    Name "Laptop Olive (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_Laptop_Olive_Name"
+    m_Image "{4D7E31C65140FBD2}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_Laptop_Olive.edds"
    }
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
     ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
-     Name "Laptop Olive"
+     Name "#ROOT_AE3-Item_Laptop_Olive_Name"
     }
    }
   }

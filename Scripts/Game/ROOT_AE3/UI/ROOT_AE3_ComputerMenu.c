@@ -68,6 +68,8 @@ class ROOT_AE3_ComputerMenu : ChimeraMenuBase
 	override void OnMenuUpdate(float tDelta)
 	{
 		super.OnMenuUpdate(tDelta);
+		// Only menu and history keys while the menu is open; character and editor keys stay off while typing.
+		GetGame().GetInputManager().ActivateContext("ROOT_AE3_ComputerContext");
 		if (m_Snake)
 		{
 			m_Snake.Update(tDelta);

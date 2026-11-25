@@ -3,20 +3,21 @@ GenericEntity : "{970C853CDA5C984F}Prefabs/ROOT_AE3/Devices/ROOT_AE3_Router.et" 
  components {
   MeshObject "{6AF041BB1162E7B8}" {
    Materials {
-    MaterialAssignClass "{6AF041BB1162F92A}" {
+    MaterialAssignClass "{6AF041BB1162F934}" {
      AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
     }
    }
   }
   SCR_EditableEntityComponent "{6AF041BB1162F80F}" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162F81C}" {
-    Name "Router Olive (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_Router_Olive_Name"
+    m_Image "{086C85F655691F6B}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_Router_Olive.edds"
    }
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
     ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
-     Name "Router Olive"
+     Name "#ROOT_AE3-Item_Router_Olive_Name"
     }
    }
   }

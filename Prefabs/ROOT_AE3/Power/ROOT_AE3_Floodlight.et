@@ -57,7 +57,8 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
   }
   SCR_EditableEntityComponent "{6AF041BB11637FDA}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11637FA5}" {
-    Name "Floodlight (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_Floodlight_Name"
+    m_Image "{68AA4388FBCD56BA}UI/Textures/EditorPreviews/Auto/Props/Military/Generators/E_GeneratorFloodlight_US_01.edds"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE TRAIT_ILLUMINATION SIZE_S THEME_MILITARY
     }

@@ -32,7 +32,7 @@ GenericEntity : "{2FCB46C395C9CBE7}Prefabs/Props/Airport/GeneratorAirfield_USSR_
   }
   SCR_EditableEntityComponent "{6AF041BB11632072}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11632044}" {
-    Name "Airfield Generator USSR (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_Generator_Airfield_USSR_Name"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE SIZE_M THEME_MILITARY
     }

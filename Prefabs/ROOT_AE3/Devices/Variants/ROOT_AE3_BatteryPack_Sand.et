@@ -3,20 +3,21 @@ GenericEntity : "{41B2C75A0CB1EFC7}Prefabs/ROOT_AE3/Devices/ROOT_AE3_BatteryPack
  components {
   MeshObject "{6AF041BB117D932C}" {
    Materials {
-    MaterialAssignClass "{6AF041BB11626405}" {
+    MaterialAssignClass "{6AF041BB116264EC}" {
      AssignedMaterial "{8C92E50E701258E7}Assets/ROOT_AE3/Data/AE3_Plastic_Sand.emat"
     }
    }
   }
   SCR_EditableEntityComponent "{6AF041BB11626798}" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11626666}" {
-    Name "Battery Pack Sand (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_BatteryPack_Sand_Name"
+    m_Image "{795F7249E08A7E5C}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_BatteryPack_Sand.edds"
    }
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
     ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
-     Name "Battery Pack Sand"
+     Name "#ROOT_AE3-Item_BatteryPack_Sand_Name"
     }
    }
   }

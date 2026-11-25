@@ -24,6 +24,19 @@ class ROOT_AE3_SettingsManager
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Server: sends the client-relevant values to every player (after a change at runtime).
+	static void Broadcast()
+	{
+		array<int> players = {};
+		GetGame().GetPlayerManager().GetPlayers(players);
+		string packed = Get().PackClient();
+		foreach (int playerId : players)
+		{
+			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.SETTINGS, packed);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Drops all state (game end).
 	static void Reset()
 	{

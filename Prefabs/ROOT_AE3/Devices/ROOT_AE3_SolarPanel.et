@@ -10,33 +10,13 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
     }
-    MaterialAssignClass "{6AF041BB1162D42A}" {
-     SourceMaterial "AE3_Plastic_Olive"
-     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat"
-    }
     MaterialAssignClass "{6AF041BB1162D422}" {
      SourceMaterial "AE3_Metal"
      AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat"
     }
-    MaterialAssignClass "{6AF041BB1162D43C}" {
-     SourceMaterial "AE3_Keys"
-     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat"
-    }
-    MaterialAssignClass "{6AF041BB1162D436}" {
-     SourceMaterial "AE3_Screen"
-     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat"
-    }
-    MaterialAssignClass "{6AF041BB1162D430}" {
-     SourceMaterial "AE3_LED"
-     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat"
-    }
     MaterialAssignClass "{6AF041BB1162D40D}" {
      SourceMaterial "AE3_SolarCells"
      AssignedMaterial "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat"
-    }
-    MaterialAssignClass "{6AF041BB1162D407}" {
-     SourceMaterial "AE3_Rubber"
-     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
     }
    }
   }
@@ -68,7 +48,8 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
   }
   SCR_EditableEntityComponent "{6AF041BB1162D4B7}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162D487}" {
-    Name "Solar Panel (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_SolarPanel_Name"
+    m_Image "{140E06D2BB6D725F}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_SolarPanel.edds"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
     }

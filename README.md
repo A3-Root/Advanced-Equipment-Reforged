@@ -20,7 +20,8 @@ Solar panels switch on and off like generators. Flash drives take files from the
 (`ROOT_AE3_UsbDriveComponent` files), the Game Master (add file / directory / image) and the script API.
 Laptop, router, battery pack, solar panel and portable server also come in Olive, Sand and Black
 (`Prefabs/ROOT_AE3/Devices/Variants/`). All devices are placeable in Game Master (Edit mode) and in the World Editor. Laptops, routers, battery packs, flash drives and portable servers are in
-the US, USSR, FIA and CIV arsenals (equipment). Inventory items fit uniform, vest and backpack storage.
+the US, USSR, FIA and CIV arsenals (equipment). Device names are in the string table `Language/ROOT_AE3_localization.st` (English) and
+searchable in the Game Master browser; preview images are in `UI/Textures/EditorPreviews/ROOT_AE3/`. Inventory items fit uniform, vest and backpack storage.
 The 3x2 inventory slot is added by `Scripts/Game/ROOT_AE3/Inventory/ROOT_AE3_SlotSize.c`.
 
 ## Player actions
@@ -35,7 +36,7 @@ the session, ejects drives, unplugs power and puts it into standby.
 ## armaOS terminal
 
 Login (`LOGIN>` / `PASSWORD>`), prompt `user@host:/path/>`, quotes, `>` / `>>` redirection, Tab completion,
-history, Ctrl+C button, 20 terminal designs, font size, mouse wheel scrolling.
+history (Up / Down arrows), Ctrl+C button, 20 terminal designs, font size, mouse wheel scrolling.
 
 Programs: `man help ls cd cat date history clear rm mv cp whoami mkdir touch echo find grep mount umount lsusb
 chown unlock sudo su desktop ping ip ifconfig wifi ssh msg exit shutdown standby`, optional `crypto crack`
@@ -71,14 +72,24 @@ the router password; it needs a router that accepts connections.
 
 ## Game Master
 
-Context actions (prefix "AE3:") on selected devices: add user / sudoer, remove sudoer, root password, root
+Context action "Advanced Equipment..." on hovered or selected devices opens a panel of the actions that apply,
+grouped Users, System, Files and intel, Power, Network: add user / sudoer, remove sudoer, root password, root
 login, hostname, interface mode, add file (permissions, Caesar / columnar encryption, password, virtual size),
 add directory, add email, mail address, chat handle, add web page, browser history, image, calendar event,
 install games, static IP, interface access (identity IDs / factions / names), user transfer speed, transfer speed, battery level, fuel, router settings, power on / off, standby, crash, connect
 power / network (select the source or router with the devices), disconnect, open interface as root, save /
-restore computer (empty name lists the saves). Text values are entered in a form; `\n` in file, mail, web page and calendar text is a line break. "Open interface as root"
+restore computer (empty name lists the saves). Text values are entered in a form; `
+` in file, mail, web page and calendar text is a line break.
+Each action shows a notification with the number of devices it changed. "Open interface as root"
 opens the desktop as root for the Game Master without range or access checks (filesystem browser); the previous
 login is restored when the Game Master closes it.
+
+Device attributes (category "Advanced Equipment"): powered on, battery level, fuel, root login, interface mode,
+SSH server, router range, accept connections, external SSH. Game settings (category "Advanced Equipment"):
+boot and shutdown time, root login at terminal, sudoers act as root, any login, log out on session end,
+default interface, desktop theme, window size, file browsing, screen on models, router range and multiplier,
+network transfer speed, games. Game setting changes are sent to all players.
+Attributes: `Configs/Editor/AttributeLists/Edit.conf`, `Scripts/Game/ROOT_AE3/Editor/ROOT_AE3_EditorAttributes.c`.
 
 ## World Editor
 
@@ -94,7 +105,7 @@ login is restored when the Game Master closes it.
 ## Settings
 
 Defaults in `Configs/ROOT_AE3/Settings.conf`. A mission overrides them with `m_ROOT_AE3_Settings` in its
-`SCR_MissionHeader`.
+`SCR_MissionHeader`. The Game Master changes part of them in game (see Game Master).
 Groups: Main (debug log, network debug log, any-login test mode, device names), armaOS (root login, sudoers, root password, error sound, transfer speeds
 and cap, terminal design, scroll, font size, screen mirror range / interval / viewers / lines / keystroke sync
 / change detection, header texts, boot and shutdown time), Desktop (default interface, file
@@ -161,7 +172,7 @@ addresses, changing the chat handle and setting a static IP in the desktop need 
 
 ## Not ported
 
-Music app, the debug overlay, translations (the interface is English only), the full desktop on the model screen (it shows the window titles), CCTV of cameras outside the
+Music app, the debug overlay, translations (the interface and string table are English only), the full desktop on the model screen (it shows the window titles), CCTV of cameras outside the
 viewer's streaming range, Game Master action for multi-page web sites (script API `RegisterSite` only), calendar event
 locations, the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a laptop when it is placed, removing installed games, the Zeus games roster and per-computer
 games module, file drag and drop, graphical game boards (games run as text in the desktop Games app), portable desks and desk chairs, lamp variants (one floodlight), inline base64 images, typing

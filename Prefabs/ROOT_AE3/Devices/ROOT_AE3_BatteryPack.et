@@ -16,25 +16,9 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
      SourceMaterial "AE3_Metal"
      AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat"
     }
-    MaterialAssignClass "{6AF041BB116264FD}" {
-     SourceMaterial "AE3_Keys"
-     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat"
-    }
-    MaterialAssignClass "{6AF041BB116264F7}" {
-     SourceMaterial "AE3_Screen"
-     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat"
-    }
     MaterialAssignClass "{6AF041BB116264CF}" {
      SourceMaterial "AE3_LED"
      AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat"
-    }
-    MaterialAssignClass "{6AF041BB116264C9}" {
-     SourceMaterial "AE3_SolarCells"
-     AssignedMaterial "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat"
-    }
-    MaterialAssignClass "{6AF041BB116264C0}" {
-     SourceMaterial "AE3_Rubber"
-     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
     }
    }
   }
@@ -64,7 +48,8 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   }
   SCR_EditableEntityComponent "{6AF041BB11626798}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11626666}" {
-    Name "Battery Pack (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_BatteryPack_Name"
+    m_Image "{CE4616B1BF89916A}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_BatteryPack.edds"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
     }
@@ -79,7 +64,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
     ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
-     Name "Battery Pack"
+     Name "#ROOT_AE3-Item_BatteryPack_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
      Weight 12

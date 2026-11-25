@@ -163,6 +163,75 @@ class ROOT_AE3_Settings
 	bool m_bGamesDebugSeats;
 
 	//------------------------------------------------------------------------------------------------
+	//! Numeric and on/off settings by key (Game Master settings attributes). False for an unknown key.
+	bool GetNumber(string key, out float value)
+	{
+		switch (key)
+		{
+			case "allow_root_login": value = ROOT_AE3_Util.BoolNum(m_bAllowRootLogin); return true;
+			case "cli_elevate": value = ROOT_AE3_Util.BoolNum(m_bCliElevateSudoers); return true;
+			case "logout_on_end": value = ROOT_AE3_Util.BoolNum(m_bLogoutOnSessionEnd); return true;
+			case "debug_any_login": value = ROOT_AE3_Util.BoolNum(m_bDebugAnyLogin); return true;
+			case "error_sound": value = ROOT_AE3_Util.BoolNum(m_bEnableErrorSound); return true;
+			case "ui_on_texture": value = ROOT_AE3_Util.BoolNum(m_bUiOnTexture); return true;
+			case "file_browsing": value = ROOT_AE3_Util.BoolNum(m_bDesktopEnableFileBrowsing); return true;
+			case "map_same_network": value = ROOT_AE3_Util.BoolNum(m_bDesktopMapSameNetworkOnly); return true;
+			case "games_enabled": value = ROOT_AE3_Util.BoolNum(m_bGamesEnabled); return true;
+			case "games_hosting": value = ROOT_AE3_Util.BoolNum(m_bGamesAllowHosting); return true;
+			case "games_same_network": value = ROOT_AE3_Util.BoolNum(m_bGamesRequireSameNetwork); return true;
+			case "startup_time": value = m_fStartupTime; return true;
+			case "shutdown_time": value = m_fShutdownTime; return true;
+			case "transfer_local": value = m_fTransferSpeedLocal; return true;
+			case "transfer_usb": value = m_fTransferSpeedUsb; return true;
+			case "transfer_network": value = m_fTransferSpeedNetwork; return true;
+			case "range_default": value = m_fDefaultWirelessRange; return true;
+			case "range_multiplier": value = m_fWirelessRangeMultiplier; return true;
+			case "ui_range": value = m_fUiPlayerRange; return true;
+			case "power_interval": value = m_fPowerUpdateInterval; return true;
+			case "default_mode": value = m_iDesktopDefaultMode; return true;
+			case "default_theme": value = m_iDesktopDefaultTheme; return true;
+			case "desktop_size": value = m_iDesktopSize; return true;
+			case "terminal_design": value = m_iTerminalDesign; return true;
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	bool SetNumber(string key, float value)
+	{
+		switch (key)
+		{
+			case "allow_root_login": m_bAllowRootLogin = value != 0; return true;
+			case "cli_elevate": m_bCliElevateSudoers = value != 0; return true;
+			case "logout_on_end": m_bLogoutOnSessionEnd = value != 0; return true;
+			case "debug_any_login": m_bDebugAnyLogin = value != 0; return true;
+			case "error_sound": m_bEnableErrorSound = value != 0; return true;
+			case "ui_on_texture": m_bUiOnTexture = value != 0; return true;
+			case "file_browsing": m_bDesktopEnableFileBrowsing = value != 0; return true;
+			case "map_same_network": m_bDesktopMapSameNetworkOnly = value != 0; return true;
+			case "games_enabled": m_bGamesEnabled = value != 0; return true;
+			case "games_hosting": m_bGamesAllowHosting = value != 0; return true;
+			case "games_same_network": m_bGamesRequireSameNetwork = value != 0; return true;
+			case "startup_time": m_fStartupTime = value; return true;
+			case "shutdown_time": m_fShutdownTime = value; return true;
+			case "transfer_local": m_fTransferSpeedLocal = value; return true;
+			case "transfer_usb": m_fTransferSpeedUsb = value; return true;
+			case "transfer_network": m_fTransferSpeedNetwork = value; return true;
+			case "range_default": m_fDefaultWirelessRange = value; return true;
+			case "range_multiplier": m_fWirelessRangeMultiplier = value; return true;
+			case "ui_range": m_fUiPlayerRange = value; return true;
+			case "power_interval": m_fPowerUpdateInterval = value; return true;
+			case "default_mode": m_iDesktopDefaultMode = Math.Round(value); return true;
+			case "default_theme": m_iDesktopDefaultTheme = Math.Round(value); return true;
+			case "desktop_size": m_iDesktopSize = Math.Round(value); return true;
+			case "terminal_design": m_iTerminalDesign = Math.Round(value); return true;
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Client-relevant values packed for RPC.
 	string PackClient()
 	{

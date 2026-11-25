@@ -153,6 +153,16 @@ class ROOT_AE3_NetworkComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Configured range in m before multipliers.
+	float GetBaseRange()
+	{
+		if (m_fRange < 0)
+			return ROOT_AE3_SettingsManager.Get().m_fDefaultWirelessRange;
+
+		return m_fRange;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	float GetRange()
 	{
 		ROOT_AE3_Settings s = ROOT_AE3_SettingsManager.Get();

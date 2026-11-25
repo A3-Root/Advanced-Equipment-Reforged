@@ -123,14 +123,19 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Clickable button: background rectangle plus centered label.
+	//! Clickable button: background rectangle plus centered label; highlights on hover and press.
 	static ImageWidget Button(Widget parent, float x, float y, float width, float height, string label, int id, ROOT_AE3_UiListener listener, Color bg = null, Color fg = null, int size = 15)
 	{
 		ref Color back = bg;
 		if (!back)
 			back = new Color(0.25, 0.27, 0.3, 1);
 
-		ImageWidget b = Rect(parent, x, y, width, height, back, id, listener);
+		ImageWidget b = Rect(parent, x, y, width, height, back);
+		b.ClearFlags(WidgetFlags.IGNORE_CURSOR);
+		ROOT_AE3_WidgetHandler h = Listen(b, id, listener);
+		if (h)
+			h.SetButton(back);
+
 		TextWidget t = Text(parent, x + 4, y, width - 8, height, label, size, fg);
 		t.SetTextOffset(0, (height - size) * 0.5 - 2);
 		return b;
@@ -178,16 +183,17 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static void Listen(Widget w, int id, ROOT_AE3_UiListener listener)
+	static ROOT_AE3_WidgetHandler Listen(Widget w, int id, ROOT_AE3_UiListener listener)
 	{
 		if (!w || !listener)
-			return;
+			return null;
 
 		w.SetUserID(id);
 		ROOT_AE3_WidgetHandler h = new ROOT_AE3_WidgetHandler();
 		h.m_Listener = listener;
 		w.AddHandler(h);
 		listener.KeepHandler(h);
+		return h;
 	}
 
 	//------------------------------------------------------------------------------------------------

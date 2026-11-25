@@ -260,9 +260,9 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	void Update(float dt)
 	{
 		InputManager im = GetGame().GetInputManager();
-		if (im.GetActionTriggered("MenuUp"))
+		if (im.GetActionTriggered("ROOT_AE3_HistoryUp"))
 			History(-1);
-		else if (im.GetActionTriggered("MenuDown"))
+		else if (im.GetActionTriggered("ROOT_AE3_HistoryDown"))
 			History(1);
 
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();

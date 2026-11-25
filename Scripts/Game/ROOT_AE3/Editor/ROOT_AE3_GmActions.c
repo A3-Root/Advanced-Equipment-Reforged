@@ -3,6 +3,86 @@
 class ROOT_AE3_GmActions
 {
 	//------------------------------------------------------------------------------------------------
+	//! Panel entries in display order: action key, label, group.
+	static void List(notnull array<string> keys, notnull array<string> labels, notnull array<string> groups)
+	{
+		array<string> table = {
+			"add_user", "Add user", "Users",
+			"add_sudoer", "Add sudoer", "Users",
+			"remove_sudoer", "Remove sudoer", "Users",
+			"user_speed", "User transfer speed", "Users",
+			"root_password", "Root password", "Users",
+			"root_login", "Root login policy", "Users",
+			"access", "Interface access", "Users",
+			"hostname", "Hostname", "System",
+			"interface", "Interface mode", "System",
+			"open_root", "Open interface as root", "System",
+			"crash", "Crash", "System",
+			"save", "Save computer", "System",
+			"restore", "Restore computer", "System",
+			"add_file", "Add file", "Files and intel",
+			"add_dir", "Add directory", "Files and intel",
+			"add_media", "Add image", "Files and intel",
+			"add_email", "Add email", "Files and intel",
+			"mail_address", "Add mail address", "Files and intel",
+			"chat_handle", "Chat handle", "Files and intel",
+			"add_webpage", "Add web page", "Files and intel",
+			"add_history", "Add browser history", "Files and intel",
+			"add_calendar", "Add calendar event", "Files and intel",
+			"add_games", "Install games", "Files and intel",
+			"power_on", "Power on", "Power",
+			"power_off", "Power off", "Power",
+			"standby", "Standby", "Power",
+			"battery", "Battery level", "Power",
+			"fuel", "Fuel", "Power",
+			"connect_power", "Connect power (selection)", "Power",
+			"disconnect_power", "Disconnect power", "Power",
+			"router", "Router settings", "Network",
+			"static_ip", "Static IP", "Network",
+			"network_speed", "Transfer speed", "Network",
+			"connect_network", "Connect network (selection)", "Network",
+			"disconnect_network", "Disconnect network", "Network"
+		};
+
+		for (int i = 0; i + 2 < table.Count(); i += 3)
+		{
+			keys.Insert(table[i]);
+			labels.Insert(table[i + 1]);
+			groups.Insert(table[i + 2]);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	static string Label(string key)
+	{
+		array<string> keys = {};
+		array<string> labels = {};
+		array<string> groups = {};
+		List(keys, labels, groups);
+		int i = keys.Find(key);
+		if (i < 0)
+			return key;
+
+		return labels[i];
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! True when the action can run on one of the devices (connect actions need two).
+	static bool AppliesToAny(string key, notnull array<IEntity> ents)
+	{
+		if (key == "connect_power" || key == "connect_network")
+			return ents.Count() >= 2;
+
+		foreach (IEntity e : ents)
+		{
+			if (Applies(key, e))
+				return true;
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Title, field labels and defaults of an action; false when the action needs no dialog.
 	static bool Fields(string key, out string title, notnull array<string> labels, notnull array<string> defaults)
 	{
@@ -184,15 +264,28 @@ class ROOT_AE3_GmActions
 			return;
 		}
 
+		int done, total;
 		foreach (IEntity e : targets)
 		{
 			if (!e || !Applies(key, e))
 				continue;
 
-			ExecuteOne(playerId, key, e, v);
+			total++;
+			int result = ExecuteOne(playerId, key, e, v);
+			if (result < 0)
+				return;
+
+			done += result;
 			if (key == "open_root")
 				break;
 		}
+
+		if (total == 0)
+			Notify(playerId, Label(key) + ": no matching device selected.");
+		else if (done == total)
+			Notify(playerId, string.Format("%1: done (%2 devices).", Label(key), done));
+		else
+			Notify(playerId, string.Format("%1: failed on %2 of %3 devices. Check the values.", Label(key), total - done, total));
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -260,7 +353,17 @@ class ROOT_AE3_GmActions
 	}
 
 	//------------------------------------------------------------------------------------------------
-	protected static void ExecuteOne(int playerId, string key, IEntity e, array<string> v)
+	protected static int R(bool ok)
+	{
+		if (ok)
+			return 1;
+
+		return 0;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Returns 1 done, 0 failed, -1 reported by the action itself.
+	protected static int ExecuteOne(int playerId, string key, IEntity e, array<string> v)
 	{
 		ROOT_AE3_ComputerComponent c = ROOT_AE3_ComputerComponent.Of(e);
 		ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(e);
@@ -282,69 +385,60 @@ class ROOT_AE3_GmActions
 
 		switch (key)
 		{
-			case "add_user": ROOT_AE3_API.AddUser(e, V(v, 0), V(v, 1), V(v, 2) == "1"); break;
-			case "add_sudoer": ROOT_AE3_API.AddSudoer(e, V(v, 0)); break;
-			case "remove_sudoer": ROOT_AE3_API.RemoveSudoer(e, V(v, 0)); break;
-			case "root_password": ROOT_AE3_API.SetRootPassword(e, V(v, 0)); break;
-			case "root_login": ROOT_AE3_API.SetRootLogin(e, V(v, 0).ToInt()); break;
-			case "hostname": ROOT_AE3_API.SetHostname(e, V(v, 0)); break;
+			case "add_user": return R(ROOT_AE3_API.AddUser(e, V(v, 0), V(v, 1), V(v, 2) == "1"));
+			case "add_sudoer": return R(ROOT_AE3_API.AddSudoer(e, V(v, 0)));
+			case "remove_sudoer": return R(ROOT_AE3_API.RemoveSudoer(e, V(v, 0)));
+			case "root_password": return R(ROOT_AE3_API.SetRootPassword(e, V(v, 0)));
+			case "root_login": return R(ROOT_AE3_API.SetRootLogin(e, V(v, 0).ToInt()));
+			case "hostname": return R(ROOT_AE3_API.SetHostname(e, V(v, 0)));
 			case "interface":
 			{
 				int mode = -1;
 				if (!V(v, 0).Trim().IsEmpty())
 					mode = V(v, 0).ToInt();
 
-				c.SetInterfaceMode(mode);
-				break;
+				return R(ROOT_AE3_API.SetInterfaceMode(e, mode));
 			}
+
 			case "access":
 			{
-				array<string> cli = ROOT_AE3_Util.List(V(v, 0));
-				array<string> gui = ROOT_AE3_Util.List(V(v, 1));
 				if (V(v, 0) != "*")
-					c.SetAccess(0, cli);
+					c.SetAccess(0, ROOT_AE3_Util.List(V(v, 0)));
 
 				if (V(v, 1) != "*")
-					c.SetAccess(1, gui);
-				break;
+					c.SetAccess(1, ROOT_AE3_Util.List(V(v, 1)));
+
+				return 1;
 			}
 
-			case "user_speed": c.SetPref(V(v, 0), "speed", V(v, 1)); break;
-			case "add_file": ROOT_AE3_API.AddFile(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3), V(v, 4).ToInt(), V(v, 5), V(v, 6), V(v, 7).ToInt()); break;
-			case "add_dir": ROOT_AE3_API.AddDirectory(e, V(v, 0), V(v, 1), V(v, 2)); break;
-			case "add_email": ROOT_AE3_API.AddEmail(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3)); break;
-			case "mail_address": ROOT_AE3_API.AddMailAddress(e, V(v, 0)); break;
-			case "chat_handle": ROOT_AE3_API.SetChatHandle(e, V(v, 0)); break;
+			case "user_speed": c.SetPref(V(v, 0), "speed", V(v, 1)); return 1;
+			case "add_file": return R(ROOT_AE3_API.AddFile(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3), V(v, 4).ToInt(), V(v, 5), V(v, 6), V(v, 7).ToInt()));
+			case "add_dir": return R(ROOT_AE3_API.AddDirectory(e, V(v, 0), V(v, 1), V(v, 2)));
+			case "add_email": return R(ROOT_AE3_API.AddEmail(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3)));
+			case "mail_address": return R(ROOT_AE3_API.AddMailAddress(e, V(v, 0)));
+			case "chat_handle": return R(ROOT_AE3_API.SetChatHandle(e, V(v, 0)));
 			case "add_webpage":
 			{
 				if (V(v, 3) == "1")
-					ROOT_AE3_API.RegisterWebpage(V(v, 0), V(v, 1), V(v, 2));
-				else
-					ROOT_AE3_API.RegisterWebpage(V(v, 0), V(v, 1), V(v, 2), e);
+					return R(ROOT_AE3_API.RegisterWebpage(V(v, 0), V(v, 1), V(v, 2)));
 
-				break;
+				return R(ROOT_AE3_API.RegisterWebpage(V(v, 0), V(v, 1), V(v, 2), e));
 			}
 
-			case "add_history": ROOT_AE3_API.AddBrowserHistory(e, V(v, 0)); break;
-			case "add_media": ROOT_AE3_API.AddMedia(e, V(v, 0), V(v, 1), V(v, 2)); break;
-			case "add_calendar": ROOT_AE3_API.AddCalendarEvent(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3)); break;
-			case "add_games":
-			{
-				array<string> names = ROOT_AE3_Util.Words(V(v, 0));
-				ROOT_AE3_API.AddGames(e, names);
-				break;
-			}
-
-			case "network_speed": ROOT_AE3_API.SetTransferSpeed(e, V(v, 0).ToFloat()); break;
-			case "static_ip": ROOT_AE3_API.SetStaticIp(e, V(v, 0)); break;
-			case "battery": ROOT_AE3_API.SetBatteryLevel(e, V(v, 0).ToFloat() / 100); break;
-			case "fuel": ROOT_AE3_API.SetFuel(e, V(v, 0).ToFloat()); break;
-			case "power_on": ROOT_AE3_API.SetPowerState(e, 1); break;
-			case "power_off": ROOT_AE3_API.SetPowerState(e, 0); break;
-			case "standby": ROOT_AE3_API.SetPowerState(e, 2); break;
-			case "crash": ROOT_AE3_API.CrashDevice(e); break;
-			case "disconnect_power": ROOT_AE3_API.DisconnectPower(e); break;
-			case "disconnect_network": ROOT_AE3_API.DisconnectNetwork(e); break;
+			case "add_history": return R(ROOT_AE3_API.AddBrowserHistory(e, V(v, 0)));
+			case "add_media": return R(ROOT_AE3_API.AddMedia(e, V(v, 0), V(v, 1), V(v, 2)));
+			case "add_calendar": return R(ROOT_AE3_API.AddCalendarEvent(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3)));
+			case "add_games": return R(ROOT_AE3_API.AddGames(e, ROOT_AE3_Util.Words(V(v, 0))));
+			case "network_speed": return R(ROOT_AE3_API.SetTransferSpeed(e, V(v, 0).ToFloat()));
+			case "static_ip": return R(ROOT_AE3_API.SetStaticIp(e, V(v, 0)));
+			case "battery": return R(ROOT_AE3_API.SetBatteryLevel(e, V(v, 0).ToFloat() / 100));
+			case "fuel": return R(ROOT_AE3_API.SetFuel(e, V(v, 0).ToFloat()));
+			case "power_on": return R(ROOT_AE3_API.SetPowerState(e, 1));
+			case "power_off": return R(ROOT_AE3_API.SetPowerState(e, 0));
+			case "standby": return R(ROOT_AE3_API.SetPowerState(e, 2));
+			case "crash": return R(ROOT_AE3_API.CrashDevice(e));
+			case "disconnect_power": return R(ROOT_AE3_API.DisconnectPower(e));
+			case "disconnect_network": return R(ROOT_AE3_API.DisconnectNetwork(e));
 			case "router":
 			{
 				float range = V(v, 2).ToFloat();
@@ -366,7 +460,8 @@ class ROOT_AE3_GmActions
 					array<string> allow = ROOT_AE3_Util.Words(V(v, 5));
 					n.SetExternalAllow(allow);
 				}
-				break;
+
+				return 1;
 			}
 
 			case "save":
@@ -376,7 +471,7 @@ class ROOT_AE3_GmActions
 				else
 					Notify(playerId, "Save failed.");
 
-				break;
+				return -1;
 			}
 
 			case "restore":
@@ -386,7 +481,7 @@ class ROOT_AE3_GmActions
 					array<string> saves = {};
 					ROOT_AE3_SaveLoad.ListSaves(saves);
 					Notify(playerId, "Saves: " + ROOT_AE3_Util.JoinFrom(saves, 0, ", "));
-					break;
+					return -1;
 				}
 
 				if (ROOT_AE3_API.RestoreComputer(e, V(v, 0)))
@@ -394,14 +489,16 @@ class ROOT_AE3_GmActions
 				else
 					Notify(playerId, "No save named " + V(v, 0));
 
-				break;
+				return -1;
 			}
 
 			case "open_root":
 			{
 				ROOT_AE3_Manager.Get().OpenAsRoot(playerId, c);
-				break;
+				return -1;
 			}
 		}
+
+		return 0;
 	}
 }

@@ -1,9 +1,10 @@
-//! Game Master context action on Advanced Equipment devices. m_sAction selects the ROOT_AE3_GmActions key.
-//! Runs on the Game Master's machine: opens the field dialog when needed, then sends the request to the server.
+//! Game Master context action on Advanced Equipment devices. Opens the ROOT_AE3_GmDialog action panel for the
+//! hovered and selected devices; with m_sAction set, runs that ROOT_AE3_GmActions key instead.
+//! Runs on the Game Master's machine; the request is sent to the server, which checks the rights.
 [BaseContainerProps(), SCR_BaseContainerCustomTitleUIInfo("m_Info")]
 class ROOT_AE3_GmContextAction : SCR_BaseContextAction
 {
-	[Attribute("", desc: "Action key (see ROOT_AE3_GmActions)")]
+	[Attribute("", desc: "Action key (see ROOT_AE3_GmActions), empty = action panel")]
 	protected string m_sAction;
 
 	//------------------------------------------------------------------------------------------------
@@ -27,16 +28,10 @@ class ROOT_AE3_GmContextAction : SCR_BaseContextAction
 	{
 		array<IEntity> ents = {};
 		Collect(hoveredEntity, selectedEntities, ents);
-		if (m_sAction == "connect_power" || m_sAction == "connect_network")
-			return ents.Count() >= 2;
+		if (m_sAction.IsEmpty())
+			return !ents.IsEmpty();
 
-		foreach (IEntity e : ents)
-		{
-			if (ROOT_AE3_GmActions.Applies(m_sAction, e))
-				return true;
-		}
-
-		return false;
+		return ROOT_AE3_GmActions.AppliesToAny(m_sAction, ents);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -50,16 +45,20 @@ class ROOT_AE3_GmContextAction : SCR_BaseContextAction
 	{
 		array<IEntity> ents = {};
 		Collect(hoveredEntity, selectedEntities, ents);
+		if (ents.IsEmpty())
+			return;
+
+		if (m_sAction.IsEmpty())
+		{
+			ROOT_AE3_GmDialog.OpenPanel(ents);
+			return;
+		}
+
 		array<RplId> ids = {};
 		foreach (IEntity e : ents)
 		{
-			ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(e);
-			if (d)
-				ids.Insert(d.GetRplId());
+			ids.Insert(ROOT_AE3_DeviceComponent.Of(e).GetRplId());
 		}
-
-		if (ids.IsEmpty())
-			return;
 
 		string title;
 		array<string> labels = {};

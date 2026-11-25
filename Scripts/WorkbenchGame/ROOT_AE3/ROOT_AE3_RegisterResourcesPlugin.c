@@ -2,6 +2,7 @@
 //! -ae3List=<path|path...>: registers each listed absolute path.
 //! -ae3Rebuild=<path|path...>: builds runtime resources (.xob from .fbx, .edds from .png).
 //! -ae3Resave=<path|path...>: loads and re-saves each listed registered .et / .conf / .layout so Workbench writes its IDs.
+//! -ae3Dump=<resource>><path>|...: writes each listed resource to the absolute path (reading vanilla configs).
 //! -ae3KeepOpen=1: stays open so asynchronous imports finish (the caller ends the process).
 //! Command line: -wbmodule=ScriptEditor -plugin=ROOT_AE3_RegisterResourcesPlugin -ae3List=<path|path>
 [WorkbenchPluginAttribute(name: "AE3 Register Resources", description: "Register or re-save listed files", wbModules: {"ResourceManager", "ScriptEditor"}, awesomeFontCode: 0xF0C7)]
@@ -92,7 +93,7 @@ class ROOT_AE3_RegisterResourcesPlugin : WorkbenchPlugin
 					if (info)
 						name = info.GetName();
 
-					PrintFormat("[AE3] inspect: %1 -> %2", prefab, name);
+					PrintFormat("[AE3] inspect: %1 -> %2 (%3)", prefab, name, WidgetManager.Translate(name));
 				}
 			}
 		}
@@ -242,6 +243,26 @@ class ROOT_AE3_RegisterResourcesPlugin : WorkbenchPlugin
 
 		if (GetArg("-ae3Items", listPath))
 			InspectItems(listPath);
+
+		if (GetArg("-ae3Dump", listPath))
+		{
+			foreach (string pair : ReadList(listPath))
+			{
+				array<string> parts = {};
+				pair.Split(">", parts, true);
+				Resource dump = BaseContainerTools.LoadContainer(parts[0]);
+				if (parts.Count() == 2 && dump && dump.IsValid() && BaseContainerTools.SaveContainer(dump.GetResource().ToBaseContainer(), parts[0], parts[1]))
+				{
+					ok++;
+					Print("[AE3] dumped " + parts[0]);
+				}
+				else
+				{
+					failed++;
+					Print("[AE3] DUMP FAILED " + pair, LogLevel.WARNING);
+				}
+			}
+		}
 
 		PrintFormat("[AE3] done ok=%1 failed=%2", ok, failed);
 		string keep;

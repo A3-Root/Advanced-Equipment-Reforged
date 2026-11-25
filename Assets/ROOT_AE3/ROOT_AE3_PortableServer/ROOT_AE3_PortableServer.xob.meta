@@ -31,7 +31,7 @@ MetaFileClass {
    GeometryParams {
     GeometryParam UCX_ROOT_AE3_PortableServer {
      SurfaceProperties {
-      "{536BF67B2052B869}material/metal.gamemat"
+      "{CE9253778DD8FBDE}Common/Materials/Game/metal.gamemat"
      }
      Mass 0
      Margin 0

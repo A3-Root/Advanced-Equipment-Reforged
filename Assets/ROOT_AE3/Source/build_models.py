@@ -140,8 +140,8 @@ def collider(name, size, loc, col, rot=(0, 0, 0)):
     return box("UCX_" + name, size, loc, None, col, rot=rot)
 
 
-def add_lods(col):
-    """Visual meshes become <name>_LOD0; a decimated copy <name>_LOD1 (40 % of the faces) is added."""
+def add_lods(col, ratio):
+    """Visual meshes become <name>_LOD0; a copy <name>_LOD1 decimated to ratio of the faces (none at 1) is added."""
     for o in [o for o in col.objects if o.type == 'MESH' and not o.name.startswith("UCX_")]:
         base = o.name
         o.name = base + "_LOD0"
@@ -149,18 +149,20 @@ def add_lods(col):
         lod.data = o.data.copy()
         lod.name = base + "_LOD1"
         col.objects.link(lod)
+        if ratio >= 1:
+            continue
         bpy.ops.object.select_all(action='DESELECT')
         bpy.context.view_layer.objects.active = lod
         lod.select_set(True)
         mod = lod.modifiers.new("decimate", 'DECIMATE')
-        mod.ratio = 0.4
+        mod.ratio = ratio
         bpy.ops.object.modifier_apply(modifier=mod.name)
 
 
-def export(col, name):
+def export(col, name, lod_ratio=0.4):
     path = os.path.join(OUT, name)
     os.makedirs(path, exist_ok=True)
-    add_lods(col)
+    add_lods(col, lod_ratio)
     bpy.ops.object.select_all(action='DESELECT')
     for o in col.objects:
         o.select_set(True)
@@ -276,17 +278,18 @@ def solar(M):
     pw, ph, pt = 1.0, 0.65, 0.035
     cz = 0.42
     parts = [box("frame", (pw, ph, pt), (0, 0, cz), M["metal"], col, rot=(tilt, 0, 0)),
-             box("cells", (pw - 0.04, ph - 0.04, 0.004), (0, -math.sin(tilt) * 0.0, cz + 0.019 * math.cos(tilt)), M["cells"], col, rot=(tilt, 0, 0))]
+             # cells 0.5 mm above the frame top, offset along the tilted panel normal
+             box("cells", (pw - 0.04, ph - 0.04, 0.004), (0, -math.sin(tilt) * (pt / 2 + 0.0025), cz + math.cos(tilt) * (pt / 2 + 0.0025)), M["cells"], col, rot=(tilt, 0, 0))]
     for sx in (-1, 1):
         parts.append(box("legfront", (0.03, 0.03, 0.26), (sx * 0.42, -0.2, 0.13), M["metal"], col))
-        parts.append(box("legback", (0.03, 0.03, 0.62), (sx * 0.42, 0.22, 0.31), M["metal"], col))
+        parts.append(box("legback", (0.03, 0.03, 0.58), (sx * 0.42, 0.22, 0.29), M["metal"], col))
         parts.append(box("skid", (0.04, 0.6, 0.02), (sx * 0.42, 0.0, 0.01), M["metal"], col))
     parts.append(box("junction", (0.12, 0.05, 0.08), (0, 0.24, 0.3), M["plastic"], col))
     o = join(parts, name)
     uv_box(o)
     collider(name + "_panel", (pw, ph, pt), (0, 0, cz), col, rot=(tilt, 0, 0))
     collider(name + "_base", (0.9, 0.6, 0.3), (0, 0, 0.15), col)
-    export(col, name)
+    export(col, name, 1.0)
 
 
 def server(M):

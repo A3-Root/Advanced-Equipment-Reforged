@@ -10,7 +10,8 @@ GenericEntity : "{64D68C86AFC359FB}Prefabs/ROOT_AE3/Devices/ROOT_AE3_SolarPanel.
   }
   SCR_EditableEntityComponent "{6AF041BB1162D4B7}" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162D487}" {
-    Name "Solar Panel Sand (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_SolarPanel_Sand_Name"
+    m_Image "{9EB4C3FD8C96363D}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_SolarPanel_Sand.edds"
    }
   }
  }

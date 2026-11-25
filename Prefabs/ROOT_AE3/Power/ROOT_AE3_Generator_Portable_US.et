@@ -32,7 +32,8 @@ GenericEntity : "{0958E6B949501D00}Prefabs/Props/Military/Generators/GeneratorPo
   }
   SCR_EditableEntityComponent "{6AF041BB1163EF32}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1163EF04}" {
-    Name "Portable Generator US (Advanced Equipment)"
+    Name "#ROOT_AE3-Editable_Generator_Portable_US_Name"
+    m_Image "{7A832EF82CF7543E}UI/Textures/EditorPreviews/Auto/Props/Military/Generators/E_GeneratorPortable_US_01.edds"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
     }
