@@ -111,6 +111,21 @@ class ROOT_AE3_GameSnakesLadders : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! pos (square per seat), roll (last die), jumps (from, to pairs).
+	override string Gui(int seat)
+	{
+		array<int> jumps = {};
+		foreach (int from, int to : m_mJumps)
+		{
+			jumps.Insert(from);
+			jumps.Insert(to);
+		}
+
+		return "pos=" + Ints(m_aPos) + ";roll=" + m_iLastRoll.ToString() + ";jumps=" + Ints(jumps);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string v = "Positions:\n";

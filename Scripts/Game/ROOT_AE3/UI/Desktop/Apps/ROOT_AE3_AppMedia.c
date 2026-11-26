@@ -181,7 +181,9 @@ class ROOT_AE3_AppMedia : ROOT_AE3_App
 			return;
 		}
 
-		if (!ok || value.Trim().IsEmpty())
+		string text = value;
+		text.TrimInPlace();
+		if (!ok || text.IsEmpty())
 			return;
 
 		switch (tag)
@@ -195,7 +197,7 @@ class ROOT_AE3_AppMedia : ROOT_AE3_App
 
 			case "url":
 			{
-				string url = value.Trim();
+				string url = text;
 				string kind = ROOT_AE3_WebMedia.KindOf(url);
 				if (kind != "url" && kind != "video")
 				{
@@ -211,7 +213,7 @@ class ROOT_AE3_AppMedia : ROOT_AE3_App
 			case "base64":
 			{
 				m_sPath = "";
-				SetImage("base64", value.Trim(), "", "Pasted image");
+				SetImage("base64", text, "", "Pasted image");
 				return;
 			}
 

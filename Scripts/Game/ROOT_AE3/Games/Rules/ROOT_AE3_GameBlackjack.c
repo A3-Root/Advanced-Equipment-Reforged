@@ -308,6 +308,50 @@ class ROOT_AE3_GameBlackjack : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! dealer (cards, ? for the hidden card during a round), dv (dealer value, -1 hidden), h<seat> (cards), v (values),
+	//! score, done, round (1 during a round), result.
+	override string Gui(int seat)
+	{
+		string dealer;
+		int dv = -1;
+		if (m_bInRound && !m_aDealer.IsEmpty())
+		{
+			dealer = m_aDealer[0] + ",?";
+		}
+		else
+		{
+			dealer = string.Join(",", m_aDealer, true);
+			if (!m_aDealer.IsEmpty())
+				dv = Value(m_aDealer);
+		}
+
+		array<int> values = {};
+		array<int> done = {};
+		string g = "dealer=" + dealer + ";dv=" + dv.ToString();
+		for (int s = 0; s < m_iSeats; s++)
+		{
+			g += ";h" + s.ToString() + "=" + string.Join(",", m_aHands[s], true);
+			int v;
+			if (!m_aHands[s].IsEmpty())
+				v = Value(m_aHands[s]);
+
+			values.Insert(v);
+			int d;
+			if (m_aDone[s])
+				d = 1;
+
+			done.Insert(d);
+		}
+
+		g += ";v=" + Ints(values) + ";score=" + Ints(m_aScore) + ";done=" + Ints(done) + ";round=" + ROOT_AE3_Util.BoolStr(m_bInRound);
+		string result = m_sRoundResult;
+		result.Replace(";", ",");
+		result.Replace("=", " ");
+		return g + ";result=" + result;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string dealer;

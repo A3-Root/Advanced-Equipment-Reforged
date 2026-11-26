@@ -177,7 +177,8 @@ class ROOT_AE3_GuiRouterGames
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Table view reply "game_view": id, game, name, started, host, seats, board, line, help, status, playing, practice allowed.
+	//! Table view reply "game_view": id, game, name, started, host, seats, board, line, help, status, playing, practice allowed,
+	//! graphical state (me, turn, winner, bots, mine, then the rules' Gui), then one field per seat name.
 	static void View(ROOT_AE3_Session s, string rid, ROOT_AE3_GameTable t, string status)
 	{
 		ROOT_AE3_ComputerComponent c = s.m_Computer;
@@ -244,6 +245,36 @@ class ROOT_AE3_GuiRouterGames
 			playing,
 			ROOT_AE3_Util.BoolStr(ROOT_AE3_SettingsManager.Get().m_bGamesDebugSeats)
 		};
+		string gui;
+		if (t.m_bStarted)
+		{
+			array<int> bots = {};
+			array<int> mine = {};
+			foreach (int i, ROOT_AE3_ComputerComponent holder : t.m_aSeats)
+			{
+				int b;
+				if (t.IsBot(i))
+					b = 1;
+
+				int m;
+				if (holder && holder == c)
+					m = 1;
+
+				bots.Insert(b);
+				mine.Insert(m);
+			}
+
+			int play = t.PlaySeat(c);
+			gui = string.Format("me=%1;turn=%2;winner=%3;bots=%4;mine=%5;", play, t.m_Rules.GetTurn(), t.m_Rules.GetWinner(), ROOT_AE3_GameRules.Ints(bots), ROOT_AE3_GameRules.Ints(mine));
+			gui += t.m_Rules.Gui(play);
+		}
+
+		res.Insert(gui);
+		foreach (string n : t.m_aSeatNames)
+		{
+			res.Insert(n);
+		}
+
 		ROOT_AE3_GuiRouter.Reply(s, rid, true, "game_view", res);
 	}
 }

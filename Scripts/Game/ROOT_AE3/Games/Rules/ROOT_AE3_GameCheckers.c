@@ -259,6 +259,30 @@ class ROOT_AE3_GameCheckers : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! board (64: 1 white man, 2 white king, -1, -2 black), white, last, chain, moves (from * 64 + to, own turn only).
+	override string Gui(int seat)
+	{
+		string g = "board=" + Ints(m_aBoard) + ";white=" + ROOT_AE3_Util.BoolStr(seat == 0) + ";last=" + m_sLastMove + ";chain=" + m_iChain.ToString();
+		if (m_iWinner != -1 || seat != m_iTurn)
+			return g;
+
+		array<int> list = {};
+		if (m_iChain >= 0)
+		{
+			PieceMoves(m_iChain, true, list);
+		}
+		else
+		{
+			AllMoves(SignOf(seat), true, list);
+			if (list.IsEmpty())
+				AllMoves(SignOf(seat), false, list);
+		}
+
+		return g + ";moves=" + Ints(list);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		bool white = seat == 0;

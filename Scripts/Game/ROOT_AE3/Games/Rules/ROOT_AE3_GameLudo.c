@@ -5,6 +5,7 @@ class ROOT_AE3_GameLudo : ROOT_AE3_GameRules
 	protected ref array<int> m_aTokens = {};	//!< seat * 4 + token
 	protected int m_iRoll;					//!< 0 = not rolled yet
 	protected int m_iSixes;
+	protected int m_iShown;					//!< last die value thrown
 
 	//------------------------------------------------------------------------------------------------
 	override string GetId()
@@ -121,6 +122,7 @@ class ROOT_AE3_GameLudo : ROOT_AE3_GameRules
 			}
 
 			m_iRoll = Math.RandomIntInclusive(1, 6);
+			m_iShown = m_iRoll;
 			if (m_iRoll == 6)
 				m_iSixes++;
 
@@ -268,6 +270,24 @@ class ROOT_AE3_GameLudo : ROOT_AE3_GameRules
 		}
 
 		BotRanked(cands, scores, moves);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! tokens (seat * 4 + token progress), roll (0 not rolled), shown (last die), can (per own token 1 when it may move).
+	override string Gui(int seat)
+	{
+		array<int> can = {};
+		for (int t = 0; t < 4; t++)
+		{
+			int c;
+			if (m_iWinner == -1 && seat == m_iTurn && m_iRoll > 0 && CanMove(seat, t))
+				c = 1;
+
+			can.Insert(c);
+		}
+
+		return "tokens=" + Ints(m_aTokens) + ";roll=" + m_iRoll.ToString() + ";shown=" + m_iShown.ToString() + ";can=" + Ints(can);
 	}
 
 	//------------------------------------------------------------------------------------------------

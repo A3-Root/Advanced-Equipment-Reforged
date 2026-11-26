@@ -134,12 +134,12 @@ class ROOT_AE3_AppBrowser : ROOT_AE3_App
 
 		if (tag == ROOT_AE3_WebMedia.TAG_PAGE)
 		{
-			string trimmed = value.Trim();
-			int headLen = trimmed.Length();
+			int start = ROOT_AE3_WebMedia.SkipSpace(value, 0);
+			int headLen = value.Length() - start;
 			if (headLen > 64)
 				headLen = 64;
 
-			string low = trimmed.Substring(0, headLen);
+			string low = value.Substring(start, headLen);
 			low.ToLower();
 			if (!low.StartsWith("<") || low.StartsWith("<svg"))
 			{
@@ -150,7 +150,7 @@ class ROOT_AE3_AppBrowser : ROOT_AE3_App
 					head.Insert(value.ToAscii(i) & 0xFF);
 				}
 
-				if (!ROOT_AE3_WebMedia.Format(head).IsEmpty() || trimmed.StartsWith("data:image"))
+				if (!ROOT_AE3_WebMedia.Format(head).IsEmpty() || value.ContainsAt("data:image", start))
 				{
 					m_sWebKind = "url";
 					ROOT_AE3_WebMedia.Request("url", m_sWebUrl, this);

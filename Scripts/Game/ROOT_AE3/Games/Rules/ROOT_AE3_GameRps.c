@@ -140,6 +140,17 @@ class ROOT_AE3_GameRps : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! mine (own throw this round), theirs (1 when thrown), score (own, other), last (own, other), round.
+	override string Gui(int seat)
+	{
+		string g = "mine=" + m_aThrows[seat] + ";theirs=" + ROOT_AE3_Util.BoolStr(!m_aThrows[1 - seat].IsEmpty());
+		g += ";score=" + m_aScores[seat].ToString() + "," + m_aScores[1 - seat].ToString();
+		g += ";last=" + m_aLast[seat] + "," + m_aLast[1 - seat] + ";round=" + m_iRound.ToString();
+		return g;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string mine = m_aThrows[seat];

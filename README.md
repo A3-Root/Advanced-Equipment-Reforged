@@ -176,6 +176,6 @@ and leaves networks. Dropped terminal output is resent as the last 100 lines.
 
 Music app, the debug overlay, translations (the interface and string table are English only), the full desktop on the model screen (it shows the window titles), CCTV of cameras outside the
 viewer's streaming range, Game Master action for multi-page web sites (script API `RegisterSite` only), the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a laptop when it is placed, removing installed games, the Zeus games roster and per-computer
-games module, file drag and drop, graphical game boards (the desktop Games app shows boards as text), the terrain map in the Map app (it shows devices on a grid), copying and exporting mail and chat, portable desks and desk chairs, lamp variants (one floodlight), animated GIF, video formats the engine video player does not take, page styles and scripts in the Browser, typing
+games module, file drag and drop, the terrain map in the Map app (it shows devices on a grid), copying and exporting mail and chat, portable desks and desk chairs, lamp variants (one floodlight), animated GIF, video formats the engine video player does not take, page styles and scripts in the Browser, typing
 animations, refuelling generators from fuel trucks or nozzles, the Arma 3 deployment type setting (Reforger
 placeable items).

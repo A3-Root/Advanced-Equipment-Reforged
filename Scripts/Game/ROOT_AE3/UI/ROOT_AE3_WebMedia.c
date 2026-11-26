@@ -2,6 +2,7 @@
 //! Images (PNG, JPEG, GIF) and videos are saved under $profile:ROOT_AE3/media/ and shown from local storage
 //! (ImageWidget.LoadImageTexture, VideoWidget.LoadVideo). Pages are returned as text.
 //! Results go to target.OnDialog(TAG or TAG_PAGE, ok, file path / page text, or the error).
+//! Long text is never passed through string.Trim or string.Substring (output limited to 8191 characters).
 class ROOT_AE3_WebMedia
 {
 	static const string TAG = "webmedia";
@@ -21,7 +22,8 @@ class ROOT_AE3_WebMedia
 	//! "image" for texture resources, else "base64".
 	static string KindOf(string source)
 	{
-		string s = source.Trim();
+		string s = source;
+		s.TrimInPlace();
 		string low = s;
 		low.ToLower();
 		if (low.StartsWith("http://") || low.StartsWith("https://"))
@@ -181,7 +183,8 @@ class ROOT_AE3_WebMedia
 			}
 		}
 
-		string url = source.Trim();
+		string url = source;
+		url.TrimInPlace();
 		int scheme = url.IndexOf("://");
 		if (scheme < 0)
 		{
@@ -234,10 +237,10 @@ class ROOT_AE3_WebMedia
 		else if (ok)
 		{
 			string path;
-			string trimmed = data.Trim();
-			if (job.m_sMode != "video" && (trimmed.StartsWith("data:") || LooksBase64(trimmed)))
+			int first = SkipSpace(data, 0);
+			if (job.m_sMode != "video" && (data.ContainsAt("data:", first) || LooksBase64(data)))
 			{
-				path = SaveBase64(job.m_sId, trimmed, error);
+				path = SaveBase64(job.m_sId, data, error);
 			}
 			else
 			{
@@ -259,7 +262,10 @@ class ROOT_AE3_WebMedia
 						ext = job.m_sExt;
 				}
 
-				path = SaveBytes(job.m_sId, bytes, ext, error);
+				if (job.m_sMode != "video" && !Format(bytes).IsEmpty() && !Complete(bytes))
+					error = string.Format("Only %1 bytes of the image arrived: the engine passes web data as text and cuts binary files at the first zero byte. Use an address that returns the image as base64 text, or paste the base64 text.", bytes.Count());
+				else
+					path = SaveBytes(job.m_sId, bytes, ext, error);
 			}
 
 			if (!path.IsEmpty())
@@ -294,17 +300,58 @@ class ROOT_AE3_WebMedia
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! First index at or after from that is not a space, tab or line break.
+	static int SkipSpace(string s, int from)
+	{
+		int n = s.Length();
+		int i = from;
+		while (i < n && s.IsSpaceAt(i))
+		{
+			i++;
+		}
+
+		return i;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Image bytes end with the format's end marker (JPEG FF D9, PNG IEND chunk, GIF 3B).
+	static bool Complete(notnull array<int> b)
+	{
+		int n = b.Count();
+		string f = Format(b);
+		if (f == "jpg")
+		{
+			for (int i = n - 1; i > 0 && i > n - 64; i--)
+			{
+				if (b[i] == 0xD9 && b[i - 1] == 0xFF)
+					return true;
+			}
+
+			return false;
+		}
+
+		if (f == "png")
+			return n >= 12 && b[n - 8] == 0x49 && b[n - 7] == 0x45 && b[n - 6] == 0x4E && b[n - 5] == 0x44;
+
+		if (f == "gif")
+			return n > 13 && b[n - 1] == 0x3B;
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	protected static bool LooksBase64(string s)
 	{
-		if (s.Length() < 16)
+		int start = SkipSpace(s, 0);
+		if (s.Length() - start < 16)
 			return false;
 
 		Table();
 		int n = s.Length();
-		if (n > 256)
-			n = 256;
+		if (n > start + 256)
+			n = start + 256;
 
-		for (int i = 0; i < n; i++)
+		for (int i = start; i < n; i++)
 		{
 			int ch = s.ToAscii(i) & 0xFF;
 			if (ch >= 128 || (s_aDecode[ch] < 0 && ch != 61 && ch != 10 && ch != 13))
@@ -342,17 +389,22 @@ class ROOT_AE3_WebMedia
 	static bool DecodeBase64(string text, notnull array<int> bytes)
 	{
 		Table();
-		string s = text;
-		int comma = s.IndexOf(",");
-		if (s.StartsWith("data:") && comma > 0)
-			s = s.Substring(comma + 1, s.Length() - comma - 1);
+		int start = SkipSpace(text, 0);
+		if (text.ContainsAt("data:", start))
+		{
+			int comma = text.IndexOfFrom(start, ",");
+			if (comma < 0)
+				return false;
+
+			start = comma + 1;
+		}
 
 		int acc;
 		int bits;
-		int n = s.Length();
-		for (int i = 0; i < n; i++)
+		int n = text.Length();
+		for (int i = start; i < n; i++)
 		{
-			int ch = s.ToAscii(i) & 0xFF;
+			int ch = text.ToAscii(i) & 0xFF;
 			if (ch == 61)
 				break;
 
@@ -450,11 +502,7 @@ class ROOT_AE3_WebMedia
 			return "";
 		}
 
-		foreach (int v : bytes)
-		{
-			fh.Write(v, 1);
-		}
-
+		fh.WriteArray(bytes, 1);
 		fh.Close();
 		return path;
 	}

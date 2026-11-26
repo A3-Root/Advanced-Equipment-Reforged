@@ -104,6 +104,29 @@ class ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! State for the graphical board as key=value pairs joined by ';' (lists joined by ','), seen from seat.
+	string Gui(int seat)
+	{
+		return "";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Numbers joined by ','.
+	static string Ints(notnull array<int> a)
+	{
+		string s;
+		foreach (int i, int v : a)
+		{
+			if (i > 0)
+				s += ",";
+
+			s += v.ToString();
+		}
+
+		return s;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Moves a bot in that seat would make now, best first. Empty when the seat has nothing to do.
 	void BotMoves(int seat, notnull array<string> moves)
 	{

@@ -403,6 +403,46 @@ class ROOT_AE3_GameBattleship : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! ships (own 100 squares), hits (shots received, 1 miss, 2 hit), shots (own shots), sunk (enemy squares of sunk
+	//! ships), placing, ready, oppready.
+	override string Gui(int seat)
+	{
+		int enemy = 1 - seat;
+		array<int> ships = {};
+		array<int> hits = {};
+		array<int> shots = {};
+		for (int i = 0; i < 100; i++)
+		{
+			ships.Insert(m_aShips[seat * 100 + i]);
+			hits.Insert(m_aShots[enemy * 100 + i]);
+			shots.Insert(m_aShots[seat * 100 + i]);
+		}
+
+		array<int> sunk = {};
+		for (int ship = 1; ship <= 5; ship++)
+		{
+			array<int> cells = {};
+			bool down = true;
+			for (int i = 0; i < 100; i++)
+			{
+				if (m_aShips[enemy * 100 + i] != ship)
+					continue;
+
+				cells.Insert(i);
+				if (m_aShots[seat * 100 + i] != 2)
+					down = false;
+			}
+
+			if (down && !cells.IsEmpty())
+				sunk.InsertAll(cells);
+		}
+
+		string g = "ships=" + Ints(ships) + ";hits=" + Ints(hits) + ";shots=" + Ints(shots) + ";sunk=" + Ints(sunk);
+		return g + ";placing=" + ROOT_AE3_Util.BoolStr(Placing()) + ";ready=" + ROOT_AE3_Util.BoolStr(m_aReady[seat]) + ";oppready=" + ROOT_AE3_Util.BoolStr(m_aReady[enemy]);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string v = "Your fleet (1-5 ships, X hit, o miss):\n" + Grid(seat, true);

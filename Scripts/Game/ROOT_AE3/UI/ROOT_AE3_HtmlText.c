@@ -107,12 +107,12 @@ class ROOT_AE3_HtmlText
 	{
 		title = "";
 		string src = html;
-		if (src.Length() > MAX_IN)
-			src = src.Substring(0, MAX_IN);
-
 		string outText;
 		int pos;
 		int n = src.Length();
+		if (n > MAX_IN)
+			n = MAX_IN;
+
 		bool inTitle;
 		string skipUntil;
 		bool inLink;

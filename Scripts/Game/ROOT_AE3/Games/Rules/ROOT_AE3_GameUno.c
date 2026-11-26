@@ -333,6 +333,32 @@ class ROOT_AE3_GameUno : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! hand, ok (per card 1 when playable now), top, colour, counts (cards per seat), dir, deck.
+	override string Gui(int seat)
+	{
+		array<string> hand = m_aHands[seat];
+		array<int> ok = {};
+		foreach (string card : hand)
+		{
+			int can;
+			if (m_iWinner == -1 && seat == m_iTurn && Playable(card))
+				can = 1;
+
+			ok.Insert(can);
+		}
+
+		array<int> counts = {};
+		foreach (array<string> h : m_aHands)
+		{
+			counts.Insert(h.Count());
+		}
+
+		string g = "hand=" + string.Join(",", hand, true) + ";ok=" + Ints(ok) + ";top=" + Top() + ";colour=" + m_sColour;
+		return g + ";counts=" + Ints(counts) + ";dir=" + m_iDir.ToString() + ";deck=" + m_aDeck.Count().ToString();
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string colourName = "red";

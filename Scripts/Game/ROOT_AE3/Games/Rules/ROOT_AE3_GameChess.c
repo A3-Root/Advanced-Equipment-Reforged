@@ -476,6 +476,27 @@ class ROOT_AE3_GameChess : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//------------------------------------------------------------------------------------------------
+	//! board (64 pieces, + white), white (seat plays white), last, check (king square), moves (from * 64 + to, own turn only).
+	override string Gui(int seat)
+	{
+		bool white = seat == m_iWhiteSeat;
+		string g = "board=" + Ints(m_aBoard) + ";white=" + ROOT_AE3_Util.BoolStr(white) + ";last=" + m_sLastMove;
+		int king = KingSquare(m_aBoard, m_bWhiteToMove);
+		if (m_iWinner == -1 && Attacked(m_aBoard, king, !m_bWhiteToMove))
+			g += ";check=" + king.ToString();
+
+		if (m_iWinner == -1 && seat == m_iTurn)
+		{
+			array<int> legal = {};
+			Legal(m_bWhiteToMove, legal);
+			g += ";moves=" + Ints(legal);
+		}
+
+		return g;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		bool white = seat == m_iWhiteSeat;

@@ -51,6 +51,9 @@
 - Videos from web addresses in Photos and the Browser (engine VideoWidget; Play, Stop, Restart).
 - Browser opens http(s) addresses: page text with links, images and videos in the page area.
 - Practice seats: Switch seat (desktop), `seat <number>` (terminal), Game Master setting "Practice seats"; seats named "Practice N".
+- Graphical game boards in the desktop Games app for all eight games: drawn boards, cards, dice and tokens; moves by clicking.
+- Games app lobby banner with a picture of the game, waiting room with seat cards, table with seat chips and a side panel.
+- Rules method `Gui(seat)`: board state for the graphical boards (game_view field 12, seat names after it).
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -74,3 +77,6 @@
 - `AddMedia` and Game Master "Add image" accept a texture, a web address (image or video) or base64 text.
 - Practice seats allowed by default (`m_bGamesDebugSeats` 1), host only; the computer plays the seat to move, else the chosen one; leaving frees every seat it holds.
 - Setting `m_bDesktopWebImages` covers all web access (Game Master "Web access").
+- Web and base64 images no longer pass through `string.Trim` / `Substring` (output cut at 8191 characters); images larger than about 6 KB load.
+- Binary images cut short by the download (the engine returns web data as text) are reported with the number of bytes received.
+- Media files are written with `FileHandle.WriteArray`.
