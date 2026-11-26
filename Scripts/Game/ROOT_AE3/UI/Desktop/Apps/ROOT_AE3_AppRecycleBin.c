@@ -64,7 +64,7 @@ class ROOT_AE3_AppRecycleBin : ROOT_AE3_App
 		{
 			m_aEntries.Insert(payload[i]);
 			array<string> row = {payload[i], payload[i + 1]};
-			m_List.AddRow(row);
+			m_List.AddRow(row, "file");
 		}
 
 		m_List.Render();

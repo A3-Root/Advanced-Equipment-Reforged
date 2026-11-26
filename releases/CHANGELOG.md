@@ -31,6 +31,11 @@
 - String table `Language/ROOT_AE3_localization.st` for device names (Game Master browser search).
 - Game Master browser preview images for every device and variant; vanilla previews for portable generators and floodlight.
 - Workbench plugin `-ae3Dump` writes resources (vanilla configs) to a file.
+- Desktop icon set (62 app, file type and glyph icons) from `tools/gen_icons.py`.
+- Desktop right-click menus (background, icons, taskbar, Files) and modal dialogs.
+- Start menu search box and power menu; taskbar pinned apps (Files, Browser, Mail, Terminal).
+- Window snapping (top edge maximizes, side edges fill half), resize grip, fade-in; Ctrl+W closes.
+- Files: back / forward, clickable address bar, search box, navigation pane, large icons view, sortable details, properties dialog with owner and permission checkboxes, shortcuts; keys Enter, Backspace, Delete, F2, F5, arrows, Ctrl+C / X / V.
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -40,7 +45,8 @@
 - Desktop, terminal and Game Master panel buttons react to mouse clicks, highlight on hover and press and play the click sound.
 - Terminal history on Up / Down only (not W / S); Tab completes in the terminal and moves between login fields. Keys are read directly; no input config override.
 - Double click opens desktop icons and list entries and maximizes windows by the title bar.
-- Desktop icons have a dark tile, hover highlight and outlined 15 px labels.
+- Desktop restyled: Windows-like sign-in screen, borderless desktop icons with selection, translucent taskbar with clock and date, flat title bars, shadows, left aligned text; themes use a blue accent (Olive keeps green).
 - Text set by script in edit boxes no longer raises change events (fixes the Files app stack overflow and blocked file operations).
 - Container frames ignore the cursor; widgets behind them get clicks.
 - Editor preview textures built (white Game Master icons).
+- Apps renamed: Text Editor to Notepad, Image Viewer to Photos, SSH to Remote Access.

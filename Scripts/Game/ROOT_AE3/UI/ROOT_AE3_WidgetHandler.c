@@ -16,13 +16,16 @@ class ROOT_AE3_WidgetHandler : ScriptedWidgetEventHandler
 	protected bool m_bPressed;
 	protected bool m_bButton;
 	protected ref Color m_Base;
+	protected ref Color m_Hover;
 
 	//------------------------------------------------------------------------------------------------
-	//! Marks the widget as a button with the given background color.
-	void SetButton(Color base)
+	//! Marks the widget as a button with the given background color; hover replaces it under the cursor.
+	void SetButton(Color base, Color hover = null)
 	{
 		m_bButton = true;
 		m_Base = new Color(base.R(), base.G(), base.B(), base.A());
+		if (hover)
+			m_Hover = new Color(hover.R(), hover.G(), hover.B(), hover.A());
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -34,6 +37,16 @@ class ROOT_AE3_WidgetHandler : ScriptedWidgetEventHandler
 		if (add == 0)
 		{
 			w.SetColor(m_Base);
+			return;
+		}
+
+		if (m_Hover)
+		{
+			float alpha = m_Hover.A();
+			if (add > 0.2)
+				alpha = Math.Min(1, alpha * 1.6);
+
+			w.SetColor(new Color(m_Hover.R(), m_Hover.G(), m_Hover.B(), alpha));
 			return;
 		}
 

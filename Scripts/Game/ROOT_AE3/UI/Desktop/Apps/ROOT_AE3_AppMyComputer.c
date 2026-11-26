@@ -10,7 +10,7 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 	//------------------------------------------------------------------------------------------------
 	override string GetIcon()
 	{
-		return "system";
+		return "computer";
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -71,7 +71,11 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 
 			m_aIds.Insert(e[0]);
 			array<string> row = {e[1], e[2], e[3], e[4]};
-			m_List.AddRow(row);
+			string icon = "drive";
+			if (e[0] == "root")
+				icon = "computer";
+
+			m_List.AddRow(row, icon);
 		}
 
 		m_List.Render();

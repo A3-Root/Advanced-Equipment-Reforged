@@ -8,6 +8,8 @@ class ROOT_AE3_UI
 	static const ResourceName LAYOUT_EDIT = "{CC1D9D6F84A4BB01}UI/layouts/ROOT_AE3/ROOT_AE3_EditBox.layout";
 	static const ResourceName LAYOUT_EDIT_MONO = "{738CBA095FA40085}UI/layouts/ROOT_AE3/ROOT_AE3_EditBoxMono.layout";
 	static const ResourceName LAYOUT_MULTI = "{D3F6811D286EDCC2}UI/layouts/ROOT_AE3/ROOT_AE3_MultiEdit.layout";
+	protected static ref array<EditBoxWidget> s_aPlaceEdits = {};
+	protected static ref array<TextWidget> s_aPlaceTexts = {};
 
 	//------------------------------------------------------------------------------------------------
 	protected static WorkspaceWidget Ws()
@@ -63,7 +65,8 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static TextWidget Text(Widget parent, float x, float y, float width, float height, string text, int size = 16, Color color = null, bool mono = false, bool wrap = false)
+	//! align: 0 left, 1 center, 2 right.
+	static TextWidget Text(Widget parent, float x, float y, float width, float height, string text, int size = 16, Color color = null, bool mono = false, bool wrap = false, int align = 0)
 	{
 		ref Color col = color;
 		if (!col)
@@ -78,6 +81,12 @@ class ROOT_AE3_UI
 
 		t.SetExactFontSize(size);
 		t.SetTextWrapping(wrap);
+		t.ClearFlags(WidgetFlags.CENTER | WidgetFlags.RALIGN);
+		if (align == 1)
+			t.SetFlags(WidgetFlags.CENTER);
+		else if (align == 2)
+			t.SetFlags(WidgetFlags.RALIGN);
+
 		t.SetText(text);
 		return t;
 	}
@@ -99,6 +108,7 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Icon from ROOT_AE3_Icons, else from icons_wrapperUI-64.imageset.
 	static ImageWidget Icon(Widget parent, float x, float y, float size, string name, Color color = null)
 	{
 		ref Color col = color;
@@ -107,7 +117,11 @@ class ROOT_AE3_UI
 
 		ImageWidget img = ImageWidget.Cast(Ws().CreateWidget(WidgetType.ImageWidgetTypeID, WidgetFlags.VISIBLE | WidgetFlags.BLEND | WidgetFlags.STRETCH | WidgetFlags.IGNORE_CURSOR, col, 0, parent));
 		Place(img, x, y, size, size);
-		img.LoadImageFromSet(0, ICONS, name);
+		if (ROOT_AE3_Icons.Has(name))
+			img.LoadImageTexture(0, ROOT_AE3_Icons.Get(name));
+		else
+			img.LoadImageFromSet(0, ICONS, name);
+
 		return img;
 	}
 
@@ -124,22 +138,151 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Clickable button: background rectangle plus centered label; highlights on hover and press.
-	static ImageWidget Button(Widget parent, float x, float y, float width, float height, string label, int id, ROOT_AE3_UiListener listener, Color bg = null, Color fg = null, int size = 15)
+	//! Clickable area that highlights on hover and press. Transparent backgrounds get the theme hover color.
+	static ImageWidget Hit(Widget parent, float x, float y, float width, float height, int id, ROOT_AE3_UiListener listener, Color bg = null, Color hover = null)
 	{
 		ref Color back = bg;
 		if (!back)
-			back = new Color(0.25, 0.27, 0.3, 1);
+			back = ROOT_AE3_Theme.Button();
+
+		ref Color over = hover;
+		if (!over && back.A() < 0.1)
+			over = ROOT_AE3_Theme.Hover();
 
 		ImageWidget b = Rect(parent, x, y, width, height, back);
 		b.ClearFlags(WidgetFlags.IGNORE_CURSOR);
 		ROOT_AE3_WidgetHandler h = Listen(b, id, listener);
 		if (h)
-			h.SetButton(back);
+			h.SetButton(back, over);
 
-		TextWidget t = Text(parent, x + 4, y, width - 8, height, label, size, fg);
+		return b;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Clickable button: background rectangle plus centered label; highlights on hover and press.
+	static ImageWidget Button(Widget parent, float x, float y, float width, float height, string label, int id, ROOT_AE3_UiListener listener, Color bg = null, Color fg = null, int size = 15, Color hover = null)
+	{
+		ImageWidget b = Hit(parent, x, y, width, height, id, listener, bg, hover);
+		ref Color col = fg;
+		if (!col)
+			col = ROOT_AE3_Theme.Text();
+
+		TextWidget t = Text(parent, x + 4, y, width - 8, height, label, size, col, false, false, 1);
 		t.SetTextOffset(0, (height - size) * 0.5 - 2);
 		return b;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Button with a centered icon only.
+	static ImageWidget IconButton(Widget parent, float x, float y, float width, float height, string icon, int id, ROOT_AE3_UiListener listener, float iconSize = 16, Color tint = null, Color bg = null, Color hover = null)
+	{
+		ref Color back = bg;
+		if (!back)
+			back = Rgb(0, 0, 0, 0);
+
+		ImageWidget b = Hit(parent, x, y, width, height, id, listener, back, hover);
+		ref Color col = tint;
+		if (!col && icon.StartsWith("g_"))
+			col = ROOT_AE3_Theme.Text();
+
+		Icon(parent, x + (width - iconSize) * 0.5, y + (height - iconSize) * 0.5, iconSize, icon, col);
+		return b;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Button with an icon and a left aligned label (menus, toolbars, navigation pane).
+	static ImageWidget ItemButton(Widget parent, float x, float y, float width, float height, string icon, string label, int id, ROOT_AE3_UiListener listener, int size = 14, Color fg = null, Color bg = null, Color hover = null)
+	{
+		ref Color back = bg;
+		if (!back)
+			back = Rgb(0, 0, 0, 0);
+
+		ImageWidget b = Hit(parent, x, y, width, height, id, listener, back, hover);
+		ref Color col = fg;
+		if (!col)
+			col = ROOT_AE3_Theme.Text();
+
+		float tx = x + 10;
+		if (!icon.IsEmpty())
+		{
+			float s = Math.Min(18, height - 10);
+			ref Color tint = null;
+			if (icon.StartsWith("g_"))
+				tint = col;
+
+			Icon(parent, x + 10, y + (height - s) * 0.5, s, icon, tint);
+			tx = x + 18 + s;
+		}
+
+		TextWidget t = Text(parent, tx, y, x + width - tx - 4, height, label, size, col);
+		t.SetTextOffset(0, (height - size) * 0.5 - 2);
+		return b;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Filled rectangle with a 1 px border.
+	static ImageWidget Box(Widget parent, float x, float y, float width, float height, Color fill, Color border = null)
+	{
+		ref Color edge = border;
+		if (!edge)
+			edge = ROOT_AE3_Theme.Border();
+
+		Rect(parent, x, y, width, height, edge);
+		return Rect(parent, x + 1, y + 1, width - 2, height - 2, fill);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Soft drop shadow around a rectangle; draw before it.
+	static void Shadow(Widget parent, float x, float y, float width, float height, float spread = 8)
+	{
+		for (int i = 1; i <= 4; i++)
+		{
+			float d = spread * i / 4;
+			Rect(parent, x - d, y - d + spread * 0.4, width + d * 2, height + d * 2, Rgb(0, 0, 0, 0.07));
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Hint text shown while the edit box is empty (UpdatePlaceholders, called every frame by the desktop).
+	static void Placeholder(EditBoxWidget edit, Widget parent, float x, float y, float width, string text, Color color = null)
+	{
+		if (!edit)
+			return;
+
+		TextWidget t = Text(parent, x, y, width, 20, text, 14, color);
+		s_aPlaceEdits.Insert(edit);
+		s_aPlaceTexts.Insert(t);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	static void UpdatePlaceholders()
+	{
+		for (int i = s_aPlaceEdits.Count() - 1; i >= 0; i--)
+		{
+			EditBoxWidget e = s_aPlaceEdits[i];
+			TextWidget t = s_aPlaceTexts[i];
+			if (!e || !t)
+			{
+				s_aPlaceEdits.Remove(i);
+				s_aPlaceTexts.Remove(i);
+				continue;
+			}
+
+			t.SetVisible(e.GetText().IsEmpty());
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! True while an edit box has keyboard focus in write mode.
+	static bool Typing()
+	{
+		Widget f = Ws().GetFocusedWidget();
+		EditBoxWidget e = EditBoxWidget.Cast(f);
+		if (e && e.IsInWriteMode())
+			return true;
+
+		MultilineEditBoxWidget m = MultilineEditBoxWidget.Cast(f);
+		return m && m.IsInWriteMode();
 	}
 
 	//------------------------------------------------------------------------------------------------

@@ -52,9 +52,10 @@ Root login is off by default; users in `/etc/sudoers` use `sudo` / `su`. While `
 
 ## Desktop
 
-Login screen, wallpapers, themes (Dark, Light, Olive), draggable windows, taskbar, start menu, notifications.
-Apps: My Computer, Files, Text Editor, Image Viewer, Terminal, Browser, Mail, Messenger, Calendar, Network,
-SSH, Ping, Map, CCTV, Games, Snake, Calculator, Recycle Bin, Settings, System Info, About. Other mods add apps
+Sign-in screen, wallpapers, themes (Dark, Light, Olive), windows (drag, snap to the top or a side edge, resize
+from the corner), taskbar with pinned apps, start menu with search, right-click menus, dialogs, notifications.
+Apps: My Computer, Files, Notepad, Photos, Terminal, Browser, Mail, Messenger, Calendar, Network,
+Remote Access, Ping, Map, CCTV, Games, Snake, Calculator, Recycle Bin, Settings, System Info, About. Other mods add apps
 with `ROOT_AE3_API.RegisterExtApp`; their server requests are handled through
 `ROOT_AE3_API.RegisterGuiCommand` (subclass of `ROOT_AE3_GuiCommand`).
 

@@ -147,7 +147,33 @@ class ROOT_AE3_App : ROOT_AE3_GuiReplyHandler
 	{
 	}
 
+	//------------------------------------------------------------------------------------------------
+	//! Right click on a row; row -1 for the empty area.
+	void OnListContext(int listId, int row)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Column header clicked.
+	void OnListSort(int listId, int column)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Key pressed while this window is focused and no edit box is in write mode.
+	bool OnKey(KeyCode key, bool ctrl)
+	{
+		return false;
+	}
+
 	// Building helpers ------------------------------------------------------------------------------
+
+	//------------------------------------------------------------------------------------------------
+	//! True when this app's window has the focus.
+	bool IsFocused()
+	{
+		return m_Desktop && m_Window && m_Desktop.GetFocusWindow() == m_Window;
+	}
 
 	//------------------------------------------------------------------------------------------------
 	ROOT_AE3_ListView List(int listId, float x, float y, float w, float h)
@@ -166,13 +192,21 @@ class ROOT_AE3_App : ROOT_AE3_GuiReplyHandler
 	//------------------------------------------------------------------------------------------------
 	ImageWidget Btn(float x, float y, float w, float h, string text, int id)
 	{
-		return ROOT_AE3_UI.Button(GetContent(), x, y, w, h, text, id, this, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text());
+		ROOT_AE3_UI.Rect(GetContent(), x, y, w, h, ROOT_AE3_Theme.Border());
+		return ROOT_AE3_UI.Button(GetContent(), x + 1, y + 1, w - 2, h - 2, text, id, this, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 14);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Accent colored button for the main action.
+	ImageWidget MainBtn(float x, float y, float w, float h, string text, int id)
+	{
+		return ROOT_AE3_UI.Button(GetContent(), x, y, w, h, text, id, this, ROOT_AE3_Theme.Accent(), ROOT_AE3_UI.Rgb(1, 1, 1), 14);
 	}
 
 	//------------------------------------------------------------------------------------------------
 	EditBoxWidget Field(float x, float y, float w, string text, int id, bool password = false)
 	{
-		ROOT_AE3_UI.Rect(GetContent(), x, y, w, 26, ROOT_AE3_Theme.Field());
+		ROOT_AE3_UI.Box(GetContent(), x, y, w, 26, ROOT_AE3_Theme.Field());
 		EditBoxWidget e = ROOT_AE3_UI.Edit(GetContent(), x + 4, y + 2, w - 8, 22, text, id, this, password);
 		if (e)
 			e.SetColor(ROOT_AE3_Theme.Text());

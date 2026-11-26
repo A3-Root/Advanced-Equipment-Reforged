@@ -64,4 +64,16 @@ class ROOT_AE3_UiListener
 	{
 		return false;
 	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Context menu entry chosen (ROOT_AE3_DesktopView.ShowMenu).
+	void OnMenuItem(int id)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Dialog closed (ROOT_AE3_DesktopView.ShowDialog); ok is false for Cancel.
+	void OnDialog(string tag, bool ok, string value)
+	{
+	}
 }

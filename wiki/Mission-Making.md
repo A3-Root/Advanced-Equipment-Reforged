@@ -9,4 +9,4 @@
 
 File permissions are six characters: owner read, write, execute, then everyone read, write, execute,
 `-` for unset (`rw-r--`). Locked files open with `unlock FILE PASSWORD`. Images are files with the content
-`AE3_MEDIA|image|<texture resource>|<caption>` and open in the Image Viewer.
+`AE3_MEDIA|image|<texture resource>|<caption>` and open in Photos.
