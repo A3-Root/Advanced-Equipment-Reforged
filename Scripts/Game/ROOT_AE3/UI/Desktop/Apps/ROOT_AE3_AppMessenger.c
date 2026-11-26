@@ -70,7 +70,7 @@ class ROOT_AE3_AppMessenger : ROOT_AE3_App
 		{
 			case "chat_handles":
 			{
-				m_wHandle.SetText(Arg(payload, 0));
+				ROOT_AE3_UI.SetEdit(m_wHandle, Arg(payload, 0));
 				m_List.Clear();
 				m_aHandles.Clear();
 				for (int i = 1; i < payload.Count(); i++)
@@ -129,7 +129,7 @@ class ROOT_AE3_AppMessenger : ROOT_AE3_App
 			return;
 
 		Request2("chat_send", m_sPeer, m_wMsg.GetText());
-		m_wMsg.SetText("");
+		ROOT_AE3_UI.SetEdit(m_wMsg, "");
 	}
 
 	//------------------------------------------------------------------------------------------------

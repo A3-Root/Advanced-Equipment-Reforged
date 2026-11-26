@@ -111,9 +111,9 @@ class ROOT_AE3_AppNetwork : ROOT_AE3_App
 			case "router_page":
 			{
 				m_wRouter.SetText(Arg(payload, 0));
-				m_wSsid.SetText(Arg(payload, 1));
-				m_wNewPw.SetText(Arg(payload, 2));
-				m_wRange.SetText(Arg(payload, 3));
+				ROOT_AE3_UI.SetEdit(m_wSsid, Arg(payload, 1));
+				ROOT_AE3_UI.SetEdit(m_wNewPw, Arg(payload, 2));
+				ROOT_AE3_UI.SetEdit(m_wRange, Arg(payload, 3));
 				return;
 			}
 		}

@@ -92,7 +92,7 @@ class ROOT_AE3_AppSsh : ROOT_AE3_App
 
 			case "ssh_ls":
 			{
-				m_wPath.SetText(Arg(payload, 0));
+				ROOT_AE3_UI.SetEdit(m_wPath, Arg(payload, 0));
 				m_List.Clear();
 				m_aPaths.Clear();
 				m_aDirs.Clear();

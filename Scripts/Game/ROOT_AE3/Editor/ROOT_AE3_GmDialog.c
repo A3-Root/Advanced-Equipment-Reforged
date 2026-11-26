@@ -80,12 +80,6 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 		super.OnMenuClose();
 	}
 
-	//------------------------------------------------------------------------------------------------
-	override void OnMenuUpdate(float tDelta)
-	{
-		super.OnMenuUpdate(tDelta);
-		GetGame().GetInputManager().ActivateContext("ROOT_AE3_ComputerContext");
-	}
 
 	//------------------------------------------------------------------------------------------------
 	protected void OnBack(float value = 0, EActionTrigger reason = 0)

@@ -191,6 +191,10 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 			text += wrapped[i];
 		}
 
+		// Text starting with '#' is looked up in the string table.
+		if (text.StartsWith("#"))
+			text = " " + text;
+
 		m_wConsole.SetText(text);
 	}
 
@@ -217,7 +221,7 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	//------------------------------------------------------------------------------------------------
 	void SetInput(string line)
 	{
-		m_wInput.SetText(line);
+		ROOT_AE3_UI.SetEdit(m_wInput, line);
 		Focus();
 	}
 
@@ -226,7 +230,7 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	{
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
 		string line = m_wInput.GetText();
-		m_wInput.SetText("");
+		ROOT_AE3_UI.SetEdit(m_wInput, "");
 		m_iScroll = 0;
 		m_iHistoryPos = -1;
 		if (!c.m_bHidden && !line.Trim().IsEmpty() && c.m_sPrompt.EndsWith("/>"))
@@ -249,9 +253,9 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 
 		m_iHistoryPos = Math.ClampInt(m_iHistoryPos + dir, 0, h.Count());
 		if (m_iHistoryPos >= h.Count())
-			m_wInput.SetText("");
+			ROOT_AE3_UI.SetEdit(m_wInput, "");
 		else
-			m_wInput.SetText(h[m_iHistoryPos]);
+			ROOT_AE3_UI.SetEdit(m_wInput, h[m_iHistoryPos]);
 
 		Focus();
 	}
@@ -259,10 +263,13 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	//------------------------------------------------------------------------------------------------
 	void Update(float dt)
 	{
-		InputManager im = GetGame().GetInputManager();
-		if (im.GetActionTriggered("ROOT_AE3_HistoryUp"))
+		bool up = ROOT_AE3_Keys.Pressed(KeyCode.KC_UP);
+		bool down = ROOT_AE3_Keys.Pressed(KeyCode.KC_DOWN);
+		if (ROOT_AE3_Keys.Pressed(KeyCode.KC_TAB))
+			ROOT_AE3_Client.Get().Send(ROOT_AE3_EMsg.TERM_TAB, m_wInput.GetText());
+		else if (up)
 			History(-1);
-		else if (im.GetActionTriggered("ROOT_AE3_HistoryDown"))
+		else if (down)
 			History(1);
 
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
@@ -299,13 +306,8 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	//------------------------------------------------------------------------------------------------
 	override bool OnUiChar(Widget w, int id, int charCode)
 	{
-		if (id == ID_INPUT && charCode == 9)
-		{
-			ROOT_AE3_Client.Get().Send(ROOT_AE3_EMsg.TERM_TAB, m_wInput.GetText());
-			return true;
-		}
-
-		return false;
+		// Tab completion is read in Update.
+		return id == ID_INPUT && charCode == 9;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -353,7 +355,7 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 
 				string kept = m_wInput.GetText();
 				Build();
-				m_wInput.SetText(kept);
+				ROOT_AE3_UI.SetEdit(m_wInput, kept);
 				Focus();
 				return true;
 			}

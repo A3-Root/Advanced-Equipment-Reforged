@@ -82,7 +82,7 @@ class ROOT_AE3_AppGames : ROOT_AE3_App
 		if (finished && id == 1)
 		{
 			Send(m_wInput.GetText());
-			m_wInput.SetText("");
+			ROOT_AE3_UI.SetEdit(m_wInput, "");
 			return true;
 		}
 
@@ -102,7 +102,7 @@ class ROOT_AE3_AppGames : ROOT_AE3_App
 		if (id == 2)
 		{
 			Send(m_wInput.GetText());
-			m_wInput.SetText("");
+			ROOT_AE3_UI.SetEdit(m_wInput, "");
 			return true;
 		}
 

@@ -199,10 +199,10 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 			float x = 16 + col * 92;
 			float y = 16 + row * 96;
-			ROOT_AE3_UI.Rect(m_wRoot, x, y, 84, 88, ROOT_AE3_UI.Rgb(1, 1, 1, 0.04), ID_ICON + i, this);
+			ROOT_AE3_UI.Button(m_wRoot, x, y, 84, 88, "", ID_ICON + i, this, ROOT_AE3_UI.Rgb(0, 0, 0, 0.45));
 			ROOT_AE3_UI.Icon(m_wRoot, x + 22, y + 6, 40, app.GetIcon());
-			TextWidget t2 = ROOT_AE3_UI.Text(m_wRoot, x + 2, y + 50, 80, 36, app.GetTitle(), 13, null, false, true);
-			t2.SetShadow(1, 0xFF000000, 1, 1, 1);
+			TextWidget t2 = ROOT_AE3_UI.Text(m_wRoot, x + 2, y + 50, 80, 36, app.GetTitle(), 15, null, false, true);
+			t2.SetOutline(1, 0xFF000000);
 			row++;
 			if (row >= perCol)
 			{
@@ -386,6 +386,16 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//------------------------------------------------------------------------------------------------
 	void Update(float dt)
 	{
+		if (!LoggedIn() && m_wUser && m_wPass && ROOT_AE3_Keys.Pressed(KeyCode.KC_TAB))
+		{
+			EditBoxWidget next = m_wUser;
+			if (m_wUser.IsInWriteMode() || GetGame().GetWorkspace().GetFocusedWidget() == m_wUser)
+				next = m_wPass;
+
+			GetGame().GetWorkspace().SetFocusedWidget(next);
+			next.ActivateWriteMode();
+		}
+
 		foreach (ROOT_AE3_Window w : m_aWindows)
 		{
 			w.Update(dt);

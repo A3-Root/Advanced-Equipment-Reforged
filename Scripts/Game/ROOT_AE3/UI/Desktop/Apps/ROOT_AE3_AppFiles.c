@@ -120,7 +120,7 @@ class ROOT_AE3_AppFiles : ROOT_AE3_App
 	protected void Prompt(string mode, string hint, string text = "")
 	{
 		m_sMode = mode;
-		m_wName.SetText(text);
+		ROOT_AE3_UI.SetEdit(m_wName, text);
 		m_wInfo.SetText(hint);
 		GetGame().GetWorkspace().SetFocusedWidget(m_wName);
 		m_wName.ActivateWriteMode();
@@ -158,7 +158,7 @@ class ROOT_AE3_AppFiles : ROOT_AE3_App
 		}
 
 		m_sMode = "";
-		m_wName.SetText("");
+		ROOT_AE3_UI.SetEdit(m_wName, "");
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -168,7 +168,7 @@ class ROOT_AE3_AppFiles : ROOT_AE3_App
 		if (e[1] == "dir")
 		{
 			m_sPath = e[0];
-			m_wPath.SetText(m_sPath);
+			ROOT_AE3_UI.SetEdit(m_wPath, m_sPath);
 			Load();
 			return;
 		}
@@ -208,7 +208,7 @@ class ROOT_AE3_AppFiles : ROOT_AE3_App
 			case "fs_list":
 			{
 				m_sPath = Arg(payload, 0);
-				m_wPath.SetText(m_sPath);
+				ROOT_AE3_UI.SetEdit(m_wPath, m_sPath);
 				m_List.Clear();
 				m_aEntries.Clear();
 				for (int i = 1; i < payload.Count(); i++)

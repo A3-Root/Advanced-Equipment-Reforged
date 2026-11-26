@@ -34,9 +34,10 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Container only: ignores the cursor so widgets behind it stay clickable; its children receive events.
 	static FrameWidget Frame(Widget parent, float x, float y, float width, float height, bool clip = true)
 	{
-		int flags = WidgetFlags.VISIBLE;
+		int flags = WidgetFlags.VISIBLE | WidgetFlags.IGNORE_CURSOR;
 		if (clip)
 			flags |= WidgetFlags.CLIPCHILDREN;
 
@@ -180,6 +181,22 @@ class ROOT_AE3_UI
 		e.SetText(text);
 		Listen(e, id, listener);
 		return e;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sets the text of an EditBoxWidget or MultilineEditBoxWidget without raising OnUiChange.
+	static void SetEdit(Widget w, string text)
+	{
+		ROOT_AE3_WidgetHandler.s_bQuiet = true;
+		EditBoxWidget e = EditBoxWidget.Cast(w);
+		if (e)
+			e.SetText(text);
+
+		MultilineEditBoxWidget m = MultilineEditBoxWidget.Cast(w);
+		if (m)
+			m.SetText(text);
+
+		ROOT_AE3_WidgetHandler.s_bQuiet = false;
 	}
 
 	//------------------------------------------------------------------------------------------------

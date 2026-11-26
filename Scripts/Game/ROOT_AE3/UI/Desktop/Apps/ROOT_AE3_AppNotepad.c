@@ -61,7 +61,7 @@ class ROOT_AE3_AppNotepad : ROOT_AE3_App
 
 		if (cmd == "fs_read")
 		{
-			m_wText.SetText(Arg(payload, 0));
+			ROOT_AE3_UI.SetEdit(m_wText, Arg(payload, 0));
 			Status("Opened " + m_sPath);
 			return;
 		}
@@ -97,8 +97,8 @@ class ROOT_AE3_AppNotepad : ROOT_AE3_App
 			case 4:
 			{
 				m_sPath = "";
-				m_wPath.SetText("~/Documents/new.txt");
-				m_wText.SetText("");
+				ROOT_AE3_UI.SetEdit(m_wPath, "~/Documents/new.txt");
+				ROOT_AE3_UI.SetEdit(m_wText, "");
 				return true;
 			}
 		}

@@ -38,4 +38,9 @@
 - Portable server collision uses the vanilla metal game material.
 - Solar panel cells sit on top of the frame; back legs end below the panel; LOD1 equals LOD0.
 - Desktop, terminal and Game Master panel buttons react to mouse clicks, highlight on hover and press and play the click sound.
-- Computer menu and Game Master dialog use input context `ROOT_AE3_ComputerContext`: terminal history on Up / Down only (not W / S); character and editor keys are off while the menu is open.
+- Terminal history on Up / Down only (not W / S); Tab completes in the terminal and moves between login fields. Keys are read directly; no input config override.
+- Double click opens desktop icons and list entries and maximizes windows by the title bar.
+- Desktop icons have a dark tile, hover highlight and outlined 15 px labels.
+- Text set by script in edit boxes no longer raises change events (fixes the Files app stack overflow and blocked file operations).
+- Container frames ignore the cursor; widgets behind them get clicks.
+- Editor preview textures built (white Game Master icons).

@@ -111,7 +111,7 @@ class ROOT_AE3_AppMail : ROOT_AE3_App
 			{
 				m_sMyAddress = Arg(payload, 0);
 				if (m_wFrom && m_wFrom.GetText().IsEmpty())
-					m_wFrom.SetText(m_sMyAddress);
+					ROOT_AE3_UI.SetEdit(m_wFrom, m_sMyAddress);
 
 				return;
 			}

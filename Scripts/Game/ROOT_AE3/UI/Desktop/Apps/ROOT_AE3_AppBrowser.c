@@ -75,7 +75,7 @@ class ROOT_AE3_AppBrowser : ROOT_AE3_App
 
 		m_aTabs[m_iTab] = url;
 		if (m_wAddress)
-			m_wAddress.SetText(url);
+			ROOT_AE3_UI.SetEdit(m_wAddress, url);
 
 		Request1("web_get", url);
 	}
