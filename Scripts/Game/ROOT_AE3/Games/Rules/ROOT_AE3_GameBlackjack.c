@@ -295,6 +295,19 @@ class ROOT_AE3_GameBlackjack : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Hits below 17, else stands. Never deals.
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1 || !m_bInRound || seat != m_iTurn || m_aDone[seat])
+			return;
+
+		if (Value(m_aHands[seat]) < 17)
+			moves.Insert("hit");
+		else
+			moves.Insert("stand");
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string dealer;

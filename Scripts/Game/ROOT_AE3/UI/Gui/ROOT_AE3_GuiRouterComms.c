@@ -34,6 +34,36 @@ class ROOT_AE3_GuiRouterComms
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Conversation row: self, peer, last message, last time.
+	protected static string ThreadRow(string self, string peer, string log)
+	{
+		array<string> lines = {};
+		log.Split("\n", lines, true);
+		string text;
+		string time;
+		if (!lines.IsEmpty())
+		{
+			string last = lines[lines.Count() - 1];
+			int close = last.IndexOf("] ");
+			if (last.StartsWith("[") && close > 0)
+			{
+				time = last.Substring(1, close - 1);
+				last = last.Substring(close + 2, last.Length() - close - 2);
+			}
+
+			if (last.StartsWith(self + ": "))
+				text = "You: " + last.Substring(self.Length() + 2, last.Length() - self.Length() - 2);
+			else if (last.StartsWith(peer + ": "))
+				text = last.Substring(peer.Length() + 2, last.Length() - peer.Length() - 2);
+			else
+				text = last;
+		}
+
+		array<string> e = {self, peer, text, time};
+		return ROOT_AE3_Codec.JoinSub(e);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	static bool Handle(ROOT_AE3_Session s, string rid, string cmd, array<string> f, string user)
 	{
 		ROOT_AE3_ComputerComponent c = s.m_Computer;
@@ -75,10 +105,18 @@ class ROOT_AE3_GuiRouterComms
 			{
 				ROOT_AE3_FsNode mail = MailNode(fs, A(f, 2));
 				if (!mail)
+				{
 					Msg(s, rid, false, cmd, "No such mail.");
-				else
-					Msg(s, rid, true, cmd, Display(mail.m_sContent));
+					return true;
+				}
 
+				string body = Display(mail.m_sContent);
+				int split = body.IndexOf("\n\n");
+				if (split >= 0)
+					body = body.Substring(split + 2, body.Length() - split - 2);
+
+				array<string> m = {Header(mail.m_sContent, "From"), Header(mail.m_sContent, "To"), Header(mail.m_sContent, "Subject"), Header(mail.m_sContent, "Date"), body};
+				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, m);
 				return true;
 			}
 
@@ -97,7 +135,7 @@ class ROOT_AE3_GuiRouterComms
 				string from = A(f, 2);
 				if (!c.GetMailAddresses().Contains(ROOT_AE3_Util.Lower(from)))
 				{
-					Msg(s, rid, false, cmd, "The sender address does not belong to this computer.");
+					Msg(s, rid, false, cmd, "Create a mail address first (Addresses).");
 					return true;
 				}
 
@@ -114,37 +152,65 @@ class ROOT_AE3_GuiRouterComms
 			{
 				array<string> res = {};
 				res.Copy(c.GetMailAddresses());
-				if (res.IsEmpty())
-					res.Insert("");
-
 				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, res);
 				return true;
 			}
 
-			case "addr_add":
+			case "addr_create":
 			{
-				if (!c.IsSudoer(user))
-				{
-					Msg(s, rid, false, cmd, "Adding mail addresses needs a sudoer.");
-					return true;
-				}
-
 				if (!ROOT_AE3_Intel.RegisterMailAddress(c, A(f, 2)))
 					Msg(s, rid, false, cmd, "Address taken or invalid.");
 				else
-					Msg(s, rid, true, cmd, "Address added.");
+					Msg(s, rid, true, cmd, "Address created.");
 
 				return true;
 			}
 
-			case "chat_handles":
+			case "addr_delete":
 			{
-				array<string> res = {ROOT_AE3_Intel.HandleOf(c)};
-				array<string> handles = {};
-				ROOT_AE3_Intel.GetHandles(handles);
-				foreach (string h : handles)
+				if (!ROOT_AE3_Intel.RemoveMailAddress(c, A(f, 2)))
+					Msg(s, rid, false, cmd, "No such address.");
+				else
+					Msg(s, rid, true, cmd, "Address deleted.");
+
+				return true;
+			}
+
+			case "handle_list":
+			{
+				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, ROOT_AE3_Intel.HandlesOf(c));
+				return true;
+			}
+
+			case "handle_create":
+			{
+				if (!ROOT_AE3_Intel.RegisterHandle(c, A(f, 2)))
+					Msg(s, rid, false, cmd, "Handle taken or invalid.");
+				else
+					Msg(s, rid, true, cmd, "Handle created.");
+
+				return true;
+			}
+
+			case "handle_delete":
+			{
+				if (!ROOT_AE3_Intel.RemoveHandle(c, A(f, 2)))
+					Msg(s, rid, false, cmd, "No such handle.");
+				else
+					Msg(s, rid, true, cmd, "Handle deleted.");
+
+				return true;
+			}
+
+			case "handles_all":
+			{
+				array<string> own = ROOT_AE3_Intel.HandlesOf(c);
+				array<string> all = {};
+				ROOT_AE3_Intel.GetHandles(all);
+				array<string> res = {};
+				foreach (string h : all)
 				{
-					if (h != res[0])
+					if (!own.Contains(h))
 						res.Insert(h);
 				}
 
@@ -152,37 +218,68 @@ class ROOT_AE3_GuiRouterComms
 				return true;
 			}
 
-			case "chat_set_handle":
+			case "chat_threads":
 			{
-				if (!c.IsSudoer(user))
+				array<string> res = {};
+				array<string> own = ROOT_AE3_Intel.HandlesOf(c);
+				foreach (int hi, string h : own)
 				{
-					Msg(s, rid, false, cmd, "Changing the chat handle needs a sudoer.");
-					return true;
+					ROOT_AE3_FsNode dir = fs.Resolve("/var/chat/" + h, "root", err, false);
+					if (dir && dir.m_bDir && !dir.IsLink())
+					{
+						foreach (string name : dir.GetSortedNames())
+						{
+							ROOT_AE3_FsNode log = dir.GetChild(name);
+							if (log && !log.m_bDir && !log.IsLink() && name.EndsWith(".log"))
+								res.Insert(ThreadRow(h, name.Substring(0, name.Length() - 4), log.m_sContent));
+						}
+					}
+
+					// Logs of the single-handle layout belong to the default handle.
+					if (hi > 0)
+						continue;
+
+					ROOT_AE3_FsNode root = fs.Resolve("/var/chat", "root", err, false);
+					if (!root || !root.m_bDir)
+						continue;
+
+					foreach (string name : root.GetSortedNames())
+					{
+						ROOT_AE3_FsNode old = root.GetChild(name);
+						string peer = name.Substring(0, Math.Max(0, name.Length() - 4));
+						if (old && !old.m_bDir && !old.IsLink() && name.EndsWith(".log") && !(dir && dir.m_bDir && dir.GetChild(name)))
+							res.Insert(ThreadRow(h, peer, old.m_sContent));
+					}
 				}
 
-				if (!ROOT_AE3_Intel.RegisterHandle(c, A(f, 2)))
-					Msg(s, rid, false, cmd, "Handle taken or invalid.");
-				else
-					Msg(s, rid, true, cmd, "Handle set.");
-
+				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, res);
 				return true;
 			}
 
 			case "chat_read":
 			{
+				string self = A(f, 2);
+				string peer = A(f, 3);
 				string content;
-				ROOT_AE3_FsNode log = PlainNode(fs, "/var/chat", A(f, 2) + ".log");
-				if (log)
-					content = Display(log.m_sContent);
+				if (ROOT_AE3_Intel.HandlesOf(c).Contains(self))
+				{
+					ROOT_AE3_FsNode log = PlainNode(fs, "/var/chat/" + self, peer + ".log");
+					if (!log && self == ROOT_AE3_Intel.HandleOf(c))
+						log = PlainNode(fs, "/var/chat", peer + ".log");
 
-				Msg(s, rid, true, cmd, content);
+					if (log)
+						content = Display(log.m_sContent);
+				}
+
+				array<string> res = {self, peer, content};
+				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, res);
 				return true;
 			}
 
 			case "chat_send":
 			{
 				string reason;
-				if (!ROOT_AE3_Intel.SendChat(c, A(f, 2), A(f, 3), reason))
+				if (!ROOT_AE3_Intel.SendChat(c, A(f, 2), A(f, 3), A(f, 4), reason))
 					Msg(s, rid, false, cmd, reason);
 				else
 					Msg(s, rid, true, cmd, "Sent.");
@@ -195,7 +292,7 @@ class ROOT_AE3_GuiRouterComms
 				array<string> res = {};
 				foreach (ROOT_AE3_CalendarEvent ev : c.GetCalendar())
 				{
-					array<string> e = {ev.m_sDate, ev.m_sTime, ev.m_sTitle, ev.m_sText};
+					array<string> e = {ev.m_sDate, ev.m_sTime, ev.m_sTitle, ev.m_sText, ev.m_sLocation};
 					res.Insert(ROOT_AE3_Codec.JoinSub(e));
 				}
 
@@ -206,7 +303,13 @@ class ROOT_AE3_GuiRouterComms
 
 			case "cal_add":
 			{
-				c.AddCalendarEvent(A(f, 2), A(f, 3), A(f, 4), A(f, 5));
+				if (A(f, 4).Trim().IsEmpty())
+				{
+					Msg(s, rid, false, cmd, "Title required.");
+					return true;
+				}
+
+				c.AddCalendarEvent(A(f, 2), A(f, 3), A(f, 4), A(f, 5), A(f, 6));
 				Msg(s, rid, true, cmd, "Event added.");
 				return true;
 			}
@@ -280,7 +383,7 @@ class ROOT_AE3_GuiRouterComms
 		ROOT_AE3_Webpage p = new ROOT_AE3_Webpage();
 		p.m_sUrl = url;
 		p.m_sTitle = r.GetSsid() + " - router";
-		p.m_sContent = string.Format("# %1\n\n- Gateway: %2\n- Clients: %3\n- Range: %4 m\n- External SSH: %5\n\nAdministration: open the Network app, enter the router password and press Load.",
+		p.m_sContent = string.Format("# %1\n\n- Gateway: %2\n- Clients: %3\n- Range: %4 m\n- External SSH: %5",
 			r.GetSsid(), r.GetGateway(), r.GetClients().Count(), Math.Round(r.GetRange()), ROOT_AE3_Util.BoolStr(r.AllowsExternalSsh()));
 		return p;
 	}
@@ -292,7 +395,7 @@ class ROOT_AE3_GuiRouterComms
 		ROOT_AE3_NetworkComponent n = c.GetNetwork();
 		ROOT_AE3_NetworkSystem sys = ROOT_AE3_NetworkSystem.Get();
 		string reason;
-		if (cmd.StartsWith("net_") || cmd.StartsWith("router_") || cmd == "ping_host" || cmd.StartsWith("ssh_"))
+		if (cmd.StartsWith("net_") || cmd == "ping_host" || cmd.StartsWith("ssh_"))
 		{
 			if (!n)
 			{
@@ -317,7 +420,8 @@ class ROOT_AE3_GuiRouterComms
 				if (n.IsSshEnabled())
 					ssh = "on";
 
-				Msg(s, rid, true, cmd, string.Format("Address %1   Gateway %2   Network %3   SSH %4", ip, n.GetGateway(), ssid, ssh));
+				array<string> info = {ip, n.GetGateway(), ssid, ssh};
+				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, info);
 				return true;
 			}
 
@@ -364,49 +468,6 @@ class ROOT_AE3_GuiRouterComms
 				return true;
 			}
 
-			case "net_setip":
-			{
-				if (!c.IsSudoer(user))
-				{
-					Msg(s, rid, false, cmd, "Setting a static address needs a sudoer.");
-					return true;
-				}
-
-				string ip = A(f, 2);
-				int a, b, cc, d;
-				if (!ip.IsEmpty() && !ROOT_AE3_Util.ParseIp(ip, a, b, cc, d))
-				{
-					Msg(s, rid, false, cmd, "Invalid address.");
-					return true;
-				}
-
-				n.SetStaticIp(ip);
-				ROOT_AE3_NetworkComponent r = n.GetParent();
-				if (r)
-				{
-					ROOT_AE3_ConnectionComponent wire = ROOT_AE3_ConnectionComponent.Of(n.GetOwner());
-					bool wired = wire && wire.IsWiredTo(r.GetOwner());
-					if (sys.Connect(n, r, r.GetPassword(), reason, wired) && wired)
-						wire.AddWired(r.GetOwner());
-				}
-
-				Msg(s, rid, true, cmd, "Address set to " + n.GetAddress());
-				return true;
-			}
-
-			case "net_ssh_toggle":
-			{
-				if (!c.IsSudoer(user))
-				{
-					Msg(s, rid, false, cmd, "Only root or sudoers can change SSH access.");
-					return true;
-				}
-
-				n.SetSshEnabled(!n.IsSshEnabled());
-				Msg(s, rid, true, cmd, "SSH access changed.");
-				return true;
-			}
-
 			case "ping_host":
 			{
 				ROOT_AE3_NetworkComponent target = sys.Resolve(A(f, 2));
@@ -418,55 +479,6 @@ class ROOT_AE3_GuiRouterComms
 				else
 					Msg(s, rid, true, cmd, string.Format("PING %1 from %2\nReply: hops=%3 time=%4 ms\nReply: hops=%3 time=%5 ms\nReply: hops=%3 time=%6 ms\n3 packets transmitted, 3 received", A(f, 2), n.GetAddress(), hops, 2 + hops * 3, 3 + hops * 3, 2 + hops * 3));
 
-				return true;
-			}
-
-			case "router_page":
-			case "router_set":
-			case "router_ext_ssh":
-			{
-				ROOT_AE3_NetworkComponent r = n.GetParent();
-				if (!r)
-				{
-					Msg(s, rid, false, cmd, "Not connected to a router.");
-					return true;
-				}
-
-				if (!r.GetPassword().IsEmpty() && !s.CheckAuth(r.GetPassword() == A(f, 2)))
-				{
-					Msg(s, rid, false, cmd, "Wrong router password.");
-					return true;
-				}
-
-				if (r.GetPassword().IsEmpty() && cmd != "router_page" && !c.IsSudoer(user))
-				{
-					Msg(s, rid, false, cmd, "Router settings of an open network need a sudoer.");
-					return true;
-				}
-
-				if (cmd == "router_set")
-				{
-					float range = A(f, 5).ToFloat();
-					if (A(f, 5).IsEmpty() || Math.Round(range) == Math.Round(r.GetRange()))
-						range = 0;
-					else
-						range = Math.Clamp(range, 1, 300);
-
-					r.ConfigureRouter(ROOT_AE3_Util.Clip(A(f, 3), 32), ROOT_AE3_Util.Clip(A(f, 4), 64), range, -1, r.AcceptsConnections(), r.AllowsExternalSsh(), -1);
-					Msg(s, rid, true, cmd, "Router settings saved.");
-					return true;
-				}
-
-				if (cmd == "router_ext_ssh")
-				{
-					r.ConfigureRouter("", r.GetPassword(), 0, -1, r.AcceptsConnections(), !r.AllowsExternalSsh(), -1);
-					Msg(s, rid, true, cmd, "External SSH changed.");
-					return true;
-				}
-
-				string info = string.Format("Gateway %1   clients %2   external SSH %3   accepts %4", r.GetGateway(), r.GetClients().Count(), ROOT_AE3_Util.BoolStr(r.AllowsExternalSsh()), ROOT_AE3_Util.BoolStr(r.AcceptsConnections()));
-				array<string> res = {info, r.GetSsid(), r.GetPassword(), Math.Round(r.GetRange()).ToString()};
-				ROOT_AE3_GuiRouter.Reply(s, rid, true, cmd, res);
 				return true;
 			}
 
@@ -526,7 +538,7 @@ class ROOT_AE3_GuiRouterComms
 
 			case "map_data":
 			{
-				MapData(s, rid, c);
+				MapData(s, rid, c, A(f, 2).ToFloat());
 				return true;
 			}
 
@@ -734,9 +746,13 @@ class ROOT_AE3_GuiRouterComms
 
 	//------------------------------------------------------------------------------------------------
 	//! Range, then "name|kind|dx|dz|address" per device; kinds self, router, computer, power.
-	protected static void MapData(ROOT_AE3_Session s, string rid, ROOT_AE3_ComputerComponent c)
+	//! Devices within range m (east, north offsets) of the computer; range 100-5000, default 500.
+	protected static void MapData(ROOT_AE3_Session s, string rid, ROOT_AE3_ComputerComponent c, float range)
 	{
-		float range = 500;
+		if (range <= 0)
+			range = 500;
+
+		range = Math.Clamp(range, 100, 5000);
 		vector origin = c.GetOwner().GetOrigin();
 		bool sameNet = ROOT_AE3_SettingsManager.Get().m_bDesktopMapSameNetworkOnly;
 		ROOT_AE3_NetworkComponent own = c.GetNetwork();

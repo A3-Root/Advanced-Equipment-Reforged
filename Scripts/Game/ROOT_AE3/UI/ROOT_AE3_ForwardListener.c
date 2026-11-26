@@ -10,6 +10,15 @@ class ROOT_AE3_ForwardListener : ROOT_AE3_UiListener
 	}
 
 	//------------------------------------------------------------------------------------------------
+	override ROOT_AE3_UiListener ClickTarget()
+	{
+		if (m_Target)
+			return m_Target.ClickTarget();
+
+		return this;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override bool OnUiClick(Widget w, int id, int button)
 	{
 		return m_Target && m_Target.OnUiClick(w, id, button);

@@ -36,6 +36,21 @@
 - Start menu search box and power menu; taskbar pinned apps (Files, Browser, Mail, Terminal).
 - Window snapping (top edge maximizes, side edges fill half), resize grip, fade-in; Ctrl+W closes.
 - Files: back / forward, clickable address bar, search box, navigation pane, large icons view, sortable details, properties dialog with owner and permission checkboxes, shortcuts; keys Enter, Backspace, Delete, F2, F5, arrows, Ctrl+C / X / V.
+- Desktop Open / Save file dialog; used by Notepad (Open, Save as), Photos (Open) and Remote Access (Download, Upload).
+- Calculator keyboard and numpad input; percent, sign change and backspace keys.
+- Map zoom (wheel, +/-), pan (drag, arrow keys), Center button and scale bar; device range up to 5 km.
+- Games app lobby and table with buttons (new table, join, start, practice seat, leave) and move field.
+- Snake plays inside its window (keyboard steering, board size, best score).
+- Several mail addresses and chat handles per computer, created and deleted by users; conversations per own handle.
+- Calendar event location (World Editor, Game Master, script API, persistence).
+- Game bots for all eight games: Add bot / Remove bot, "Play against bot", terminal `bot` / `unbot`, setting `m_bGamesBots`, API `HostGameWithBots`.
+- Desktop files and folders from `~/Desktop`; right-click New folder, New text document, Open, Rename, Delete.
+- Web and base64 images (PNG, JPEG, GIF) in Photos and as wallpaper, setting `m_bDesktopWebImages`.
+- Photos: Web address, Paste base64, Save as, Set as background.
+- Personalize: background from an image file or a web address.
+- Videos from web addresses in Photos and the Browser (engine VideoWidget; Play, Stop, Restart).
+- Browser opens http(s) addresses: page text with links, images and videos in the page area.
+- Practice seats: Switch seat (desktop), `seat <number>` (terminal), Game Master setting "Practice seats"; seats named "Practice N".
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -49,4 +64,13 @@
 - Text set by script in edit boxes no longer raises change events (fixes the Files app stack overflow and blocked file operations).
 - Container frames ignore the cursor; widgets behind them get clicks.
 - Editor preview textures built (white Game Master icons).
-- Apps renamed: Text Editor to Notepad, Image Viewer to Photos, SSH to Remote Access.
+- Apps renamed: Text Editor to Notepad, Image Viewer to Photos, SSH to Remote Access, Mail to Email.
+- Email, Messenger and Calendar laid out as in AE3: Email toolbar with tabs, search and reading pane; Messenger navigation rail, conversation list and bubbles; Calendar month grid with day panel.
+- Network app only joins and leaves networks; static IP, SSH toggle and router settings removed from the desktop (Game Master, World Editor, script API).
+- Default desktop background plain black (wallpaper 0).
+- Boot screen brand FUBAR(TM) Systems (BIOS, copyright 2026, tip, tagline, ASCII art); About and boot art credit Root only.
+- Desktop double click works when the first click rebuilds the clicked widget (desktop icons open on double click).
+- Game Master "Chat handle" adds a handle to the computer.
+- `AddMedia` and Game Master "Add image" accept a texture, a web address (image or video) or base64 text.
+- Practice seats allowed by default (`m_bGamesDebugSeats` 1), host only; the computer plays the seat to move, else the chosen one; leaving frees every seat it holds.
+- Setting `m_bDesktopWebImages` covers all web access (Game Master "Web access").

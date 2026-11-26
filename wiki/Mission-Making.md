@@ -9,4 +9,6 @@
 
 File permissions are six characters: owner read, write, execute, then everyone read, write, execute,
 `-` for unset (`rw-r--`). Locked files open with `unlock FILE PASSWORD`. Images are files with the content
-`AE3_MEDIA|image|<texture resource>|<caption>` and open in Photos.
+`AE3_MEDIA|<kind>|<source>|<caption>` and open in Photos: kind `image` (texture resource), `url` (http or https
+address of a PNG, JPEG or GIF), `video` (http or https address of a video file) or `base64` (image bytes as base64, `data:` prefix allowed; files hold at most
+65536 characters). `AddMedia` and the Game Master "Add image" action pick the kind from the source.

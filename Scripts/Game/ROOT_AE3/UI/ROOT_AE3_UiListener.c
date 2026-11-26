@@ -16,6 +16,13 @@ class ROOT_AE3_UiListener
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Listener that finally receives the events; double clicks are matched against it.
+	ROOT_AE3_UiListener ClickTarget()
+	{
+		return this;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! button: 0 left, 1 right.
 	bool OnUiClick(Widget w, int id, int button)
 	{

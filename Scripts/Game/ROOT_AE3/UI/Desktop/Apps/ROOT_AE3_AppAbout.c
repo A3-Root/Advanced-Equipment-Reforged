@@ -23,7 +23,11 @@ class ROOT_AE3_AppAbout : ROOT_AE3_App
 	override void Build()
 	{
 		ROOT_AE3_Settings s = ROOT_AE3_SettingsManager.Get();
-		string text = "armaOS\n\nAdvanced Equipment for Arma Reforger\nRoot, y0014984, Wasserstoff, JulesVerner\n\n" + s.m_sTerminalBiosVersion + "\n" + s.m_sTerminalCopyright;
-		Label(14, 12, Width() - 28, Height() - 24, text, 15, false, true);
+		ROOT_AE3_UI.Icon(GetContent(), 18, 18, 64, "logo");
+		Label(98, 20, Width() - 110, 30, "armaOS", 24);
+		ROOT_AE3_UI.Text(GetContent(), 98, 54, Width() - 110, 20, "Advanced Equipment for Arma Reforger", 14, ROOT_AE3_Theme.Muted());
+		ROOT_AE3_UI.Text(GetContent(), 98, 74, Width() - 110, 20, "by Root", 14, ROOT_AE3_Theme.Muted());
+		ROOT_AE3_UI.Rect(GetContent(), 18, 106, Width() - 36, 1, ROOT_AE3_Theme.Border());
+		Label(18, 118, Width() - 36, Height() - 130, s.m_sTerminalBiosVersion + "\n" + s.m_sTerminalCopyright, 13, false, true);
 	}
 }

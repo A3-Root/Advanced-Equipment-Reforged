@@ -290,6 +290,49 @@ class ROOT_AE3_GameUno : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Matching colour or value cards, then wilds in the colour held most, then draw.
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1 || seat != m_iTurn)
+			return;
+
+		array<string> colours = {"r", "g", "b", "y"};
+		array<int> counts = {0, 0, 0, 0};
+		array<string> hand = m_aHands[seat];
+		foreach (string card : hand)
+		{
+			int ci = colours.Find(card.Substring(0, 1));
+			if (ci >= 0)
+				counts[ci] = counts[ci] + 1;
+		}
+
+		int best = 0;
+		for (int i = 1; i < 4; i++)
+		{
+			if (counts[i] > counts[best])
+				best = i;
+		}
+
+		array<string> plain = {};
+		array<string> wild = {};
+		foreach (string card : hand)
+		{
+			if (!Playable(card))
+				continue;
+
+			if (card.StartsWith("W"))
+				wild.Insert("play " + card + " " + colours[best]);
+			else
+				plain.Insert("play " + card);
+		}
+
+		BotShuffle(plain);
+		moves.InsertAll(plain);
+		moves.InsertAll(wild);
+		moves.Insert("draw");
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string colourName = "red";

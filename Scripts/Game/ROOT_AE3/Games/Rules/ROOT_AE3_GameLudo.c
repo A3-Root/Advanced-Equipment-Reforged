@@ -219,6 +219,58 @@ class ROOT_AE3_GameLudo : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Roll, then the token that reaches home, captures, leaves the yard or is furthest along.
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1 || seat != m_iTurn)
+			return;
+
+		if (m_iRoll == 0)
+		{
+			moves.Insert("roll");
+			return;
+		}
+
+		array<string> cands = {};
+		array<float> scores = {};
+		for (int t = 0; t < 4; t++)
+		{
+			if (!CanMove(seat, t))
+				continue;
+
+			int p = m_aTokens[seat * 4 + t];
+			int np = p + m_iRoll;
+			float score = p + Math.RandomFloat(0, 1);
+			if (p == -1)
+			{
+				np = 0;
+				score = 100;
+			}
+
+			if (np == 57)
+				score = 200;
+
+			int abs = Absolute(seat, np);
+			for (int s = 0; s < m_iSeats && abs >= 0; s++)
+			{
+				if (s == seat)
+					continue;
+
+				for (int o = 0; o < 4; o++)
+				{
+					if (Absolute(s, m_aTokens[s * 4 + o]) == abs)
+						score += 150;
+				}
+			}
+
+			cands.Insert("move " + (t + 1).ToString());
+			scores.Insert(score);
+		}
+
+		BotRanked(cands, scores, moves);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string v;

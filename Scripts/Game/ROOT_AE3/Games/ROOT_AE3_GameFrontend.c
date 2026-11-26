@@ -115,18 +115,19 @@ class ROOT_AE3_GameFrontend
 		if (!t.m_bStarted)
 		{
 			if (seat == 0)
-				Out("Type start when every player has joined. Options: name <text>, seatname <text>, pref white|black|random, starter <seat>, practice.");
+				Out("Type start when every player has joined. Options: bot, unbot, name <text>, seatname <text>, pref white|black|random, starter <seat>, practice.");
 			else
 				Out("Waiting for the host to start. Options: seatname <text>, pref white|black|random.");
 		}
 		else
 		{
-			int viewSeat = seat;
 			int turn = t.m_Rules.GetTurn();
-			if (turn >= 0 && turn < t.m_aSeats.Count() && t.m_aSeats[turn] == Computer())
-				viewSeat = turn;
+			array<int> own = {};
+			t.SeatsOf(Computer(), own);
+			if (own.Count() > 1)
+				Out(string.Format("Playing seat %1 (%2). Type seat <number> or seat to switch.", t.PlaySeat(Computer()) + 1, t.m_aSeatNames[t.PlaySeat(Computer())]));
 
-			Out(t.m_Rules.View(viewSeat));
+			Out(t.m_Rules.View(t.PlaySeat(Computer())));
 			int w = t.m_Rules.GetWinner();
 			if (w == -2)
 				Out("The match is a draw.");
@@ -145,7 +146,7 @@ class ROOT_AE3_GameFrontend
 		if (!status.IsEmpty())
 			Out("> " + status);
 
-		Out("Commands: a move, board, status, seatname <text>, leave, quit");
+		Out("Commands: a move, board, status, seat <number>, seatname <text>, leave, quit");
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -281,6 +282,28 @@ class ROOT_AE3_GameFrontend
 			case "practice":
 			{
 				sys.AddPracticeSeat(Computer(), m_iTable, status);
+				Out(status);
+				return true;
+			}
+
+			case "seat":
+			{
+				sys.SwitchSeat(Computer(), m_iTable, rest.ToInt(), status);
+				Out(status);
+				ShowTable(table);
+				return true;
+			}
+
+			case "bot":
+			{
+				sys.AddBot(Computer(), m_iTable, status);
+				Out(status);
+				return true;
+			}
+
+			case "unbot":
+			{
+				sys.RemoveBot(Computer(), m_iTable, status);
 				Out(status);
 				return true;
 			}

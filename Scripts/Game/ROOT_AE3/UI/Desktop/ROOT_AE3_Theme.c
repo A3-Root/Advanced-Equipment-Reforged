@@ -28,13 +28,6 @@ class ROOT_AE3_Theme
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Desktop background without wallpaper.
-	static Color Desktop()
-	{
-		return Pick(ROOT_AE3_UI.Rgb(0.04, 0.16, 0.3), ROOT_AE3_UI.Rgb(0.0, 0.45, 0.78), ROOT_AE3_UI.Rgb(0.25, 0.3, 0.18));
-	}
-
-	//------------------------------------------------------------------------------------------------
 	//! Window background.
 	static Color Panel()
 	{

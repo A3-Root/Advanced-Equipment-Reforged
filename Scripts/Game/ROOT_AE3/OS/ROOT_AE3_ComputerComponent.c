@@ -829,7 +829,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 
 	//------------------------------------------------------------------------------------------------
 	//! Authority.
-	void AddCalendarEvent(string date, string time, string title, string text)
+	void AddCalendarEvent(string date, string time, string title, string text, string location = "")
 	{
 		if (m_aCalendar.Count() >= 200)
 			return;
@@ -843,6 +843,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 		ev.m_sTime = time;
 		ev.m_sTitle = ROOT_AE3_Codec.Clean(title);
 		ev.m_sText = ROOT_AE3_Codec.Clean(text);
+		ev.m_sLocation = ROOT_AE3_Codec.Clean(ROOT_AE3_Util.Clip(location, 128));
 		m_aCalendar.Insert(ev);
 	}
 

@@ -430,6 +430,41 @@ class ROOT_AE3_GameChess : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Legal moves scored by captured material, promotion, check and whether the moved piece can be taken.
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1 || seat != m_iTurn)
+			return;
+
+		array<int> legal = {};
+		Legal(m_bWhiteToMove, legal);
+		array<int> values = {0, 1, 3, 3, 5, 9, 0};
+		array<string> cands = {};
+		array<float> scores = {};
+		foreach (int m : legal)
+		{
+			int from = m / 64;
+			int to = m % 64;
+			array<int> n = After(m_aBoard, from, to, 5);
+			float score = Math.RandomFloat(0, 0.5) + values[Math.AbsInt(m_aBoard[to])];
+			int mover = Math.AbsInt(n[to]);
+			if (Math.AbsInt(m_aBoard[from]) == 1 && mover == 5)
+				score += 8;
+
+			if (Attacked(n, to, !m_bWhiteToMove))
+				score -= values[mover] * 0.9;
+
+			if (Attacked(n, KingSquare(n, !m_bWhiteToMove), m_bWhiteToMove))
+				score += 0.3;
+
+			cands.Insert(SquareName(from) + SquareName(to));
+			scores.Insert(score);
+		}
+
+		BotRanked(cands, scores, moves);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	protected static string PieceChar(int p)
 	{
 		array<string> w = {".", "P", "N", "B", "R", "Q", "K"};

@@ -13,4 +13,7 @@ class ROOT_AE3_CalendarEntry
 
 	[Attribute("", uiwidget: UIWidgets.EditBoxMultiline, desc: "Description")]
 	string m_sText;
+
+	[Attribute("", desc: "Location")]
+	string m_sLocation;
 }

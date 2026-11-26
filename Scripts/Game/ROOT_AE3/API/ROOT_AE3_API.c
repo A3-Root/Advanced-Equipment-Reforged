@@ -231,10 +231,11 @@ class ROOT_AE3_API
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Image file for the desktop Image Viewer. texture: "{GUID}path.edds" resource.
-	static bool AddMedia(IEntity device, string path, ResourceName texture, string caption = "")
+	//! Image file for the desktop Photos app.
+	//! source: texture resource, http(s) address or base64 image text (PNG, JPEG, GIF; data: URI allowed).
+	static bool AddMedia(IEntity device, string path, string source, string caption = "")
 	{
-		return AddFile(device, path, ROOT_AE3_Intel.Media("image", texture, caption), "root", "rw-r--");
+		return AddFile(device, path, ROOT_AE3_Intel.Media(ROOT_AE3_WebMedia.KindOf(source), source.Trim(), caption), "root", "rw-r--");
 	}
 
 	// Commands ---------------------------------------------------------------------------------------
@@ -345,13 +346,13 @@ class ROOT_AE3_API
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static bool AddCalendarEvent(IEntity device, string date, string time, string title, string text)
+	static bool AddCalendarEvent(IEntity device, string date, string time, string title, string text, string location = "")
 	{
 		ROOT_AE3_ComputerComponent c = Computer(device);
 		if (!c)
 			return false;
 
-		c.AddCalendarEvent(date, time, title, text);
+		c.AddCalendarEvent(date, time, title, text, location);
 		return true;
 	}
 
@@ -396,6 +397,31 @@ class ROOT_AE3_API
 		}
 
 		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: opens a table of game hosted by device with bots bot seats and starts it when the game allows.
+	//! Returns the table number, -1 on failure.
+	static int HostGameWithBots(IEntity device, string game, int bots = 1)
+	{
+		ROOT_AE3_ComputerComponent c = Computer(device);
+		if (!c || !Replication.IsServer())
+			return -1;
+
+		ROOT_AE3_GameTableSystem sys = ROOT_AE3_GameTableSystem.Get();
+		string status;
+		ROOT_AE3_GameTable t = sys.Host(c, game, status);
+		if (!t)
+			return -1;
+
+		for (int i = 0; i < bots; i++)
+		{
+			if (!sys.AddBot(c, t.m_iId, status))
+				break;
+		}
+
+		sys.StartTable(c, t.m_iId, status);
+		return t.m_iId;
 	}
 
 	// Power and network ------------------------------------------------------------------------------

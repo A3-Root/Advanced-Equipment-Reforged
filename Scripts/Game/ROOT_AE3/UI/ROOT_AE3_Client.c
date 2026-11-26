@@ -10,7 +10,7 @@ class ROOT_AE3_Client
 	int m_iInterface;
 	string m_sUser;
 	string m_sTheme = "0";
-	string m_sWallpaper = "1";
+	string m_sWallpaper = "0";
 	ref array<string> m_aLines = {};
 	string m_sPrompt;
 	bool m_bHidden;

@@ -27,7 +27,7 @@ class ROOT_AE3_SetupComponent : ScriptComponent
 	[Attribute(desc: "Calendar events", category: "Content")]
 	protected ref array<ref ROOT_AE3_CalendarEntry> m_aCalendar;
 
-	[Attribute("1", desc: "Desktop wallpaper index 1-5", params: "1 5 1", category: "Content")]
+	[Attribute("0", desc: "Desktop wallpaper index 1-5, 0 for plain black", params: "0 5 1", category: "Content")]
 	protected int m_iWallpaper;
 
 	//------------------------------------------------------------------------------------------------
@@ -126,7 +126,7 @@ class ROOT_AE3_SetupComponent : ScriptComponent
 				if (date.IsEmpty())
 					date = ROOT_AE3_Util.Today();
 
-				computer.AddCalendarEvent(date, c.m_sTime, c.m_sTitle, c.m_sText);
+				computer.AddCalendarEvent(date, c.m_sTime, c.m_sTitle, c.m_sText, c.m_sLocation);
 			}
 		}
 

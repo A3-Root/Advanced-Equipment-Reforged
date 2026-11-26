@@ -52,9 +52,10 @@ Root login is off by default; users in `/etc/sudoers` use `sudo` / `su`. While `
 
 ## Desktop
 
-Sign-in screen, wallpapers, themes (Dark, Light, Olive), windows (drag, snap to the top or a side edge, resize
-from the corner), taskbar with pinned apps, start menu with search, right-click menus, dialogs, notifications.
-Apps: My Computer, Files, Notepad, Photos, Terminal, Browser, Mail, Messenger, Calendar, Network,
+Sign-in screen, plain black background, wallpapers 1-5, an image file or a web address, themes (Dark, Light, Olive), windows (drag, snap to the top or a side edge, resize
+from the corner), taskbar with pinned apps, start menu with search, right-click menus, dialogs, Open / Save file
+dialog, notifications.
+Apps: My Computer, Files, Notepad, Photos, Terminal, Browser, Email, Messenger, Calendar, Network,
 Remote Access, Ping, Map, CCTV, Games, Snake, Calculator, Recycle Bin, Settings, System Info, About. Other mods add apps
 with `ROOT_AE3_API.RegisterExtApp`; their server requests are handled through
 `ROOT_AE3_API.RegisterGuiCommand` (subclass of `ROOT_AE3_GuiCommand`).
@@ -67,7 +68,7 @@ overloaded generator or battery switches off; unsupplied devices run on their in
 when it is empty. Routers get `192.168.N.1/24`, hand out addresses (DHCP or static IP inside the subnet),
 cascade by cable, accept wireless clients in range with an optional password and filter external SSH by
 regular expressions. Each computer gets the mail address `<hostname>@lan` and the chat handle `@<hostname>` when it
-has none. `ping`, `ssh`, `msg`, mail and chat need a powered path between both devices. Mail and chat belong
+has none; users add and delete further mail addresses (16 per computer) and chat handles (8 per computer) in Email and Messenger. `ping`, `ssh`, `msg`, mail and chat need a powered path between both devices. Mail and chat belong
 to the computer: every logged-in user reads its mail folders and chat logs. A network cable needs physical access and skips
 the router password; it needs a router that accepts connections.
 
@@ -97,7 +98,7 @@ Attributes: `Configs/Editor/AttributeLists/Edit.conf`, `Scripts/Game/ROOT_AE3/Ed
 | Component | Attributes |
 | --- | --- |
 | `ROOT_AE3_ComputerComponent` | interface mode, terminal / desktop access (identity IDs, faction keys, player names), hostname, root login, root password, users (name, password, sudoer), sudoers, install commands / games / crypto and crack, USB ports |
-| `ROOT_AE3_SetupComponent` | files and directories, mail addresses, mails, chat handle, web pages, browser history, calendar, wallpaper |
+| `ROOT_AE3_SetupComponent` | files and directories, mail addresses, mails, chat handle, web pages, browser history, calendar (with location), wallpaper (0 black, 1-5) |
 | `ROOT_AE3_PowerComponent` | role, draw on / standby, output, capacity, recharge, fuel tank, burn rate, mains, external only, on at start, start level, start fuel, buffer output, solar panel tilt |
 | `ROOT_AE3_NetworkComponent` | router: SSID, gateway, range, multiplier, accept clients, password, external SSH, allow list, speed; client: static IP, speed, SSH |
 | `ROOT_AE3_ConnectionComponent` | power source and router by entity name (cable links) |
@@ -110,16 +111,16 @@ Defaults in `Configs/ROOT_AE3/Settings.conf`. A mission overrides them with `m_R
 Groups: Main (debug log, network debug log, any-login test mode, device names), armaOS (root login, sudoers, root password, error sound, transfer speeds
 and cap, terminal design, scroll, font size, screen mirror range / interval / viewers / lines / keystroke sync
 / change detection, header texts, boot and shutdown time), Desktop (default interface, file
-browsing, theme, map same network, window size), Network (range, multiplier), Power (sync threshold, sync, interval), Games
+browsing, theme, map same network, window size, web access), Network (range, multiplier), Power (sync threshold, sync, interval), Games
 (enabled, hosting, same network, max tables, turn and abandon timeout, power draw, idle draw,
-practice seats).
+practice seats, bots).
 
 ## Script API
 
 `ROOT_AE3_API` (authority only): `AddUser`, `AddSudoer`, `RemoveSudoer`, `SetRootPassword`, `SetRootLogin`,
 `SetHostname`, `AddFile`, `AddDirectory`, `ReadFile`, `RemovePath`, `AddMedia`, `AddCustomCommand`,
 `InstallCommand`, `AddMailAddress`, `AddEmail`, `SetChatHandle`, `RegisterWebpage`, `RegisterSite`,
-`AddBrowserHistory`, `AddCalendarEvent`, `RemoveCalendarEvent`, `RegisterCamera`, `AddGames`, `ConnectPower`,
+`AddBrowserHistory`, `AddCalendarEvent`, `RemoveCalendarEvent`, `RegisterCamera`, `AddGames`, `HostGameWithBots`, `ConnectPower`,
 `DisconnectPower`, `ConnectNetwork`, `DisconnectNetwork`, `SetPowerState`, `CrashDevice`, `SetBatteryLevel`,
 `SetFuel`, `SetTransferSpeed`, `GetAddress`, `SaveComputer`, `RestoreComputer`, `RegisterGuiCommand`, `SetInterfaceMode`, `SetInterfaceAccess`, `SetStaticIp`, `SetMainsPowered`,
 `GetPowerState`, `GetBatteryLevel`, `GetFuel`, `AddAccessCondition` / `RemoveAccessCondition` (`ROOT_AE3_AccessCondition`),
@@ -167,15 +168,14 @@ most 65,536 characters per second plus the message that crosses it; later messag
 dropped. On a router without password only sudoers change its settings. `/.trash` is root-only; trash entries are
 restored or deleted by their owner or root through the Files app. Mail folders keep 100 mails, a computer
 sends at most one mail every 2 s; a filesystem holds at most 5,000 files, folders and links. Scripts run at
-most 50 lines. Failed player actions show the reason as a hint. Destroyed devices switch off and offer no actions. Adding mail
-addresses, changing the chat handle and setting a static IP in the desktop need a sudoer. Dropped terminal output is resent as the last
-100 lines.
+most 50 lines. Failed player actions show the reason as a hint. Destroyed devices switch off and offer no actions. Static IP,
+SSH access and router settings are set by the Game Master, World Editor or script API only; the desktop Network app joins
+and leaves networks. Dropped terminal output is resent as the last 100 lines.
 
 ## Not ported
 
 Music app, the debug overlay, translations (the interface and string table are English only), the full desktop on the model screen (it shows the window titles), CCTV of cameras outside the
-viewer's streaming range, Game Master action for multi-page web sites (script API `RegisterSite` only), calendar event
-locations, the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a laptop when it is placed, removing installed games, the Zeus games roster and per-computer
-games module, file drag and drop, graphical game boards (games run as text in the desktop Games app), portable desks and desk chairs, lamp variants (one floodlight), inline base64 images, typing
+viewer's streaming range, Game Master action for multi-page web sites (script API `RegisterSite` only), the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a laptop when it is placed, removing installed games, the Zeus games roster and per-computer
+games module, file drag and drop, graphical game boards (the desktop Games app shows boards as text), the terrain map in the Map app (it shows devices on a grid), copying and exporting mail and chat, portable desks and desk chairs, lamp variants (one floodlight), animated GIF, video formats the engine video player does not take, page styles and scripts in the Browser, typing
 animations, refuelling generators from fuel trucks or nozzles, the Arma 3 deployment type setting (Reforger
 placeable items).

@@ -130,6 +130,16 @@ class ROOT_AE3_GameRps : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1 || !m_aThrows[seat].IsEmpty())
+			return;
+
+		array<string> throws = {"rock", "paper", "scissors"};
+		moves.Insert(throws[Math.RandomInt(0, 3)]);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string mine = m_aThrows[seat];

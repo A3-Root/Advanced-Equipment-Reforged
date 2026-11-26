@@ -123,8 +123,8 @@ class ROOT_AE3_GmActions
 			case "chat_handle": title = "Chat handle"; labels.Insert("Handle"); defaults.Insert(""); return true;
 			case "add_webpage": title = "Add web page"; labels.Insert("Address"); labels.Insert("Title"); labels.Insert("Markdown content"); labels.Insert("Every computer (0/1)"); defaults.Insert("intel.local"); defaults.Insert(""); defaults.Insert("# Title"); defaults.Insert("0"); return true;
 			case "add_history": title = "Add browser history"; labels.Insert("Address"); defaults.Insert("intel.local"); return true;
-			case "add_media": title = "Add image"; labels.Insert("Path"); labels.Insert("Texture {GUID}path.edds"); labels.Insert("Caption"); defaults.Insert("/home/user/photo.img"); defaults.Insert(""); defaults.Insert(""); return true;
-			case "add_calendar": title = "Add calendar event"; labels.Insert("Date YYYY-MM-DD"); labels.Insert("Time HH:MM"); labels.Insert("Title"); labels.Insert("Description"); defaults.Insert(ROOT_AE3_Util.Today()); defaults.Insert("12:00"); defaults.Insert(""); defaults.Insert(""); return true;
+			case "add_media": title = "Add image"; labels.Insert("Path"); labels.Insert("Texture {GUID}path.edds, web address or base64"); labels.Insert("Caption"); defaults.Insert("/home/user/photo.img"); defaults.Insert(""); defaults.Insert(""); return true;
+			case "add_calendar": title = "Add calendar event"; labels.Insert("Date YYYY-MM-DD"); labels.Insert("Time HH:MM"); labels.Insert("Title"); labels.Insert("Description"); labels.Insert("Location"); defaults.Insert(ROOT_AE3_Util.Today()); defaults.Insert("12:00"); defaults.Insert(""); defaults.Insert(""); defaults.Insert(""); return true;
 			case "add_games": title = "Install games"; labels.Insert("Games separated by spaces (empty = all)"); defaults.Insert(""); return true;
 			case "static_ip": title = "Static IP"; labels.Insert("Address inside the router subnet (empty = DHCP)"); defaults.Insert(""); return true;
 			case "network_speed": title = "Transfer speed"; labels.Insert("KB/s (0 = default)"); defaults.Insert("0"); return true;
@@ -427,7 +427,7 @@ class ROOT_AE3_GmActions
 
 			case "add_history": return R(ROOT_AE3_API.AddBrowserHistory(e, V(v, 0)));
 			case "add_media": return R(ROOT_AE3_API.AddMedia(e, V(v, 0), V(v, 1), V(v, 2)));
-			case "add_calendar": return R(ROOT_AE3_API.AddCalendarEvent(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3)));
+			case "add_calendar": return R(ROOT_AE3_API.AddCalendarEvent(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3), V(v, 4)));
 			case "add_games": return R(ROOT_AE3_API.AddGames(e, ROOT_AE3_Util.Words(V(v, 0))));
 			case "network_speed": return R(ROOT_AE3_API.SetTransferSpeed(e, V(v, 0).ToFloat()));
 			case "static_ip": return R(ROOT_AE3_API.SetStaticIp(e, V(v, 0)));

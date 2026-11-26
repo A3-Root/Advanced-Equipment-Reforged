@@ -5,7 +5,8 @@
 class ROOT_AE3_SaveLoad
 {
 	static const string DIR = "$profile:ROOT_AE3/saves";
-	static const string VERSION = "AE3SAVE6";
+	static const string VERSION = "AE3SAVE7";
+	static const string VERSION_6 = "AE3SAVE6";		//!< Calendar events without location
 
 	//------------------------------------------------------------------------------------------------
 	static string Pack(ROOT_AE3_ComputerComponent c)
@@ -44,6 +45,7 @@ class ROOT_AE3_SaveLoad
 			cal.Insert(ev.m_sTime);
 			cal.Insert(ev.m_sTitle);
 			cal.Insert(ev.m_sText);
+			cal.Insert(ev.m_sLocation);
 		}
 
 		array<string> pages = {};
@@ -98,7 +100,7 @@ class ROOT_AE3_SaveLoad
 	static bool Unpack(ROOT_AE3_ComputerComponent c, string data)
 	{
 		array<string> parts = ROOT_AE3_Codec.Split(data);
-		if (parts.Count() < 19 || parts[0] != VERSION)
+		if (parts.Count() < 19 || (parts[0] != VERSION && parts[0] != VERSION_6))
 			return false;
 
 		string fsData;
@@ -147,9 +149,17 @@ class ROOT_AE3_SaveLoad
 
 		c.GetCalendar().Clear();
 		array<string> cal = ROOT_AE3_Codec.SplitSub(parts[10]);
-		for (int i = 0; i + 3 < cal.Count(); i += 4)
+		int stride = 5;
+		if (parts[0] == VERSION_6)
+			stride = 4;
+
+		for (int i = 0; i + stride - 1 < cal.Count(); i += stride)
 		{
-			c.AddCalendarEvent(cal[i], cal[i + 1], cal[i + 2], cal[i + 3]);
+			string location;
+			if (stride == 5)
+				location = cal[i + 4];
+
+			c.AddCalendarEvent(cal[i], cal[i + 1], cal[i + 2], cal[i + 3], location);
 		}
 
 		foreach (string a : ROOT_AE3_Codec.SplitSub(parts[11]))
@@ -213,9 +223,10 @@ class ROOT_AE3_SaveLoad
 		}
 
 		c.GetTerminal().Reset();
-		string handle = c.GetPref("", "chat_handle", "");
-		if (!handle.IsEmpty())
+		foreach (string handle : ROOT_AE3_Intel.HandlesOf(c))
+		{
 			ROOT_AE3_Intel.ClaimHandle(c, handle);
+		}
 
 		ROOT_AE3_SetupComponent setup = ROOT_AE3_SetupComponent.Of(c.GetOwner());
 		if (setup)

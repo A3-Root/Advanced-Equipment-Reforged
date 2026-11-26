@@ -104,6 +104,46 @@ class ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Moves a bot in that seat would make now, best first. Empty when the seat has nothing to do.
+	void BotMoves(int seat, notnull array<string> moves)
+	{
+	}
+
+	//------------------------------------------------------------------------------------------------
+	static void BotShuffle(notnull array<string> a)
+	{
+		for (int i = a.Count() - 1; i > 0; i--)
+		{
+			int j = Math.RandomInt(0, i + 1);
+			string t = a[i];
+			a[i] = a[j];
+			a[j] = t;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Appends cands to moves, highest score first.
+	static void BotRanked(notnull array<string> cands, notnull array<float> scores, notnull array<string> moves)
+	{
+		array<int> used = {};
+		for (int n = 0; n < cands.Count(); n++)
+		{
+			int best = -1;
+			for (int i = 0; i < cands.Count(); i++)
+			{
+				if (used.Contains(i))
+					continue;
+
+				if (best < 0 || scores[i] > scores[best])
+					best = i;
+			}
+
+			used.Insert(best);
+			moves.Insert(cands[best]);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! The seat to move ran out of time: two-seat games are lost, others skip the turn.
 	void OnTimeout()
 	{

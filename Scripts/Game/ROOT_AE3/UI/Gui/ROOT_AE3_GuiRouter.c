@@ -497,7 +497,7 @@ class ROOT_AE3_GuiRouter
 					return;
 				}
 
-				array<string> res = {p1, ROOT_AE3_Intel.MediaResource(content), ROOT_AE3_Intel.MediaCaption(content)};
+				array<string> res = {p1, ROOT_AE3_Intel.MediaResource(content), ROOT_AE3_Intel.MediaCaption(content), ROOT_AE3_Intel.MediaType(content)};
 				Reply(s, rid, true, cmd, res);
 				return;
 			}
@@ -593,6 +593,9 @@ class ROOT_AE3_GuiRouter
 				return;
 			}
 		}
+
+		if (ROOT_AE3_GuiRouterGames.Handle(s, rid, cmd, f, user))
+			return;
 
 		if (ROOT_AE3_GuiRouterComms.Handle(s, rid, cmd, f, user))
 			return;

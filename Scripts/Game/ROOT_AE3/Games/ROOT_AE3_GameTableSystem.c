@@ -21,7 +21,10 @@ class ROOT_AE3_GameTableSystem
 	static void Reset()
 	{
 		if (s_Instance)
+		{
 			GetGame().GetCallqueue().Remove(s_Instance.Sweep);
+			GetGame().GetCallqueue().Remove(s_Instance.BotStep);
+		}
 
 		s_Instance = null;
 	}
@@ -134,7 +137,142 @@ class ROOT_AE3_GameTableSystem
 		t.m_aSeats.Insert(c);
 		t.m_aSeatNames.Insert(c.GetHostname());
 		t.m_aPrefs.Insert(0);
+		t.m_aBots.Insert(false);
 		UpdatePower(c);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Host only, before the start: a seat played by the server (setting m_bGamesBots).
+	bool AddBot(ROOT_AE3_ComputerComponent c, int id, out string status)
+	{
+		ROOT_AE3_GameTable t = Find(id);
+		if (!t || t.m_bStarted || t.m_aSeats.Count() >= t.m_Rules.MaxSeats())
+		{
+			status = "No seat available.";
+			return false;
+		}
+
+		if (t.GetHost() != c)
+		{
+			status = "Only the computer hosting the table can add a bot.";
+			return false;
+		}
+
+		if (!ROOT_AE3_SettingsManager.Get().m_bGamesBots)
+		{
+			status = "Bots are switched off on this server.";
+			return false;
+		}
+
+		int n = 1;
+		foreach (bool b : t.m_aBots)
+		{
+			if (b)
+				n++;
+		}
+
+		t.m_aSeats.Insert(null);
+		t.m_aSeatNames.Insert("Bot " + n.ToString());
+		t.m_aPrefs.Insert(0);
+		t.m_aBots.Insert(true);
+		t.m_fLastActivity = Now();
+		status = "A bot took a seat.";
+		Push(t, status);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Host only, before the start: removes the last bot seat.
+	bool RemoveBot(ROOT_AE3_ComputerComponent c, int id, out string status)
+	{
+		ROOT_AE3_GameTable t = Find(id);
+		if (!t || t.m_bStarted || t.GetHost() != c)
+		{
+			status = "Only the computer hosting the table can remove a bot before the start.";
+			return false;
+		}
+
+		for (int i = t.m_aBots.Count() - 1; i >= 0; i--)
+		{
+			if (!t.m_aBots[i])
+				continue;
+
+			t.m_aSeats.Remove(i);
+			t.m_aSeatNames.Remove(i);
+			t.m_aPrefs.Remove(i);
+			t.m_aBots.Remove(i);
+			status = "Bot removed.";
+			Push(t, status);
+			return true;
+		}
+
+		status = "There is no bot at this table.";
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Queues one bot move when a bot seat has something to do.
+	protected void ScheduleBots(ROOT_AE3_GameTable t)
+	{
+		if (!t || t.m_bBotQueued || !t.m_bStarted || t.m_Rules.GetWinner() != -1 || !t.m_aBots.Contains(true))
+			return;
+
+		t.m_bBotQueued = true;
+		GetGame().GetCallqueue().CallLater(BotStep, 900, false, t.m_iId);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void BotStep(int id)
+	{
+		ROOT_AE3_GameTable t = Find(id);
+		if (!t)
+			return;
+
+		t.m_bBotQueued = false;
+		if (!t.m_bStarted || t.m_Rules.GetWinner() != -1)
+			return;
+
+		int turn = t.m_Rules.GetTurn();
+		for (int seat = 0; seat < t.m_aSeats.Count(); seat++)
+		{
+			if (!t.IsBot(seat) || (turn >= 0 && seat != turn))
+				continue;
+
+			array<string> moves = {};
+			t.m_Rules.BotMoves(seat, moves);
+			foreach (string move : moves)
+			{
+				string status;
+				if (!t.m_Rules.Apply(seat, move, status))
+					continue;
+
+				AfterMove(t, t.m_aSeatNames[seat] + ": " + status);
+				return;
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Turn clock, updates, power after the end, next bot move.
+	protected void AfterMove(ROOT_AE3_GameTable t, string status)
+	{
+		t.m_fLastActivity = Now();
+		if (t.m_Rules.GetTurn() != t.m_iLastTurn)
+		{
+			t.m_iLastTurn = t.m_Rules.GetTurn();
+			t.m_fTurnStart = Now();
+		}
+
+		Push(t, status);
+		if (t.m_Rules.GetWinner() != -1)
+		{
+			foreach (ROOT_AE3_ComputerComponent seatC : t.m_aSeats)
+			{
+				UpdatePower(seatC);
+			}
+		}
+
+		ScheduleBots(t);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -193,6 +331,12 @@ class ROOT_AE3_GameTableSystem
 			return false;
 		}
 
+		if (t.GetHost() != c)
+		{
+			status = "Only the computer hosting the table can add a practice seat.";
+			return false;
+		}
+
 		if (!ROOT_AE3_SettingsManager.Get().m_bGamesDebugSeats)
 		{
 			status = "Practice seats are switched off on this computer.";
@@ -200,7 +344,38 @@ class ROOT_AE3_GameTableSystem
 		}
 
 		Seat(t, c);
-		status = "Practice seat added.";
+		int seat = t.m_aSeats.Count() - 1;
+		t.m_aSeatNames[seat] = "Practice " + (seat + 1).ToString();
+		t.m_fLastActivity = Now();
+		status = "Practice seat added. This computer plays every seat it holds.";
+		Push(t, status);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! A computer holding several seats chooses the one it plays (seat number, or 0 for the next one).
+	bool SwitchSeat(ROOT_AE3_ComputerComponent c, int id, int seatNumber, out string status)
+	{
+		ROOT_AE3_GameTable t = Find(id);
+		if (!t || t.SeatOf(c) < 0)
+		{
+			status = "This computer holds no seat at that table.";
+			return false;
+		}
+
+		bool ok;
+		if (seatNumber <= 0)
+			ok = t.NextPlaySeat(c);
+		else
+			ok = t.SetPlaySeat(c, seatNumber - 1);
+
+		if (!ok)
+		{
+			status = "This computer does not hold that seat.";
+			return false;
+		}
+
+		status = string.Format("Playing seat %1 (%2).", t.PlaySeat(c) + 1, t.m_aSeatNames[t.PlaySeat(c)]);
 		return true;
 	}
 
@@ -260,6 +435,7 @@ class ROOT_AE3_GameTableSystem
 
 		status = "The match has started.";
 		Push(t, status);
+		ScheduleBots(t);
 		return true;
 	}
 
@@ -286,30 +462,25 @@ class ROOT_AE3_GameTableSystem
 			return false;
 		}
 
-		// Practice seats: the same computer acts for whichever of its seats is to move.
+		// Practice seats: the seat to move when this computer holds it, else the chosen seat.
 		int turn = t.m_Rules.GetTurn();
-		if (turn >= 0 && turn < t.m_aSeats.Count() && t.m_aSeats[turn] == c)
-			seat = turn;
-
+		seat = t.PlaySeat(c);
 		if (!t.m_Rules.Apply(seat, move, status))
 			return false;
 
-		t.m_fLastActivity = Now();
-		if (t.m_Rules.GetTurn() != t.m_iLastTurn)
+		// Every seat may act (throws, fleet setup): the next own seat that still has to act is played.
+		if (turn < 0 && t.m_Rules.GetTurn() < 0)
 		{
-			t.m_iLastTurn = t.m_Rules.GetTurn();
-			t.m_fTurnStart = Now();
-		}
-
-		Push(t, status);
-		if (t.m_Rules.GetWinner() != -1)
-		{
-			foreach (ROOT_AE3_ComputerComponent seatC : t.m_aSeats)
+			array<int> own = {};
+			t.SeatsOf(c, own);
+			if (own.Count() > 1)
 			{
-				UpdatePower(seatC);
+				t.NextPlaySeat(c);
+				status += string.Format(" Now playing seat %1.", t.PlaySeat(c) + 1);
 			}
 		}
 
+		AfterMove(t, status);
 		return true;
 	}
 
@@ -320,26 +491,40 @@ class ROOT_AE3_GameTableSystem
 		if (!t)
 			return;
 
-		int seat = t.SeatOf(c);
-		if (seat < 0)
+		// Every seat the computer holds goes, practice seats included.
+		array<int> seats = {};
+		t.SeatsOf(c, seats);
+		if (seats.IsEmpty())
 			return;
 
-		if (t.m_bStarted && t.m_Rules.GetWinner() == -1)
+		for (int i = seats.Count() - 1; i >= 0; i--)
 		{
-			t.m_Rules.OnSeatLeft(seat);
-			Push(t, "A player left the table.");
+			int seat = seats[i];
+			if (t.m_bStarted && t.m_Rules.GetWinner() == -1)
+				t.m_Rules.OnSeatLeft(seat);
+
+			if (!t.m_bStarted)
+			{
+				t.m_aSeats.Remove(seat);
+				t.m_aSeatNames.Remove(seat);
+				t.m_aPrefs.Remove(seat);
+				t.m_aBots.Remove(seat);
+			}
+			else
+			{
+				t.m_aSeats[seat] = null;
+			}
 		}
 
-		if (!t.m_bStarted)
+		int ai = t.m_aActiveOwner.Find(c);
+		if (ai >= 0)
 		{
-			t.m_aSeats.Remove(seat);
-			t.m_aSeatNames.Remove(seat);
-			t.m_aPrefs.Remove(seat);
+			t.m_aActiveOwner.Remove(ai);
+			t.m_aActiveSeat.Remove(ai);
 		}
-		else
-		{
-			t.m_aSeats[seat] = null;
-		}
+
+		if (t.m_bStarted)
+			Push(t, "A player left the table.");
 
 		UpdatePower(c);
 		bool empty = true;
@@ -385,7 +570,7 @@ class ROOT_AE3_GameTableSystem
 		{
 			case "seatname":
 			{
-				t.m_aSeatNames[seat] = ROOT_AE3_Util.Clip(ROOT_AE3_Codec.Clean(value), 32);
+				t.m_aSeatNames[t.PlaySeat(c)] = ROOT_AE3_Util.Clip(ROOT_AE3_Codec.Clean(value), 32);
 				status = "Seat renamed.";
 				return true;
 			}
@@ -429,7 +614,7 @@ class ROOT_AE3_GameTableSystem
 					return false;
 				}
 
-				t.m_aPrefs[seat] = p;
+				t.m_aPrefs[t.PlaySeat(c)] = p;
 				status = "Side preference set.";
 				return true;
 			}
@@ -500,29 +685,39 @@ class ROOT_AE3_GameTableSystem
 		if (f.Count() < 2)
 			return;
 
-		if (s.GetTerminal().CurrentUser().IsEmpty() || !ROOT_AE3_Filesystem.ValidName(f[0]))
+		if (s.GetTerminal().CurrentUser().IsEmpty() || !Installed(s.m_Computer, f[0]))
 			return;
 
-		string e;
-		ROOT_AE3_FsNode program = s.m_Computer.GetFilesystem().Resolve("/games/" + f[0], "root", e);
-		if (!program || program.m_bDir || program.m_sOwner != "root" || (program.m_iPerms & 16) != 0 || !s.m_Computer.IsInstalled(f[0]) || !ROOT_AE3_GameRules.Games().Contains(f[0]))
-			return;
-
-		ROOT_AE3_GameFrontend fe;
-		foreach (ROOT_AE3_GameFrontend x : m_aFrontends)
-		{
-			if (x && x.m_bGui && x.m_Session == s && x.m_sGame == f[0])
-				fe = x;
-		}
-
-		if (!fe)
-		{
-			fe = new ROOT_AE3_GameFrontend(s, f[0], true);
-			AddFrontend(fe);
-		}
-
+		ROOT_AE3_GameFrontend fe = GuiFrontend(s, f[0]);
 		fe.OnLine(f[1]);
 		fe.FlushGui();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! The game exists and its program /games/<game> is installed unmodified on the computer.
+	bool Installed(ROOT_AE3_ComputerComponent c, string game)
+	{
+		if (!c || !c.GetFilesystem() || !ROOT_AE3_Filesystem.ValidName(game) || !ROOT_AE3_GameRules.Games().Contains(game) || !c.IsInstalled(game))
+			return false;
+
+		string e;
+		ROOT_AE3_FsNode program = c.GetFilesystem().Resolve("/games/" + game, "root", e);
+		return program && !program.m_bDir && program.m_sOwner == "root" && (program.m_iPerms & 16) == 0;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Desktop front end of a session for one game; receives table updates as GAME_STATE.
+	ROOT_AE3_GameFrontend GuiFrontend(ROOT_AE3_Session s, string game)
+	{
+		foreach (ROOT_AE3_GameFrontend x : m_aFrontends)
+		{
+			if (x && x.m_bGui && x.m_Session == s && x.m_sGame == game)
+				return x;
+		}
+
+		ROOT_AE3_GameFrontend fe = new ROOT_AE3_GameFrontend(s, game, true);
+		AddFrontend(fe);
+		return fe;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -571,6 +766,7 @@ class ROOT_AE3_GameTableSystem
 				t.m_fTurnStart = now;
 				t.m_iLastTurn = t.m_Rules.GetTurn();
 				Push(t, t.m_Rules.m_sStatus);
+				ScheduleBots(t);
 			}
 		}
 	}

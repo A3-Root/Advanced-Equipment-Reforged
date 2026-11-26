@@ -33,6 +33,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected static const int MI_SYSINFO = 9;
 	protected static const int MI_CLOSE = 10;
 	protected static const int MI_MINIMIZE = 11;
+	protected static const int MI_NEW_FOLDER = 12;
+	protected static const int MI_NEW_FILE = 13;
+	protected static const int MI_FILE_OPEN = 14;
+	protected static const int MI_FILE_RENAME = 15;
+	protected static const int MI_FILE_DELETE = 16;
+	protected static const int ID_FILE = 2000;
 	protected static const float BAR_H = 48;
 	protected static const float CELL_W = 90;
 	protected static const float CELL_H = 96;
@@ -65,6 +71,9 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected ROOT_AE3_Window m_ContextWindow;
 	protected int m_iZ = 10;
 	protected int m_iSelIcon = -1;
+	protected int m_iSelFile = -1;
+	protected ref array<ref array<string>> m_aDeskFiles = {};	//!< ~/Desktop entries (fs_list fields)
+	protected ImageWidget m_wWall;
 	protected float m_fW, m_fH;
 	protected float m_fGridW, m_fGridH;
 	protected bool m_bShown;
@@ -80,7 +89,14 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected ref ROOT_AE3_ForwardListener m_PopupListener;
 	protected ref ROOT_AE3_ForwardListener m_DialogListener;
 	protected ref ROOT_AE3_ForwardListener m_ToastListener;
-	protected static ref array<KeyCode> s_aKeys = {KeyCode.KC_RETURN, KeyCode.KC_NUMPADENTER, KeyCode.KC_DELETE, KeyCode.KC_F2, KeyCode.KC_F5, KeyCode.KC_BACK, KeyCode.KC_UP, KeyCode.KC_DOWN, KeyCode.KC_LEFT, KeyCode.KC_RIGHT, KeyCode.KC_A, KeyCode.KC_C, KeyCode.KC_X, KeyCode.KC_V, KeyCode.KC_W, KeyCode.KC_TAB};
+	protected ref ROOT_AE3_FilePicker m_Picker;
+	protected static ref array<KeyCode> s_aKeys = {
+		KeyCode.KC_RETURN, KeyCode.KC_NUMPADENTER, KeyCode.KC_DELETE, KeyCode.KC_F2, KeyCode.KC_F5, KeyCode.KC_BACK, KeyCode.KC_SPACE,
+		KeyCode.KC_UP, KeyCode.KC_DOWN, KeyCode.KC_LEFT, KeyCode.KC_RIGHT, KeyCode.KC_A, KeyCode.KC_C, KeyCode.KC_D, KeyCode.KC_S, KeyCode.KC_X, KeyCode.KC_V, KeyCode.KC_W, KeyCode.KC_TAB,
+		KeyCode.KC_0, KeyCode.KC_1, KeyCode.KC_2, KeyCode.KC_3, KeyCode.KC_4, KeyCode.KC_5, KeyCode.KC_6, KeyCode.KC_7, KeyCode.KC_8, KeyCode.KC_9,
+		KeyCode.KC_NUMPAD0, KeyCode.KC_NUMPAD1, KeyCode.KC_NUMPAD2, KeyCode.KC_NUMPAD3, KeyCode.KC_NUMPAD4, KeyCode.KC_NUMPAD5, KeyCode.KC_NUMPAD6, KeyCode.KC_NUMPAD7, KeyCode.KC_NUMPAD8, KeyCode.KC_NUMPAD9,
+		KeyCode.KC_ADD, KeyCode.KC_SUBTRACT, KeyCode.KC_MULTIPLY, KeyCode.KC_DIVIDE, KeyCode.KC_DECIMAL, KeyCode.KC_PERIOD, KeyCode.KC_COMMA, KeyCode.KC_MINUS, KeyCode.KC_EQUALS, KeyCode.KC_SLASH
+	};
 
 	//------------------------------------------------------------------------------------------------
 	void ROOT_AE3_DesktopView(Widget parent)
@@ -100,6 +116,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//------------------------------------------------------------------------------------------------
 	void Destroy()
 	{
+		ClosePicker();
 		foreach (ROOT_AE3_Window w : m_aWindows)
 		{
 			w.Destroy();
@@ -200,6 +217,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//! Full rebuild (theme, user or wallpaper changed). Open windows are closed.
 	void Build()
 	{
+		ClosePicker();
 		m_sBuiltKey = BuildKey();
 		foreach (ROOT_AE3_Window w : m_aWindows)
 		{
@@ -216,11 +234,11 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		m_wToast = null;
 		m_wTaskbar = null;
 		m_iSelIcon = -1;
+		m_iSelFile = -1;
+		m_aDeskFiles.Clear();
 		ROOT_AE3_Theme.s_iTheme = ROOT_AE3_Client.Get().m_sTheme.ToInt();
-		ROOT_AE3_UI.Rect(m_wRoot, 0, 0, m_fW, m_fH, ROOT_AE3_Theme.Desktop(), ID_BG, this);
-		ResourceName wall = ROOT_AE3_AppRegistry.Wallpaper(ROOT_AE3_Client.Get().m_sWallpaper.ToInt());
-		if (!wall.IsEmpty())
-			ROOT_AE3_UI.Picture(m_wRoot, 0, 0, m_fW, m_fH, wall);
+		ROOT_AE3_UI.Rect(m_wRoot, 0, 0, m_fW, m_fH, ROOT_AE3_UI.Rgb(0, 0, 0), ID_BG, this);
+		BuildWallpaper(ROOT_AE3_Client.Get().m_sWallpaper);
 
 		if (!LoggedIn())
 		{
@@ -230,11 +248,57 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		m_wIcons = ROOT_AE3_UI.Frame(m_wRoot, 0, 0, m_fW, m_fH - BAR_H);
 		BuildIcons();
+		RequestDesktopFiles();
 		m_wWindows = ROOT_AE3_UI.Frame(m_wRoot, 0, 0, m_fW, m_fH - BAR_H, false);
 		m_wTaskbar = ROOT_AE3_UI.Frame(m_wRoot, 0, m_fH - BAR_H, m_fW, BAR_H);
 		m_wTaskbar.SetZOrder(100000);
 		RefreshTaskbar();
 		PushMirror();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Wallpaper pref: 0 black, 1-5 built in, an image file path or a web address.
+	protected void BuildWallpaper(string pref)
+	{
+		m_wWall = null;
+		if (pref.StartsWith("/"))
+		{
+			m_wWall = ROOT_AE3_UI.Picture(m_wRoot, 0, 0, m_fW, m_fH, "");
+			m_wWall.SetVisible(false);
+			array<string> args = {pref};
+			ROOT_AE3_Client.Get().Request("fs_media", args, this);
+			return;
+		}
+
+		if (ROOT_AE3_WebMedia.KindOf(pref) == "url")
+		{
+			m_wWall = ROOT_AE3_UI.Picture(m_wRoot, 0, 0, m_fW, m_fH, "");
+			m_wWall.SetVisible(false);
+			ROOT_AE3_WebMedia.Request("url", pref, this);
+			return;
+		}
+
+		ResourceName wall = ROOT_AE3_AppRegistry.Wallpaper(pref.ToInt());
+		if (!wall.IsEmpty())
+			ROOT_AE3_UI.Picture(m_wRoot, 0, 0, m_fW, m_fH, wall);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Shows the custom wallpaper; file is a local image (web) or a texture resource.
+	protected void ShowWallpaper(string file, bool local)
+	{
+		if (!m_wWall)
+			return;
+
+		bool loaded;
+		if (local)
+			loaded = m_wWall.LoadImageTexture(0, file, true, true);
+		else
+			loaded = m_wWall.LoadImageTexture(0, file);
+
+		m_wWall.SetVisible(loaded);
+		if (!loaded)
+			Toast("armaOS", "The background image could not be displayed.");
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -309,15 +373,159 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 				col++;
 			}
 		}
+
+		foreach (int fi, array<string> e : m_aDeskFiles)
+		{
+			float fx = 8 + col * CELL_W;
+			float fy = 8 + row * CELL_H;
+			Color fbg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
+			if (fi == m_iSelFile)
+				fbg = ROOT_AE3_UI.Rgb(0.6, 0.8, 1, 0.3);
+
+			ROOT_AE3_UI.Hit(m_wIcons, fx, fy, CELL_W - 4, CELL_H - 4, ID_FILE + fi, m_IconListener, fbg, ROOT_AE3_UI.Rgb(1, 1, 1, 0.16));
+			ROOT_AE3_UI.Icon(m_wIcons, fx + (CELL_W - 4 - 48) * 0.5, fy + 6, 48, ROOT_AE3_Icons.ForFile(e[1], e[5] == "1", e[6] == "1", e[7] == "1", ROOT_AE3_Filesystem.BaseName(e[0])));
+			TextWidget flabel = ROOT_AE3_UI.Text(m_wIcons, fx + 2, fy + 58, CELL_W - 8, 34, ROOT_AE3_Filesystem.BaseName(e[0]), 13, ROOT_AE3_UI.Rgb(1, 1, 1), false, true, 1);
+			flabel.SetShadow(3, 0xFF000000, 0.9, 0, 1);
+			row++;
+			if (row >= perCol)
+			{
+				row = 0;
+				col++;
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Desktop files come from ~/Desktop (file browsing setting on).
+	protected bool DesktopFiles()
+	{
+		return LoggedIn() && ROOT_AE3_SettingsManager.Get().m_bDesktopEnableFileBrowsing;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected string DesktopDir()
+	{
+		return ROOT_AE3_Filesystem.HomeOf(ROOT_AE3_Client.Get().m_sUser) + "/Desktop";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	void RequestDesktopFiles()
+	{
+		if (!DesktopFiles())
+			return;
+
+		array<string> args = {DesktopDir()};
+		ROOT_AE3_Client.Get().Request("fs_list", args, this);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void SelectFile(int index)
+	{
+		if (m_iSelFile == index && m_iSelIcon == -1)
+			return;
+
+		m_iSelFile = index;
+		m_iSelIcon = -1;
+		BuildIcons();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Folders open in Files, images in Photos, programs run in the terminal, other files in Notepad.
+	protected void OpenDeskFile(int index)
+	{
+		if (!m_aDeskFiles.IsIndexValid(index))
+			return;
+
+		array<string> e = m_aDeskFiles[index];
+		if (e[1] == "dir")
+		{
+			OpenApp(ROOT_AE3_AppFiles, e[0]);
+			return;
+		}
+
+		if (e[5] == "1")
+		{
+			OpenApp(ROOT_AE3_AppMedia, e[0]);
+			return;
+		}
+
+		if (e[6] == "1")
+		{
+			OpenApp(ROOT_AE3_AppFiles, DesktopDir());
+			return;
+		}
+
+		if (e[7] == "1")
+		{
+			array<string> args = {e[0]};
+			ROOT_AE3_Client.Get().Request("run_file", args, this);
+			return;
+		}
+
+		OpenApp(ROOT_AE3_AppNotepad, e[0]);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	override void OnDialog(string tag, bool ok, string value)
+	{
+		if (tag == ROOT_AE3_WebMedia.TAG)
+		{
+			if (ok)
+				ShowWallpaper(value, true);
+			else
+				Toast("armaOS", value);
+
+			return;
+		}
+
+		value = value.Trim();
+		if (!ok || value.IsEmpty())
+			return;
+
+		if (!ROOT_AE3_Filesystem.ValidName(value))
+		{
+			Toast("armaOS", "That name is not allowed.");
+			return;
+		}
+
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		string path = DesktopDir() + "/" + value;
+		switch (tag)
+		{
+			case "desk_newfolder":
+			{
+				array<string> a = {path};
+				c.Request("fs_mkdir", a, this);
+				return;
+			}
+
+			case "desk_newfile":
+			{
+				array<string> b = {path, ""};
+				c.Request("fs_save", b, this);
+				return;
+			}
+
+			case "desk_rename":
+			{
+				if (!m_aDeskFiles.IsIndexValid(m_iSelFile))
+					return;
+
+				array<string> m = {m_aDeskFiles[m_iSelFile][0], path};
+				c.Request("fs_move", m, this);
+				return;
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
 	protected void SelectIcon(int index)
 	{
-		if (m_iSelIcon == index)
+		if (m_iSelIcon == index && m_iSelFile == -1)
 			return;
 
 		m_iSelIcon = index;
+		m_iSelFile = -1;
 		BuildIcons();
 	}
 
@@ -682,6 +890,30 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			target.OnDialog(tag, ok, value);
 	}
 
+	// File picker -----------------------------------------------------------------------------------
+
+	//------------------------------------------------------------------------------------------------
+	//! Modal Open / Save dialog; the chosen absolute path goes to target.OnDialog(tag, ok, path).
+	//! start: folder shown first (empty = home). save: the name may be new. folders: pick a folder.
+	void ShowFilePicker(ROOT_AE3_UiListener target, string tag, string title, string start = "", bool save = false, string fileName = "", string okLabel = "Open", bool folders = false)
+	{
+		ClosePicker();
+		CloseMenu();
+		CloseDialog();
+		float aw, ah;
+		GetArea(aw, ah);
+		m_Picker = new ROOT_AE3_FilePicker(this, m_wRoot, aw, ah, target, tag, title, start, save, fileName, okLabel, folders);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	void ClosePicker()
+	{
+		if (m_Picker)
+			m_Picker.Destroy();
+
+		m_Picker = null;
+	}
+
 	// Windows ---------------------------------------------------------------------------------------
 
 	//------------------------------------------------------------------------------------------------
@@ -747,6 +979,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (m_wDialog)
 		{
 			FinishDialog(false);
+			return true;
+		}
+
+		if (m_Picker)
+		{
+			m_Picker.Cancel();
 			return true;
 		}
 
@@ -866,6 +1104,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (m_wPopup || m_wMenu)
 			return;
 
+		if (m_Picker)
+		{
+			m_Picker.OnKey(key);
+			return;
+		}
+
 		if (m_Focus && !m_Focus.IsMinimized())
 		{
 			if (ctrl && key == KeyCode.KC_W)
@@ -881,6 +1125,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (enter && m_iSelIcon >= 0)
 		{
 			OpenApp(m_aApps[m_iSelIcon]);
+			return;
+		}
+
+		if (enter && m_iSelFile >= 0)
+		{
+			OpenDeskFile(m_iSelFile);
 			return;
 		}
 
@@ -1022,6 +1272,49 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return;
 		}
 
+		if (cmd == "fs_media")
+		{
+			if (!ok)
+			{
+				Toast("armaOS", "Background: " + ROOT_AE3_App.Arg(payload, 0));
+				return;
+			}
+
+			string kind = ROOT_AE3_App.Arg(payload, 3);
+			if (ROOT_AE3_WebMedia.IsWeb(kind))
+				ROOT_AE3_WebMedia.Request(kind, ROOT_AE3_App.Arg(payload, 1), this);
+			else
+				ShowWallpaper(ROOT_AE3_App.Arg(payload, 1), false);
+
+			return;
+		}
+
+		if (cmd == "fs_list")
+		{
+			if (!ok || payload.IsEmpty() || payload[0] != DesktopDir())
+				return;
+
+			m_aDeskFiles.Clear();
+			for (int i = 1; i < payload.Count(); i++)
+			{
+				array<string> e = ROOT_AE3_Codec.SplitSub(payload[i]);
+				if (e.Count() >= 8)
+					m_aDeskFiles.Insert(e);
+			}
+
+			m_iSelFile = -1;
+			if (m_wIcons)
+				BuildIcons();
+
+			return;
+		}
+
+		if (ok && (cmd == "fs_mkdir" || cmd == "fs_save" || cmd == "fs_move" || cmd == "fs_delete"))
+		{
+			RequestDesktopFiles();
+			return;
+		}
+
 		if (!ok && !payload.IsEmpty())
 			Toast("armaOS", payload[0]);
 	}
@@ -1093,6 +1386,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return true;
 		}
 
+		if (id >= ID_FILE && id < ID_FILE + m_aDeskFiles.Count())
+		{
+			OpenDeskFile(id - ID_FILE);
+			return true;
+		}
+
 		return false;
 	}
 
@@ -1102,6 +1401,19 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		array<string> labels = {"Refresh", "-", "Open Files", "Open Terminal", "-", "Personalize", "System info"};
 		array<int> ids = {MI_REFRESH, 0, MI_FILES, MI_TERMINAL, 0, MI_PERSONALIZE, MI_SYSINFO};
 		array<string> icons = {"g_refresh", "", "folder", "terminal", "", "settings", "info"};
+		if (DesktopFiles())
+		{
+			labels.InsertAt("-", 1);
+			ids.InsertAt(0, 1);
+			icons.InsertAt("", 1);
+			labels.InsertAt("New text document", 1);
+			ids.InsertAt(MI_NEW_FILE, 1);
+			icons.InsertAt("g_newfile", 1);
+			labels.InsertAt("New folder", 1);
+			ids.InsertAt(MI_NEW_FOLDER, 1);
+			icons.InsertAt("g_newfolder", 1);
+		}
+
 		ShowMenu(this, labels, ids, icons);
 	}
 
@@ -1130,7 +1442,37 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 				return;
 			}
 
-			case MI_REFRESH: BuildIcons(); return;
+			case MI_REFRESH:
+			{
+				BuildIcons();
+				RequestDesktopFiles();
+				return;
+			}
+
+			case MI_NEW_FOLDER: ShowDialog(this, "desk_newfolder", "New folder", "Name of the new folder on the desktop:", true, "New folder", "Create"); return;
+			case MI_NEW_FILE: ShowDialog(this, "desk_newfile", "New text document", "Name of the new file on the desktop:", true, "New document.txt", "Create"); return;
+			case MI_FILE_OPEN: OpenDeskFile(m_iSelFile); return;
+			case MI_FILE_RENAME:
+			{
+				if (m_aDeskFiles.IsIndexValid(m_iSelFile))
+				{
+					string old = ROOT_AE3_Filesystem.BaseName(m_aDeskFiles[m_iSelFile][0]);
+					ShowDialog(this, "desk_rename", "Rename", "New name for \"" + old + "\":", true, old, "Rename");
+				}
+
+				return;
+			}
+
+			case MI_FILE_DELETE:
+			{
+				if (m_aDeskFiles.IsIndexValid(m_iSelFile))
+				{
+					array<string> del = {m_aDeskFiles[m_iSelFile][0]};
+					ROOT_AE3_Client.Get().Request("fs_delete", del, this);
+				}
+
+				return;
+			}
 			case MI_PERSONALIZE: OpenApp(ROOT_AE3_AppSettings); return;
 			case MI_SYSINFO: OpenApp(ROOT_AE3_AppSysInfo); return;
 			case MI_TERMINAL: OpenApp(ROOT_AE3_AppTerminal); return;
@@ -1219,6 +1561,21 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 				array<int> ids = {MI_OPEN};
 				array<string> icons = {"g_open"};
 				ShowMenu(this, labels, ids, icons);
+			}
+
+			return true;
+		}
+
+		if (id >= ID_FILE && id < ID_FILE + m_aDeskFiles.Count())
+		{
+			SetFocusWindow(null);
+			SelectFile(id - ID_FILE);
+			if (button == 1)
+			{
+				array<string> flabels = {"Open", "Rename", "Delete"};
+				array<int> fids = {MI_FILE_OPEN, MI_FILE_RENAME, MI_FILE_DELETE};
+				array<string> ficons = {"g_open", "g_rename", "g_delete"};
+				ShowMenu(this, flabels, fids, ficons);
 			}
 
 			return true;

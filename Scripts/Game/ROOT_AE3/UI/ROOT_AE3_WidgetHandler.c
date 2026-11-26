@@ -139,15 +139,16 @@ class ROOT_AE3_WidgetHandler : ScriptedWidgetEventHandler
 
 		int id = w.GetUserID();
 		int now = System.GetTickCount();
-		// Tracked per listener and id: listeners may rebuild the clicked widget between the two clicks.
-		bool doubleClick = button == 0 && s_LastClickListener == m_Listener && s_iLastClickId == id && now - s_iLastClick <= DOUBLE_CLICK_MS;
+		// Tracked per final listener and id: the clicked widget and its forwarding listener may be rebuilt between the two clicks.
+		ROOT_AE3_UiListener target = m_Listener.ClickTarget();
+		bool doubleClick = button == 0 && s_LastClickListener == target && s_iLastClickId == id && now - s_iLastClick <= DOUBLE_CLICK_MS;
 		if (doubleClick)
 		{
 			s_LastClickListener = null;
 		}
 		else
 		{
-			s_LastClickListener = m_Listener;
+			s_LastClickListener = target;
 			s_iLastClickId = id;
 			s_iLastClick = now;
 		}

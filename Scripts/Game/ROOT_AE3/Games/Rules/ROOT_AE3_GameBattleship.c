@@ -352,6 +352,57 @@ class ROOT_AE3_GameBattleship : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Random fleet, ready, then squares next to hits, then a checkerboard pattern, then the rest.
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1)
+			return;
+
+		if (Placing())
+		{
+			if (m_aReady[seat])
+				return;
+
+			if (Complete(seat))
+				moves.Insert("ready");
+			else
+				moves.Insert("random");
+
+			return;
+		}
+
+		if (seat != m_iTurn)
+			return;
+
+		array<string> nearHit = {};
+		array<string> pattern = {};
+		array<string> rest = {};
+		for (int sq = 0; sq < 100; sq++)
+		{
+			if (m_aShots[seat * 100 + sq] != 0)
+				continue;
+
+			int r = sq / SIZE;
+			int f = sq % SIZE;
+			bool near = (r > 0 && m_aShots[seat * 100 + sq - SIZE] == 2) || (r < SIZE - 1 && m_aShots[seat * 100 + sq + SIZE] == 2) || (f > 0 && m_aShots[seat * 100 + sq - 1] == 2) || (f < SIZE - 1 && m_aShots[seat * 100 + sq + 1] == 2);
+			string name = SquareName(sq, SIZE);
+			if (near)
+				nearHit.Insert(name);
+			else if ((r + f) % 2 == 0)
+				pattern.Insert(name);
+			else
+				rest.Insert(name);
+		}
+
+		BotShuffle(nearHit);
+		BotShuffle(pattern);
+		BotShuffle(rest);
+		moves.InsertAll(nearHit);
+		moves.InsertAll(pattern);
+		moves.InsertAll(rest);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string v = "Your fleet (1-5 ships, X hit, o miss):\n" + Grid(seat, true);

@@ -1,4 +1,5 @@
-//! Web browser for in-game pages: address bar, tabs, back / forward, history, markdown pages with links.
+//! Web browser: in-game pages (markdown with links) and, with web access on, http(s) addresses: pages as text
+//! with links, images and videos shown in the page area. Address bar, tabs, back / forward, history.
 class ROOT_AE3_AppBrowser : ROOT_AE3_App
 {
 	//------------------------------------------------------------------------------------------------
@@ -29,6 +30,11 @@ class ROOT_AE3_AppBrowser : ROOT_AE3_App
 	protected ref array<string> m_aBack = {};
 	protected ref array<string> m_aForward = {};
 	protected string m_sContent;
+	protected FrameWidget m_wMedia;
+	protected float m_fPageW;
+	protected float m_fPageH;
+	protected string m_sWebUrl;		//!< web address being shown
+	protected string m_sWebKind;
 
 	override void Build()
 	{
@@ -61,6 +67,9 @@ class ROOT_AE3_AppBrowser : ROOT_AE3_App
 		ROOT_AE3_UI.Rect(GetContent(), 6, 90, w - 12, h - 96, ROOT_AE3_Theme.Field());
 		m_wPage = ROOT_AE3_UI.Rich(GetContent(), 14, 96, w - 28, h - 108, "", 15, ROOT_AE3_Theme.Text());
 		ROOT_AE3_UI.Listen(m_wPage, 7, this);
+		m_fPageW = w - 12;
+		m_fPageH = h - 96;
+		m_wMedia = ROOT_AE3_UI.Frame(GetContent(), 6, 90, m_fPageW, m_fPageH);
 		Go(m_aTabs[m_iTab], false);
 	}
 
@@ -77,7 +86,135 @@ class ROOT_AE3_AppBrowser : ROOT_AE3_App
 		if (m_wAddress)
 			ROOT_AE3_UI.SetEdit(m_wAddress, url);
 
+		if (m_wMedia)
+			ROOT_AE3_UI.Clear(m_wMedia);
+
+		if (m_wPage)
+			m_wPage.SetVisible(true);
+
+		m_sWebUrl = "";
+		string kind = ROOT_AE3_WebMedia.KindOf(url);
+		if (kind == "url" || kind == "video")
+		{
+			m_sWebUrl = url.Trim();
+			m_sWebKind = kind;
+			if (m_wTitle)
+				m_wTitle.SetText("Loading " + m_sWebUrl);
+
+			if (m_wPage)
+				m_wPage.SetText("");
+
+			if (kind == "video" || ROOT_AE3_WebMedia.IsImageAddress(m_sWebUrl))
+				ROOT_AE3_WebMedia.Request(kind, m_sWebUrl, this);
+			else
+				ROOT_AE3_WebMedia.RequestPage(m_sWebUrl, this);
+
+			return;
+		}
+
 		Request1("web_get", url);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Web results: page text, or the local file of an image or video.
+	override void OnDialog(string tag, bool ok, string value)
+	{
+		if (tag != ROOT_AE3_WebMedia.TAG && tag != ROOT_AE3_WebMedia.TAG_PAGE)
+			return;
+
+		if (m_sWebUrl.IsEmpty() || !m_wPage)
+			return;
+
+		if (!ok)
+		{
+			m_wTitle.SetText("Page not available");
+			m_wPage.SetText(Render("# Error\n\n" + value + "\n\n" + m_sWebUrl));
+			return;
+		}
+
+		if (tag == ROOT_AE3_WebMedia.TAG_PAGE)
+		{
+			string trimmed = value.Trim();
+			int headLen = trimmed.Length();
+			if (headLen > 64)
+				headLen = 64;
+
+			string low = trimmed.Substring(0, headLen);
+			low.ToLower();
+			if (!low.StartsWith("<") || low.StartsWith("<svg"))
+			{
+				// Not HTML: an image sent without a known extension, or plain text.
+				array<int> head = {};
+				for (int i = 0; i < 8 && i < value.Length(); i++)
+				{
+					head.Insert(value.ToAscii(i) & 0xFF);
+				}
+
+				if (!ROOT_AE3_WebMedia.Format(head).IsEmpty() || trimmed.StartsWith("data:image"))
+				{
+					m_sWebKind = "url";
+					ROOT_AE3_WebMedia.Request("url", m_sWebUrl, this);
+					return;
+				}
+
+				m_wTitle.SetText(m_sWebUrl);
+				string plain = value;
+				if (plain.Length() > ROOT_AE3_HtmlText.MAX_OUT)
+					plain = plain.Substring(0, ROOT_AE3_HtmlText.MAX_OUT);
+
+				m_wPage.SetText(Render(plain));
+				Status(m_sWebUrl);
+				return;
+			}
+
+			string title;
+			string rich = ROOT_AE3_HtmlText.Convert(value, m_sWebUrl, title);
+			if (title.IsEmpty())
+				title = m_sWebUrl;
+
+			m_wTitle.SetText(title);
+			m_wPage.SetText(rich);
+			Status(m_sWebUrl);
+			return;
+		}
+
+		ShowMedia(value);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void ShowMedia(string file)
+	{
+		m_wPage.SetVisible(false);
+		ROOT_AE3_UI.Clear(m_wMedia);
+		ROOT_AE3_UI.Rect(m_wMedia, 0, 0, m_fPageW, m_fPageH, ROOT_AE3_UI.Rgb(0.03, 0.03, 0.03));
+		m_wTitle.SetText(ROOT_AE3_Filesystem.BaseName(m_sWebUrl));
+		Status(m_sWebUrl);
+		if (m_sWebKind == "video")
+		{
+			if (!ROOT_AE3_WebMedia.CreateVideo(m_wMedia, 0, 0, m_fPageW, m_fPageH, file, true))
+				ROOT_AE3_UI.Text(m_wMedia, 20, m_fPageH * 0.4, m_fPageW - 40, 66, "The game cannot play this video file.", 15, ROOT_AE3_UI.Rgb(0.8, 0.8, 0.8), false, true, 1);
+
+			return;
+		}
+
+		ImageWidget img = ROOT_AE3_UI.Picture(m_wMedia, 0, 0, m_fPageW, m_fPageH, "");
+		if (!img.LoadImageTexture(0, file, true, true))
+		{
+			img.SetVisible(false);
+			ROOT_AE3_UI.Text(m_wMedia, 20, m_fPageH * 0.4, m_fPageW - 40, 44, "This image could not be displayed.", 15, ROOT_AE3_UI.Rgb(0.8, 0.8, 0.8), false, true, 1);
+			return;
+		}
+
+		int iw, ih;
+		img.GetImageSize(0, iw, ih);
+		if (iw > 0 && ih > 0)
+		{
+			float fw = iw;
+			float fh = ih;
+			float scale = Math.Min(1, Math.Min(m_fPageW / fw, m_fPageH / fh));
+			FrameSlot.SetSize(img, fw * scale, fh * scale);
+			FrameSlot.SetPos(img, (m_fPageW - fw * scale) * 0.5, (m_fPageH - fh * scale) * 0.5);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------

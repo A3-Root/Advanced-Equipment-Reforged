@@ -163,6 +163,21 @@ class ROOT_AE3_Intel
 	}
 
 	//------------------------------------------------------------------------------------------------
+	static bool RemoveMailAddress(ROOT_AE3_ComputerComponent computer, string address)
+	{
+		address = ROOT_AE3_Util.Lower(address.Trim());
+		if (!computer.GetMailAddresses().Contains(address))
+			return false;
+
+		computer.GetMailAddresses().RemoveItem(address);
+		if (s_mMail.Get(address) == computer)
+			s_mMail.Remove(address);
+
+		s_aAutoMail.RemoveItem(address);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Authority: default mail address <host>@lan and chat handle @<host> when the computer has none.
 	static void ProvisionIdentity(ROOT_AE3_ComputerComponent computer)
 	{
@@ -227,7 +242,9 @@ class ROOT_AE3_Intel
 		{
 			s_mHandles.Remove(handle);
 			s_aAutoHandles.RemoveItem(handle);
-			owner.SetPref("", "chat_handle", "");
+			array<string> left = HandlesOf(owner);
+			left.RemoveItem(handle);
+			SetHandles(owner, left);
 			ProvisionIdentity(owner);
 		}
 
@@ -244,9 +261,11 @@ class ROOT_AE3_Intel
 				s_mMail.Remove(a);
 		}
 
-		string handle = computer.GetPref("", "chat_handle", "");
-		if (!handle.IsEmpty() && s_mHandles.Get(handle) == computer)
-			s_mHandles.Remove(handle);
+		foreach (string h : HandlesOf(computer))
+		{
+			if (s_mHandles.Get(h) == computer)
+				s_mHandles.Remove(h);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -332,29 +351,94 @@ class ROOT_AE3_Intel
 	// Chat and instant messages ----------------------------------------------------------------------
 
 	//------------------------------------------------------------------------------------------------
-	static bool RegisterHandle(ROOT_AE3_ComputerComponent computer, string handle)
+	//! Own chat handles of a computer, the first is the default sender.
+	static array<string> HandlesOf(ROOT_AE3_ComputerComponent computer)
+	{
+		array<string> res = {};
+		string list = computer.GetPref("", "chat_handles", "");
+		if (!list.IsEmpty())
+			res = ROOT_AE3_Codec.SplitSub(list);
+
+		string legacy = computer.GetPref("", "chat_handle", "");
+		if (!legacy.IsEmpty() && !res.Contains(legacy))
+			res.InsertAt(legacy, 0);
+
+		return res;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static void SetHandles(ROOT_AE3_ComputerComponent computer, notnull array<string> handles)
+	{
+		computer.SetPref("", "chat_handles", ROOT_AE3_Codec.JoinSub(handles));
+		string first;
+		if (!handles.IsEmpty())
+			first = handles[0];
+
+		computer.SetPref("", "chat_handle", first);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! "name" becomes "@name".
+	static string NormalizeHandle(string handle)
 	{
 		handle = handle.Trim();
-		if (handle.IsEmpty() || handle.Length() > 32 || !ROOT_AE3_Filesystem.ValidName(handle))
+		if (!handle.IsEmpty() && !handle.StartsWith("@"))
+			handle = "@" + handle;
+
+		return handle;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Adds a chat handle to a computer (at most 8). False when taken by another computer or invalid.
+	static bool RegisterHandle(ROOT_AE3_ComputerComponent computer, string handle)
+	{
+		handle = NormalizeHandle(handle);
+		if (handle.Length() < 2 || handle.Length() > 32 || !ROOT_AE3_Filesystem.ValidName(handle))
 			return false;
 
 		ROOT_AE3_ComputerComponent owner = s_mHandles.Get(handle);
 		if (owner && owner != computer)
 			return false;
 
-		string old = computer.GetPref("", "chat_handle", "");
-		if (!old.IsEmpty() && old != handle && s_mHandles.Get(old) == computer)
-			s_mHandles.Remove(old);
+		array<string> handles = HandlesOf(computer);
+		if (!handles.Contains(handle))
+		{
+			if (handles.Count() >= 8)
+				return false;
+
+			handles.Insert(handle);
+		}
 
 		s_mHandles.Set(handle, computer);
-		computer.SetPref("", "chat_handle", handle);
+		SetHandles(computer, handles);
 		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------
+	static bool RemoveHandle(ROOT_AE3_ComputerComponent computer, string handle)
+	{
+		array<string> handles = HandlesOf(computer);
+		if (!handles.Contains(handle))
+			return false;
+
+		handles.RemoveItem(handle);
+		if (s_mHandles.Get(handle) == computer)
+			s_mHandles.Remove(handle);
+
+		s_aAutoHandles.RemoveItem(handle);
+		SetHandles(computer, handles);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Default handle of a computer, empty when it has none.
 	static string HandleOf(ROOT_AE3_ComputerComponent computer)
 	{
-		return computer.GetPref("", "chat_handle", "");
+		array<string> handles = HandlesOf(computer);
+		if (handles.IsEmpty())
+			return "";
+
+		return handles[0];
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -370,12 +454,23 @@ class ROOT_AE3_Intel
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static bool SendChat(ROOT_AE3_ComputerComponent sender, string to, string text, out string reason)
+	//! Log file of the conversation between an own handle and a peer.
+	static string ChatLog(string self, string peer)
 	{
-		string fromHandle = HandleOf(sender);
-		if (fromHandle.IsEmpty())
+		return "/var/chat/" + self + "/" + peer + ".log";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sends a chat message from an own handle (empty = default handle) to a handle on a reachable computer.
+	static bool SendChat(ROOT_AE3_ComputerComponent sender, string from, string to, string text, out string reason)
+	{
+		if (from.IsEmpty())
+			from = HandleOf(sender);
+
+		to = NormalizeHandle(to);
+		if (from.IsEmpty() || !HandlesOf(sender).Contains(from))
 		{
-			reason = "Set a chat handle first.";
+			reason = "Create a handle first.";
 			return false;
 		}
 
@@ -391,7 +486,7 @@ class ROOT_AE3_Intel
 		ROOT_AE3_ComputerComponent target = s_mHandles.Get(to);
 		if (!target || !target.IsRunning() || !Reachable(sender, target))
 		{
-			reason = to + " is offline.";
+			reason = to + " is not reachable.";
 			return false;
 		}
 
@@ -399,10 +494,15 @@ class ROOT_AE3_Intel
 		if (text.Length() > 1024)
 			text = text.Substring(0, 1024);
 
-		string line = string.Format("[%1] %2: %3\n", ROOT_AE3_Util.Now(), fromHandle, text);
-		sender.GetFilesystem().AppendLog("/var/chat/" + to + ".log", line, 63);
-		target.GetFilesystem().AppendLog("/var/chat/" + fromHandle + ".log", line, 63);
-		NotifyOperator(target, "Message from " + fromHandle, text);
+		string line = string.Format("[%1] %2: %3\n", ROOT_AE3_Util.Now(), from, text);
+		string e;
+		sender.GetFilesystem().CreateDir("/var/chat/" + from, "root", "root", 63, e, true);
+		target.GetFilesystem().CreateDir("/var/chat/" + to, "root", "root", 63, e, true);
+		sender.GetFilesystem().AppendLog(ChatLog(from, to), line, 63);
+		if (target != sender || from != to)
+			target.GetFilesystem().AppendLog(ChatLog(to, from), line, 63);
+
+		NotifyOperator(target, "Message from " + from, text);
 		return true;
 	}
 

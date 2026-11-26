@@ -15,7 +15,8 @@ picked up or moved more than 2 m beyond the plugged length.
 ## Network
 
 Routers take `192.168.N.1/24`, hand out addresses from `.10` (or a static IP inside the subnet), cascade by
-cable and accept wireless clients within their range. `wifi scan`, `wifi connect`, the desktop Network app and
+cable and accept wireless clients within their range. Static IP, SSH access and router settings come from the
+Game Master, World Editor or script API. `wifi scan`, `wifi connect`, the desktop Network app and
 the "Plug network cable" action (10 m) join a router. Wireless clients drop out of range or when the router
 loses power; cables follow the same stretch rule as power cables. A router without password changes settings
 only for sudoers.

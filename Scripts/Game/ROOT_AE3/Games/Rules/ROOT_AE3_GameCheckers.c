@@ -229,6 +229,36 @@ class ROOT_AE3_GameCheckers : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Captures first (the jumping piece while chained), else any move.
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner != -1 || seat != m_iTurn)
+			return;
+
+		int sign = SignOf(seat);
+		array<int> list = {};
+		if (m_iChain >= 0)
+		{
+			PieceMoves(m_iChain, true, list);
+		}
+		else
+		{
+			AllMoves(sign, true, list);
+			if (list.IsEmpty())
+				AllMoves(sign, false, list);
+		}
+
+		array<string> cands = {};
+		foreach (int m : list)
+		{
+			cands.Insert(SquareName(m / 64) + SquareName(m % 64));
+		}
+
+		BotShuffle(cands);
+		moves.InsertAll(cands);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		bool white = seat == 0;

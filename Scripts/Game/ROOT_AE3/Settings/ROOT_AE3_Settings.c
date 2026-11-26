@@ -74,25 +74,25 @@ class ROOT_AE3_Settings
 	[Attribute("1", desc: "Mirror only when the screen content changed", category: "armaOS")]
 	bool m_bUiEnableChangeDetection;
 
-	[Attribute("SHITE(TM) COMPUTING", desc: "Terminal window title", category: "armaOS")]
+	[Attribute("FUBAR(TM) SYSTEMS", desc: "Terminal window title", category: "armaOS")]
 	string m_sTerminalDialogTitle;
 
-	[Attribute("SHITE(TM) BIOS v1.0.0", desc: "Header BIOS line", category: "armaOS")]
+	[Attribute("FUBAR(TM) BIOS v2.6.0 - Field-Hardened Edition", desc: "Header BIOS line", category: "armaOS")]
 	string m_sTerminalBiosVersion;
 
-	[Attribute("(c) 2025 System Hardware Integration & Technology Enterprises", desc: "Header copyright line", category: "armaOS")]
+	[Attribute("(c) 2026 Field-Unified Business Automation & Research Corp. All rights reserved.", desc: "Header copyright line", category: "armaOS")]
 	string m_sTerminalCopyright;
 
 	[Attribute("Initializing kernel... please wait...", desc: "Header boot line", category: "armaOS")]
 	string m_sTerminalBootMessage;
 
-	[Attribute("> Tip: SHITE(TM) laptops perform better when plugged in.", desc: "Header tip line", category: "armaOS")]
+	[Attribute("> Tip: FUBAR(TM) laptops are drop-tested to military standard. Once.", desc: "Header tip line", category: "armaOS")]
 	string m_sTerminalTipMessage;
 
 	[Attribute("1", desc: "Header ASCII art", category: "armaOS")]
 	bool m_bTerminalShowAsciiArt;
 
-	[Attribute("Powered by SHITE(TM) Technologies - Excellence, from the ground up.", desc: "Header tagline", category: "armaOS")]
+	[Attribute("FUBAR(TM) Systems - Situation normal since 1987.", desc: "Header tagline", category: "armaOS")]
 	string m_sTerminalTagline;
 
 	[Attribute("15", desc: "Boot duration in s", params: "3 15 1", category: "armaOS")]
@@ -110,6 +110,9 @@ class ROOT_AE3_Settings
 
 	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Default desktop theme", enums: { ParamEnum("Dark", "0"), ParamEnum("Light", "1"), ParamEnum("Olive", "2") }, category: "Desktop")]
 	int m_iDesktopDefaultTheme;
+
+	[Attribute("1", desc: "Photos, wallpapers and the Browser may load web addresses (pages, images, videos); each client downloads them", category: "Desktop")]
+	bool m_bDesktopWebImages;
 
 	[Attribute("0", desc: "Map app shows only devices on the same network", category: "Desktop")]
 	bool m_bDesktopMapSameNetworkOnly;
@@ -159,8 +162,11 @@ class ROOT_AE3_Settings
 	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Desktop window size", enums: { ParamEnum("Fullscreen", "0"), ParamEnum("Large", "1"), ParamEnum("Medium", "2"), ParamEnum("Small", "3") }, category: "Desktop")]
 	int m_iDesktopSize;
 
-	[Attribute("0", desc: "One device may take every seat (testing)", category: "Games")]
+	[Attribute("1", desc: "Table hosts may take extra practice seats and play every side themselves", category: "Games")]
 	bool m_bGamesDebugSeats;
+
+	[Attribute("1", desc: "Table hosts may add bot players", category: "Games")]
+	bool m_bGamesBots;
 
 	//------------------------------------------------------------------------------------------------
 	//! Numeric and on/off settings by key (Game Master settings attributes). False for an unknown key.
@@ -179,6 +185,9 @@ class ROOT_AE3_Settings
 			case "games_enabled": value = ROOT_AE3_Util.BoolNum(m_bGamesEnabled); return true;
 			case "games_hosting": value = ROOT_AE3_Util.BoolNum(m_bGamesAllowHosting); return true;
 			case "games_same_network": value = ROOT_AE3_Util.BoolNum(m_bGamesRequireSameNetwork); return true;
+			case "games_bots": value = ROOT_AE3_Util.BoolNum(m_bGamesBots); return true;
+			case "games_practice": value = ROOT_AE3_Util.BoolNum(m_bGamesDebugSeats); return true;
+			case "web_images": value = ROOT_AE3_Util.BoolNum(m_bDesktopWebImages); return true;
 			case "startup_time": value = m_fStartupTime; return true;
 			case "shutdown_time": value = m_fShutdownTime; return true;
 			case "transfer_local": value = m_fTransferSpeedLocal; return true;
@@ -213,6 +222,9 @@ class ROOT_AE3_Settings
 			case "games_enabled": m_bGamesEnabled = value != 0; return true;
 			case "games_hosting": m_bGamesAllowHosting = value != 0; return true;
 			case "games_same_network": m_bGamesRequireSameNetwork = value != 0; return true;
+			case "games_bots": m_bGamesBots = value != 0; return true;
+			case "games_practice": m_bGamesDebugSeats = value != 0; return true;
+			case "web_images": m_bDesktopWebImages = value != 0; return true;
 			case "startup_time": m_fStartupTime = value; return true;
 			case "shutdown_time": m_fShutdownTime = value; return true;
 			case "transfer_local": m_fTransferSpeedLocal = value; return true;
@@ -240,7 +252,7 @@ class ROOT_AE3_Settings
 			m_sTerminalDialogTitle, m_iDesktopDefaultTheme.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopEnableFileBrowsing),
 			ROOT_AE3_Util.BoolStr(m_bUiOnTexture), m_fUiPlayerRange.ToString(), m_iUiMaxConcurrentViewers.ToString(),
 			m_fUiKeystrokeSyncInterval.ToString(), m_iDesktopDefaultMode.ToString(), m_iDeviceNameFallback.ToString(),
-			m_iDesktopSize.ToString()
+			m_iDesktopSize.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopWebImages)
 		};
 		return ROOT_AE3_Codec.JoinSub(f);
 	}
@@ -249,7 +261,7 @@ class ROOT_AE3_Settings
 	void UnpackClient(string data)
 	{
 		array<string> f = ROOT_AE3_Codec.SplitSub(data);
-		if (f.Count() < 13)
+		if (f.Count() < 14)
 			return;
 
 		m_iTerminalDesign = f[0].ToInt();
@@ -265,5 +277,6 @@ class ROOT_AE3_Settings
 		m_iDesktopDefaultMode = f[10].ToInt();
 		m_iDeviceNameFallback = f[11].ToInt();
 		m_iDesktopSize = f[12].ToInt();
+		m_bDesktopWebImages = f[13] == "1";
 	}
 }

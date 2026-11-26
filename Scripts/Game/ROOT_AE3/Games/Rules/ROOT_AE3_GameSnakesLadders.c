@@ -104,6 +104,13 @@ class ROOT_AE3_GameSnakesLadders : ROOT_AE3_GameRules
 	}
 
 	//------------------------------------------------------------------------------------------------
+	override void BotMoves(int seat, notnull array<string> moves)
+	{
+		if (m_iWinner == -1 && seat == m_iTurn)
+			moves.Insert("roll");
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override string View(int seat)
 	{
 		string v = "Positions:\n";

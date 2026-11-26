@@ -29,7 +29,6 @@ class ROOT_AE3_AppSsh : ROOT_AE3_App
 	protected EditBoxWidget m_wTarget;
 	protected EditBoxWidget m_wPass;
 	protected EditBoxWidget m_wPath;
-	protected EditBoxWidget m_wLocal;
 	protected ROOT_AE3_ListView m_List;
 	protected ref array<string> m_aPaths = {};
 	protected ref array<bool> m_aDirs = {};
@@ -54,11 +53,10 @@ class ROOT_AE3_AppSsh : ROOT_AE3_App
 		m_List.SetColumns(headers, widths);
 		ROOT_AE3_UI.Rect(GetContent(), w * 0.55 + 12, 70, w * 0.45 - 18, h - 110, ROOT_AE3_Theme.Field());
 		m_wView = Label(w * 0.55 + 20, 76, w * 0.45 - 34, h - 122, "", 13, true, true);
-		Label(8, h - 32, 70, 22, "Local");
-		m_wLocal = Field(70, h - 34, w - 330, "~/Downloads", 7);
-		Btn(w - 254, h - 34, 80, 26, "Read", 8);
-		Btn(w - 170, h - 34, 80, 26, "Pull", 9);
-		Btn(w - 86, h - 34, 80, 26, "Push", 10);
+		Btn(6, h - 34, 90, 28, "View", 8);
+		MainBtn(102, h - 34, 130, 28, "Download...", 9);
+		Btn(238, h - 34, 130, 28, "Upload...", 10);
+		ROOT_AE3_UI.Text(GetContent(), 378, h - 29, w - 384, 20, "Download: selected remote file to a local folder. Upload: a local file to the listed remote folder.", 12, ROOT_AE3_Theme.Muted(), false, true);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -142,10 +140,41 @@ class ROOT_AE3_AppSsh : ROOT_AE3_App
 			case 4: Request0("ssh_close"); m_bConnected = false; m_List.Clear(); m_List.Render(); return true;
 			case 6: Request1("ssh_ls", m_wPath.GetText()); return true;
 			case 8: Request1("ssh_read", SelPath()); return true;
-			case 9: Request2("ssh_pull", SelPath(), m_wLocal.GetText()); return true;
-			case 10: Request2("ssh_push", m_wLocal.GetText(), m_wPath.GetText()); return true;
+			case 9:
+			{
+				if (SelPath().IsEmpty())
+				{
+					Status("Select a remote file first.");
+					return true;
+				}
+
+				if (m_Desktop)
+					m_Desktop.ShowFilePicker(this, "pull", "Download to folder", "", false, "", "Download here", true);
+
+				return true;
+			}
+
+			case 10:
+			{
+				if (m_Desktop)
+					m_Desktop.ShowFilePicker(this, "push", "Upload file", "", false, "", "Upload");
+
+				return true;
+			}
 		}
 
 		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	override void OnDialog(string tag, bool ok, string value)
+	{
+		if (!ok || value.IsEmpty())
+			return;
+
+		if (tag == "pull")
+			Request2("ssh_pull", SelPath(), value);
+		else if (tag == "push")
+			Request2("ssh_push", value, m_wPath.GetText());
 	}
 }
