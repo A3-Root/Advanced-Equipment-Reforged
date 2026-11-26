@@ -11,7 +11,11 @@ MetaFileClass {
      SourceMaterial "AE3_SolarCells"
      AssignedMaterial "{DD87DB753DF6C8A8}Assets/ROOT_AE3/ROOT_AE3_SolarPanel/Data/AE3_SolarCells.emat"
     }
-    MaterialAssignClass "{6AF11E6A14EC56E7}" {
+    MaterialAssignClass "{6AF4BE75162C39F6}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{48587265A1B89592}Assets/ROOT_AE3/ROOT_AE3_SolarPanel/Data/AE3_Accent.emat"
+    }
+    MaterialAssignClass "{6AF4E21F16073750}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{B26B345F18FB426E}Assets/ROOT_AE3/ROOT_AE3_SolarPanel/Data/AE3_Plastic_Dark.emat"
     }

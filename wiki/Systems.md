@@ -23,8 +23,10 @@ only for sudoers.
 
 ## Sessions and access
 
-One player uses a computer at a time. Sessions start within 4 m and end when the player moves away, dies, loses
-the character or the computer is picked up. Closing a session ends `su`, SSH and running programs but keeps the
+One player uses a computer at a time. Sessions start within 4 m, or from the own inventory (inventory "Use",
+on foot or in a vehicle), and end when the player moves away (more than 5 m), dies, loses the character, the lid is
+closed or the computer is picked up by another player. A laptop dropped from the operator's inventory keeps the session
+while the operator stays within 5 m and the lid is open. A carried computer goes to standby when its session ends. Closing a session ends `su`, SSH and running programs but keeps the
 logged-in account for the next player; log out with `exit` or Sign out. Terminal and desktop requests need the open interface and the
 access lists. Passwords: 1 s delay per failed attempt, up to 5 s, per player identity.
 
@@ -47,3 +49,12 @@ access lists. Passwords: 1 s delay per failed attempt, up to 5 s, per player ide
 Device state, links, network settings, installed programs, access lists, flash drives and lid state are saved
 by the vanilla persistence system. Game Master "Save" / "Restore" use `$profile:ROOT_AE3/saves/<name>.txt`.
 `GetOnDeviceReady` fires again after a restore.
+
+## EWO packs
+
+Setting `m_bEwoMode`. A pack matching `m_sEwoPrefabs` (worn, carried or placed) has an energy pool, a wireless
+network on a router that exists while it broadcasts, follows the pack and is not on the Map app (`EWO Net N`, random
+password, gateway `77.95.N.1` with the lowest free N 1-254, external SSH only from `77.95.*` subnets), charges laptops
+in the carrier's inventory and recharges from a running generator, battery or solar panel within
+`m_fEwoSourceRange`; the source carries the load from what its consumers leave. Server tick 3 s. Panel: inventory
+"Use" on the pack (own inventory or vicinity), updated every tick.

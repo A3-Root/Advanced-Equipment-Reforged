@@ -1,0 +1,28 @@
+GenericEntity : "{B9552E66565A51FE}Prefabs/ROOT_AE3/Devices/ROOT_AE3_UsbStick.et" {
+ ID "6AF4C47711077C53"
+ components {
+  MeshObject "{6AF041BB1162BD23}" {
+   Materials {
+    MaterialAssignClass "{6AF4C4261115878A}" {
+     AssignedMaterial "{9513F577CD2E9E9F}Assets/ROOT_AE3/Data/AE3_Accent_Yellow.emat"
+    }
+   }
+  }
+  ROOT_AE3_UsbDriveComponent "{6AF041BB1162B7CC}" {
+   m_sPortProp "{E567DEC5BFA983BB}Prefabs/ROOT_AE3/Devices/Variants/ROOT_AE3_UsbStick_Prop_Yellow.et"
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162B7AD}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162B7BC}" {
+    Name "#ROOT_AE3-Editable_UsbStick_Yellow_Name"
+    m_Image "{63E8F87DB4CCF91D}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_UsbStick_Yellow.edds"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AE3_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AE3-Item_UsbStick_Yellow_Name"
+    }
+   }
+  }
+ }
+}

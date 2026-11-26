@@ -19,6 +19,10 @@ MetaFileClass {
      SourceMaterial "AE3_LED"
      AssignedMaterial "{368A332C7EF691FF}Assets/ROOT_AE3/ROOT_AE3_BatteryPack/Data/AE3_LED.emat"
     }
+    MaterialAssignClass "{6AF4BE75119287BA}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{58DD3912314682D1}Assets/ROOT_AE3/ROOT_AE3_BatteryPack/Data/AE3_Accent.emat"
+    }
    }
    MeshParams {
     MeshParam ROOT_AE3_BatteryPack {

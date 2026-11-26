@@ -6,6 +6,10 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
   MeshObject "{6AF041BB1162C222}" {
    Object "{62BAD99BA4375EC1}Assets/ROOT_AE3/ROOT_AE3_SolarPanel/ROOT_AE3_SolarPanel.xob"
    Materials {
+    MaterialAssignClass "{6AF4C4261115A069}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat"
+    }
     MaterialAssignClass "{6AF041BB1162D443}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
@@ -86,6 +90,14 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
      }
      UIInfo UIInfo "{6AF041BB1162D70C}" {
       Name "ROOT_AE3_StatusAction"
+     }
+    }
+    ROOT_AE3_RenameAction "{6AF4C4261115A3C8}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C4261115A3C0}" {
+      Name "ROOT_AE3_RenameAction"
      }
     }
    }

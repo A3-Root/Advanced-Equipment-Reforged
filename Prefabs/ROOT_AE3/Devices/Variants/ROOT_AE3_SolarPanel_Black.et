@@ -3,6 +3,9 @@ GenericEntity : "{64D68C86AFC359FB}Prefabs/ROOT_AE3/Devices/ROOT_AE3_SolarPanel.
  components {
   MeshObject "{6AF041BB1162C222}" {
    Materials {
+    MaterialAssignClass "{6AF4C4261115A069}" {
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat"
+    }
     MaterialAssignClass "{6AF041BB1162D443}" {
      AssignedMaterial "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat"
     }

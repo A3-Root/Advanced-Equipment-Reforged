@@ -106,8 +106,64 @@ StringTable {
    Target_en_us "Solar Panel Sand (Advanced Equipment)"
   }
   CustomStringTableItem {
+   Id "ROOT_AE3-Editable_SystemModule_Description"
+   Target_en_us "Mission-wide Advanced Equipment settings. Device values set in the World Editor or by the Game Master take priority."
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Editable_SystemModule_Name"
+   Target_en_us "AE3 System (Advanced Equipment)"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Editable_UsbStick_Blue_Name"
+   Target_en_us "Flash Drive Blue (Advanced Equipment)"
+  }
+  CustomStringTableItem {
    Id "ROOT_AE3-Editable_UsbStick_Name"
-   Target_en_us "Flash Drive (Advanced Equipment)"
+   Target_en_us "Flash Drive Red (Advanced Equipment)"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Editable_UsbStick_Yellow_Name"
+   Target_en_us "Flash Drive Yellow (Advanced Equipment)"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_Battery"
+   Target_en_us "Battery: %1 %"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_Crashed"
+   Target_en_us "crashed"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_HintComputer"
+   Target_en_us "Use: open or rename."
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_Hostname"
+   Target_en_us "Hostname: %1"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_None"
+   Target_en_us "none"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_Off"
+   Target_en_us "off"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_On"
+   Target_en_us "on"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_Standby"
+   Target_en_us "standby"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_State"
+   Target_en_us "State: %1"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Inv_Usb"
+   Target_en_us "Flash drives: %1"
   }
   CustomStringTableItem {
    Id "ROOT_AE3-Item_BatteryPack_Black_Name"
@@ -174,8 +230,16 @@ StringTable {
    Target_en_us "Router Sand"
   }
   CustomStringTableItem {
+   Id "ROOT_AE3-Item_UsbStick_Blue_Name"
+   Target_en_us "Flash Drive Blue"
+  }
+  CustomStringTableItem {
    Id "ROOT_AE3-Item_UsbStick_Name"
-   Target_en_us "Flash Drive"
+   Target_en_us "Flash Drive Red"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Item_UsbStick_Yellow_Name"
+   Target_en_us "Flash Drive Yellow"
   }
  }
 }

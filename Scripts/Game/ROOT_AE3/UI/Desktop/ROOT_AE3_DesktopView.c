@@ -17,6 +17,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected static const int ID_DLG_EDIT = 16;
 	protected static const int ID_DLG_BG = 17;
 	protected static const int ID_MENU_BG = 18;
+	protected static const int ID_SIZE = 19;
 	protected static const int ID_ICON = 100;
 	protected static const int ID_MENU = 300;
 	protected static const int ID_POPUP = 400;
@@ -91,7 +92,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected ref ROOT_AE3_ForwardListener m_ToastListener;
 	protected ref ROOT_AE3_FilePicker m_Picker;
 	protected static ref array<KeyCode> s_aKeys = {
-		KeyCode.KC_RETURN, KeyCode.KC_NUMPADENTER, KeyCode.KC_DELETE, KeyCode.KC_F2, KeyCode.KC_F5, KeyCode.KC_BACK, KeyCode.KC_SPACE,
+		KeyCode.KC_RETURN, KeyCode.KC_NUMPADENTER, KeyCode.KC_DELETE, KeyCode.KC_F2, KeyCode.KC_F5, KeyCode.KC_F11, KeyCode.KC_BACK, KeyCode.KC_SPACE,
 		KeyCode.KC_UP, KeyCode.KC_DOWN, KeyCode.KC_LEFT, KeyCode.KC_RIGHT, KeyCode.KC_A, KeyCode.KC_C, KeyCode.KC_D, KeyCode.KC_S, KeyCode.KC_X, KeyCode.KC_V, KeyCode.KC_W, KeyCode.KC_TAB,
 		KeyCode.KC_0, KeyCode.KC_1, KeyCode.KC_2, KeyCode.KC_3, KeyCode.KC_4, KeyCode.KC_5, KeyCode.KC_6, KeyCode.KC_7, KeyCode.KC_8, KeyCode.KC_9,
 		KeyCode.KC_NUMPAD0, KeyCode.KC_NUMPAD1, KeyCode.KC_NUMPAD2, KeyCode.KC_NUMPAD3, KeyCode.KC_NUMPAD4, KeyCode.KC_NUMPAD5, KeyCode.KC_NUMPAD6, KeyCode.KC_NUMPAD7, KeyCode.KC_NUMPAD8, KeyCode.KC_NUMPAD9,
@@ -101,16 +102,70 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//------------------------------------------------------------------------------------------------
 	void ROOT_AE3_DesktopView(Widget parent)
 	{
-		float sw, sh;
-		ROOT_AE3_UI.ScreenSize(sw, sh);
-		array<float> fractions = {1, 0.85, 0.65, 0.45};
-		float frac = fractions[Math.ClampInt(ROOT_AE3_SettingsManager.Get().m_iDesktopSize, 0, 3)];
-		m_fW = sw * frac;
-		m_fH = sh * frac;
-		m_wRoot = ROOT_AE3_UI.Frame(parent, (sw - m_fW) / 2, (sh - m_fH) / 2, m_fW, m_fH);
+		m_wRoot = ROOT_AE3_UI.Frame(parent, 0, 0, 1, 1);
+		ApplySize();
 		ROOT_AE3_Theme.s_iTheme = ROOT_AE3_Client.Get().m_sTheme.ToInt();
 		ROOT_AE3_AppRegistry.GetApps(m_aApps);
 		Build();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Size and position of the desktop from the client window size (ROOT_AE3_Client.DesktopSize).
+	protected void ApplySize()
+	{
+		float sw, sh;
+		ROOT_AE3_UI.ScreenSize(sw, sh);
+		array<float> fractions = {1, 0.85, 0.65, 0.45};
+		float frac = fractions[ROOT_AE3_Client.Get().DesktopSize()];
+		m_fW = sw * frac;
+		m_fH = sh * frac;
+		ROOT_AE3_UI.Place(m_wRoot, (sw - m_fW) / 2, (sh - m_fH) / 2, m_fW, m_fH);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Next window size (Fullscreen, Large, Medium, Small). Open windows keep their app state and are fitted
+	//! into the new area.
+	void CycleSize()
+	{
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		c.SetDesktopSize((c.DesktopSize() + 1) % 4);
+		array<ref ROOT_AE3_Window> keep = {};
+		foreach (ROOT_AE3_Window w : m_aWindows)
+		{
+			if (!w)
+				continue;
+
+			w.Detach();
+			keep.Insert(w);
+		}
+
+		ROOT_AE3_Window focus = m_Focus;
+		m_aWindows.Clear();
+		ApplySize();
+		Build();
+		if (LoggedIn())
+		{
+			foreach (ROOT_AE3_Window w : keep)
+			{
+				m_aWindows.Insert(w);
+				w.Relayout();
+			}
+
+			if (focus && !focus.IsMinimized())
+				focus.BringToFront();
+
+			RefreshTaskbar();
+		}
+		else
+		{
+			foreach (ROOT_AE3_Window w : keep)
+			{
+				w.m_App.OnClose();
+			}
+		}
+
+		array<string> names = {"Fullscreen", "Large", "Medium", "Small"};
+		Toast("Window size", names[c.DesktopSize()] + " (F11 or the taskbar button changes it)");
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -623,7 +678,8 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			x += 48;
 		}
 
-		m_wTray = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 420, 16, 290, 18, m_sTray, 13, ROOT_AE3_Theme.Muted(), false, false, 2);
+		m_wTray = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 470, 16, 290, 18, m_sTray, 13, ROOT_AE3_Theme.Muted(), false, false, 2);
+		ROOT_AE3_UI.Button(m_wTaskbar, m_fW - 172, 9, 44, 30, "Size", ID_SIZE, m_TaskbarListener, ROOT_AE3_UI.Rgb(0, 0, 0, 0), ROOT_AE3_Theme.Text(), 12, ROOT_AE3_Theme.Hover());
 		m_wClock = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 120, 6, 108, 18, "", 14, ROOT_AE3_Theme.Text(), false, false, 2);
 		m_wDate = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 120, 25, 108, 18, "", 12, ROOT_AE3_Theme.Text(), false, false, 2);
 		UpdateClock();
@@ -1092,6 +1148,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//------------------------------------------------------------------------------------------------
 	protected void HandleKey(KeyCode key, bool ctrl)
 	{
+		if (key == KeyCode.KC_F11)
+		{
+			CycleSize();
+			return;
+		}
+
 		bool enter = key == KeyCode.KC_RETURN || key == KeyCode.KC_NUMPADENTER;
 		if (m_wDialog)
 		{
@@ -1620,6 +1682,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			}
 
 			case ID_START: ToggleMenu(); return true;
+			case ID_SIZE: CycleSize(); return true;
 			case ID_POWER:
 			{
 				array<string> labels = {"Standby", "Shut down", "-", "Sign out"};

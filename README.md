@@ -18,8 +18,11 @@ Equipment (Arma 3) 2.1.0.8. No dependencies besides Arma Reforger.
 
 Solar panels switch on and off like generators. Flash drives take files from the World Editor
 (`ROOT_AE3_UsbDriveComponent` files), the Game Master (add file / directory / image) and the script API.
-Laptop, router, battery pack, solar panel and portable server also come in Olive, Sand and Black
-(`Prefabs/ROOT_AE3/Devices/Variants/`). All devices are placeable in Game Master (Edit mode) and in the World Editor. Laptops, routers, battery packs, flash drives and portable servers are in
+Laptop, router, battery pack, solar panel and portable server are placed and issued as Black (orange accents), Olive
+(coyote accents) and Sand (ranger green accents) variants (`Prefabs/ROOT_AE3/Devices/Variants/`): body colour plus accent
+side bands, lid plate, bumpers, router and battery bands, solar panel frame and rim, server top plate. The base prefabs
+are their parents only and are not placeable or issued. Flash drives come in red, blue and yellow. Computers and routers have a green power and a blue
+network LED. All devices are placeable in Game Master (Edit mode) and in the World Editor. Laptops, routers, battery packs, flash drives and portable servers are in
 the US, USSR, FIA and CIV arsenals (equipment). Device names are in the string table `Language/ROOT_AE3_localization.st` (English) and
 searchable in the Game Master browser; preview images are in `UI/Textures/EditorPreviews/ROOT_AE3/`. Inventory items fit uniform, vest and backpack storage.
 The 3x2 inventory slot is added by `Scripts/Game/ROOT_AE3/Inventory/ROOT_AE3_SlotSize.c`.
@@ -29,9 +32,18 @@ The 3x2 inventory slot is added by `Scripts/Game/ROOT_AE3/Inventory/ROOT_AE3_Slo
 Use terminal, Use desktop (place a laptop to use it), Power on / Shut down, Standby / Wake up, Open / Close lid, Plug into power source
 (6 m), Plug network cable into router (10 m), Insert (first drive in the inventory) / Eject (highest occupied port; the desktop Volumes app ejects any port) flash drive, Refuel (drains a carried fuel container,
 such as a jerry can),
-Check status. The server checks that the player is alive and within 5 m for actions; sessions start within 4 m.
-Laptop, router, battery and flash drive are picked up and placed like other items; picking up a laptop ends
-the session, ejects drives, unplugs power and puts it into standby.
+Check status, Rename. The server checks that the player is alive and within 5 m for actions; sessions start within 4 m.
+Laptop, router, battery and flash drive are picked up and placed like other items. Picking up a laptop keeps its
+flash drives plugged in (shown again when it is placed), unplugs power, ends other players' sessions and puts it
+into standby. Inventory "Use" (mouse, keyboard, gamepad) on a laptop in the own inventory (uniform, vest, backpack; on
+foot or in a vehicle) shows its name field with Open and Rename. Open wakes or boots it and opens the desktop (terminal
+for terminal-only computers); the session lasts while the laptop stays in that inventory and does not mirror its
+screen to other players. When the session ends, a carried laptop goes to standby. Carried laptops use wireless
+networks in range of the carrier.
+The inventory shows a device's name ("<name> (Laptop Black)"), hostname, battery, state and plugged-in flash drives.
+Rename (placed devices: action; carried laptops: inventory Use) sets the name (printable ASCII, 32 characters, empty =
+default); the Game Master action "Rename device" and `ROOT_AE3_API.SetDeviceName` do the same. Names are saved by
+persistence.
 
 ## armaOS terminal
 
@@ -54,7 +66,9 @@ Root login is off by default; users in `/etc/sudoers` use `sudo` / `su`. While `
 
 Sign-in screen, plain black background, wallpapers 1-5, an image file or a web address, themes (Dark, Light, Olive), windows (drag, snap to the top or a side edge, resize
 from the corner), taskbar with pinned apps, start menu with search, right-click menus, dialogs, Open / Save file
-dialog, notifications.
+dialog, notifications. Window size Fullscreen / Large / Medium / Small: taskbar button "Size" or F11 cycles it;
+the choice is stored per player in `$profile:ROOT_AE3/client.txt` (setting `m_iDesktopSize` is the default, Large).
+Open windows keep their content and are fitted into the new size.
 Apps: My Computer, Files, Notepad, Photos, Terminal, Browser, Email, Messenger, Calendar, Network,
 Remote Access, Ping, Map, CCTV, Games, Snake, Calculator, Recycle Bin, Settings, System Info, About. Other mods add apps
 with `ROOT_AE3_API.RegisterExtApp`; their server requests are handled through
@@ -90,8 +104,43 @@ Device attributes (category "Advanced Equipment"): powered on, battery level, fu
 SSH server, router range, accept connections, external SSH. Game settings (category "Advanced Equipment"):
 boot and shutdown time, root login at terminal, sudoers act as root, any login, log out on session end,
 default interface, desktop theme, window size, file browsing, screen on models, router range and multiplier,
-network transfer speed, games. Game setting changes are sent to all players.
+network transfer speed, games, EWO mode / energy / range / drain / charge / recharge / source range. The same
+attributes are on the AE3 System module. Game setting changes are sent to all players.
 Attributes: `Configs/Editor/AttributeLists/Edit.conf`, `Scripts/Game/ROOT_AE3/Editor/ROOT_AE3_EditorAttributes.c`.
+
+## 77th JSOC EWO mode
+
+Off by default (setting `m_bEwoMode`, AE3 System module, Game Master attribute "77th JSOC EWO mode"). Packs whose
+prefab path contains a name in `m_sEwoPrefabs` (default `Radio_ANPRC77`, the AN/PRC-77 radio backpack) are EWO packs,
+worn, carried or placed. Inventory "Use" on a pack in the own inventory or the vicinity opens the EWO panel; it
+updates every 3 s and closes when the pack is out of reach, the player dies or EWO mode is turned off:
+
+- Energy pool `m_fEwoEnergyMax` (400; 1 energy = 1 Wh = 1 % of a laptop battery), shown as a bar.
+- Wireless network: start / stop, name (default `EWO Net N`) and password (random, 8 characters A-Z without I and O,
+  2-9), gateway `77.95.N.1` (N: lowest free number 1-254), range `m_fEwoWifiRange` (100 m), drains `m_fEwoWifiDrain`
+  (3 per minute) while broadcasting, stops when the pack is empty.
+  External SSH into an EWO network is accepted only from EWO subnets (`77\.95\.\d+\..*`). The network is a router
+  (`Prefabs/ROOT_AE3/Devices/ROOT_AE3_EwoRouter.et`) that exists while it broadcasts, follows the pack and is not
+  shown on the Map app.
+- Laptops in the carrier's inventory with their charge; Charge / Stop (pack carried). Each charging laptop gains `m_fEwoChargeRate`
+  (10) percent per minute from the pack; charging ends when the laptop is used, leaves the inventory, is full or the
+  pack is empty.
+- Plug in / Unplug: the nearest running generator, battery or solar panel within `m_fEwoSourceRange` (10 m) recharges
+  the pack at up to `m_fEwoRechargeRate` (5 per minute). The source carries 60 W per energy per minute from what its
+  consumers leave, like a charging battery; it unplugs when the source stops, is picked up or is out of range.
+
+Defaults follow Root's Cyber Warfare (`script_macros.hpp`). Server owned; checked every 3 s. A pack is tracked from its
+first panel request. Pack state stays while EWO mode is off and is not saved by persistence.
+
+## AE3 System module
+
+`Prefabs/ROOT_AE3/Systems/ROOT_AE3_SystemModule.et` (Game Master Systems, World Editor). Its `m_Settings` replace the
+mission header and `Configs/ROOT_AE3/Settings.conf` for the mission; empty = the settings at placement. Devices
+follow them where their own value is "Setting default"; values set on a device in the World Editor or by the Game
+Master take priority. Game Master: the module's attributes window lists the game settings (see Game Master, plus
+EWO), its action panel sets the default root password and the EWO pack prefabs. The first module placed is active;
+further modules are inactive and cannot be edited. Deleting the active module activates the next one, else the
+mission header or defaults apply. Its settings, including Game Master changes, are saved by persistence. Script API: `ROOT_AE3_API.SetGlobalNumber(key, value)`, `SetGlobalText(key, value)`.
 
 ## World Editor
 
@@ -102,22 +151,23 @@ Attributes: `Configs/Editor/AttributeLists/Edit.conf`, `Scripts/Game/ROOT_AE3/Ed
 | `ROOT_AE3_PowerComponent` | role, draw on / standby, output, capacity, recharge, fuel tank, burn rate, mains, external only, on at start, start level, start fuel, buffer output, solar panel tilt |
 | `ROOT_AE3_NetworkComponent` | router: SSID, gateway, range, multiplier, accept clients, password, external SSH, allow list, speed; client: static IP, speed, SSH |
 | `ROOT_AE3_ConnectionComponent` | power source and router by entity name (cable links) |
-| `ROOT_AE3_DeviceComponent` | type, name |
+| `ROOT_AE3_DeviceComponent` | type, name, hidden (not on the Map app, no player rename) |
+| `ROOT_AE3_SystemModuleComponent` | mission settings (AE3 System module) |
 
 ## Settings
 
 Defaults in `Configs/ROOT_AE3/Settings.conf`. A mission overrides them with `m_ROOT_AE3_Settings` in its
-`SCR_MissionHeader`. The Game Master changes part of them in game (see Game Master).
+`SCR_MissionHeader`; an AE3 System module overrides both. The Game Master changes part of them in game (see Game Master).
 Groups: Main (debug log, network debug log, any-login test mode, device names), armaOS (root login, sudoers, root password, error sound, transfer speeds
 and cap, terminal design, scroll, font size, screen mirror range / interval / viewers / lines / keystroke sync
 / change detection, header texts, boot and shutdown time), Desktop (default interface, file
 browsing, theme, map same network, window size, web access), Network (range, multiplier), Power (sync threshold, sync, interval), Games
 (enabled, hosting, same network, max tables, turn and abandon timeout, power draw, idle draw,
-practice seats, bots).
+practice seats, bots), EWO (mode, pack prefabs, energy, range, source range, drain, charge and recharge rate).
 
 ## Script API
 
-`ROOT_AE3_API` (authority only): `AddUser`, `AddSudoer`, `RemoveSudoer`, `SetRootPassword`, `SetRootLogin`,
+`ROOT_AE3_API` (authority only): `SetDeviceName`, `SetGlobalNumber`, `SetGlobalText`, `AddUser`, `AddSudoer`, `RemoveSudoer`, `SetRootPassword`, `SetRootLogin`,
 `SetHostname`, `AddFile`, `AddDirectory`, `ReadFile`, `RemovePath`, `AddMedia`, `AddCustomCommand`,
 `InstallCommand`, `AddMailAddress`, `AddEmail`, `SetChatHandle`, `RegisterWebpage`, `RegisterSite`,
 `AddBrowserHistory`, `AddCalendarEvent`, `RemoveCalendarEvent`, `RegisterCamera`, `AddGames`, `HostGameWithBots`, `ConnectPower`,
@@ -136,6 +186,8 @@ Events: `GetOnLogin`, `GetOnCommand`, `GetOnFileChanged`, `GetOnDeviceReady`.
 | Filesystem, users, shell, mail, games | local authority | authority | none (requests by RPC) |
 | Power and network simulation | local authority | authority | replicated state only |
 | Terminal and desktop UI | local | none | local menu |
+| EWO packs, System module, device names | local authority | authority | names replicated; EWO panel by RPC |
+| Window size, inventory Use | local | none | local (open request by RPC) |
 | Screen on the model | rendered | not rendered | rendered within range |
 
 Client requests go through `SCR_PlayerController` RPCs; only the session owner receives its output. Screen
@@ -175,7 +227,7 @@ and leaves networks. Dropped terminal output is resent as the last 100 lines.
 ## Not ported
 
 Music app, the debug overlay, translations (the interface and string table are English only), the full desktop on the model screen (it shows the window titles), CCTV of cameras outside the
-viewer's streaming range, Game Master action for multi-page web sites (script API `RegisterSite` only), the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a laptop when it is placed, removing installed games, the Zeus games roster and per-computer
+viewer's streaming range, Game Master action for multi-page web sites (script API `RegisterSite` only), the pixel canvas API for other mods (Arma 3 `fnc_retro_*`), naming a laptop when it is placed, EWO registration of laptops as Root's Cyber Warfare hacking targets, removing installed games, the Zeus games roster and per-computer
 games module, file drag and drop, the terrain map in the Map app (it shows devices on a grid), copying and exporting mail and chat, portable desks and desk chairs, lamp variants (one floodlight), animated GIF, video formats the engine video player does not take, page styles and scripts in the Browser, typing
 animations, refuelling generators from fuel trucks or nozzles, the Arma 3 deployment type setting (Reforger
 placeable items).

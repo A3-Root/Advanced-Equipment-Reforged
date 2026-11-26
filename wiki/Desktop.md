@@ -1,8 +1,9 @@
 # Desktop
 
 Opened with "Use desktop" or the `desktop` command. Sign-in screen (Tab: next field), black background,
-wallpapers 1-5, an image file or a web address, themes Dark / Light / Olive, notifications. Window size: setting
-`m_iDesktopSize`.
+wallpapers 1-5, an image file or a web address, themes Dark / Light / Olive, notifications. Window size Fullscreen /
+Large / Medium / Small: taskbar button "Size" or F11; per player (`$profile:ROOT_AE3/client.txt`), default setting
+`m_iDesktopSize` (Large). Open windows keep their content. Carried laptops open with inventory "Use", Open.
 
 - Desktop icons: apps, then the files and folders in `~/Desktop` (file browsing setting on). Click selects,
   double click or Enter opens, right click for the menu (files: Open, Rename, Delete). Right click on the

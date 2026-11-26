@@ -83,6 +83,14 @@ GenericEntity : "{0958E6B949501D00}Prefabs/Props/Military/Generators/GeneratorPo
       Name "ROOT_AE3_StatusAction"
      }
     }
+    ROOT_AE3_RenameAction "{6AF4C42611182033}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C4261118200D}" {
+      Name "ROOT_AE3_RenameAction"
+     }
+    }
    }
   }
  }

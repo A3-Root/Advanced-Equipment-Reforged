@@ -25,5 +25,11 @@ enum ROOT_AE3_EMsg
 	SETTINGS,		//!< data: ROOT_AE3_Settings.PackClient
 	SCREEN,			//!< data: device RplId, screen text, input line
 	SCREEN_INPUT,	//!< data: device RplId, input line
-	SOUND			//!< data: sound id (ROOT_AE3_Sound), UI sound for the operator
+	SOUND,			//!< data: sound id (ROOT_AE3_Sound), UI sound for the operator
+	// client -> server
+	OPEN_CARRIED,	//!< data: requested mode (-1 auto, 0 terminal, 1 desktop); device in the player's inventory
+	RENAME,			//!< data: new device name
+	EWO,			//!< data: EWO request (ROOT_AE3_EwoSystem.OnRequest)
+	// server -> client
+	EWO_STATE		//!< data: EWO pack state (ROOT_AE3_EwoPanel)
 }

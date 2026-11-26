@@ -9,6 +9,14 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   MeshObject "{6AF041BB11620821}" {
    Object "{46707E972EE2B229}Assets/ROOT_AE3/ROOT_AE3_PortableServer/ROOT_AE3_PortableServer.xob"
    Materials {
+    MaterialAssignClass "{6AF4C4261115EB9A}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF4C4261115EA64}" {
+     SourceMaterial "AE3_LED_Blue"
+     AssignedMaterial "{83593EBE15E53DEF}Assets/ROOT_AE3/Data/AE3_LED_Blue.emat"
+    }
     MaterialAssignClass "{6AF041BB116202D1}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
@@ -83,7 +91,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
-    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+    ItemDisplayName ROOT_AE3_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
      Name "#ROOT_AE3-Item_PortableServer_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
@@ -144,6 +152,14 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
      }
      UIInfo UIInfo "{6AF041BB11621C31}" {
       Name "ROOT_AE3_StatusAction"
+     }
+    }
+    ROOT_AE3_RenameAction "{6AF4C4261115E766}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C4261115E761}" {
+      Name "ROOT_AE3_RenameAction"
      }
     }
    }

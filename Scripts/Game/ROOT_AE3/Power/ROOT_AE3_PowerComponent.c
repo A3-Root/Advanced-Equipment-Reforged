@@ -89,6 +89,8 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	protected ROOT_AE3_PowerComponent m_Provider;
 	protected ref array<ROOT_AE3_PowerComponent> m_aConsumers = {};
 	protected float m_fExtraDrawW;
+	protected float m_fExternalLoadW;
+	protected float m_fExternalFactor;
 	protected float m_fSyncedLevel = -1;
 	protected float m_fSyncedFuel = -1;
 	protected bool m_bRestored;
@@ -384,6 +386,33 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	void SetExtraDraw(float w)
 	{
 		m_fExtraDrawW = Math.Max(0, w);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority: draw in W of a load outside the AE3 links on a provider (EWO pack recharge). Served like battery
+	//! charging from what the consumers leave; GetExternalFactor is the 0-1 share served in the last power tick.
+	void SetExternalLoad(float w)
+	{
+		m_fExternalLoadW = Math.Max(0, w);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	float GetExternalLoadW()
+	{
+		return m_fExternalLoadW;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority: set by the power system.
+	void SetExternalFactor(float factor)
+	{
+		m_fExternalFactor = Math.Clamp(factor, 0, 1);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	float GetExternalFactor()
+	{
+		return m_fExternalFactor;
 	}
 
 	//------------------------------------------------------------------------------------------------

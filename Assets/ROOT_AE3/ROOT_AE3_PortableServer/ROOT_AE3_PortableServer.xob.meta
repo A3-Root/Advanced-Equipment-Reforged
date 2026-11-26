@@ -23,6 +23,14 @@ MetaFileClass {
      SourceMaterial "AE3_Metal"
      AssignedMaterial "{7F42EB5B0B58F7C2}Assets/ROOT_AE3/ROOT_AE3_PortableServer/Data/AE3_Metal.emat"
     }
+    MaterialAssignClass "{6AF4BE7516602EC5}" {
+     SourceMaterial "AE3_LED_Blue"
+     AssignedMaterial "{ADF75859B6520996}Assets/ROOT_AE3/ROOT_AE3_PortableServer/Data/AE3_LED_Blue.emat"
+    }
+    MaterialAssignClass "{6AF4BE7516602EDC}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{2D1E0F225CA440F2}Assets/ROOT_AE3/ROOT_AE3_PortableServer/Data/AE3_Accent.emat"
+    }
    }
    MeshParams {
     MeshParam ROOT_AE3_PortableServer {

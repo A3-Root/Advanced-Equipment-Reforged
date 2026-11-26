@@ -43,6 +43,9 @@ def materials():
         "led": mat("AE3_LED", (0.1, 0.8, 0.2), 0.0, 0.3, emit=(0.1, 1, 0.2)),
         "cells": mat("AE3_SolarCells", (0.02, 0.05, 0.15), 0.6, 0.15),
         "rubber": mat("AE3_Rubber", (0.02, 0.02, 0.02), 0.0, 0.9),
+        # variant colour: bumpers, stripes, logo plates (orange / coyote / ranger green per prefab variant)
+        "accent": mat("AE3_Accent", (0.9, 0.35, 0.05), 0.0, 0.5),
+        "ledb": mat("AE3_LED_Blue", (0.1, 0.4, 1.0), 0.0, 0.3, emit=(0.1, 0.4, 1.0)),
     }
 
 
@@ -185,8 +188,16 @@ def laptop(M, open_lid):
             parts.append(box("k", (kw, kd, 0.002), (x + kw / 2, -D / 2 + y + 0.05, T + 0.001), M["keys"], col))
     parts.append(box("pad", (0.09, 0.055, 0.0008), (0, -D / 2 + 0.035, T + 0.0004), M["keys"], col))
     parts.append(box("led", (0.004, 0.004, 0.001), (W / 2 - 0.02, -D / 2 + 0.01, T + 0.0005), M["led"], col))
+    parts.append(box("ledb", (0.004, 0.004, 0.001), (W / 2 - 0.03, -D / 2 + 0.01, T + 0.0005), M["ledb"], col))
+    for sy in (-1, 1):
+        parts.append(box("stripe", (W - 0.05, 0.003, T * 0.5), (0, sy * (D / 2 + 0.0012), T / 2), M["accent"], col))
     for sx in (-1, 1):
-        parts.append(box("usb", (0.002, 0.012, 0.005), (sx * (W / 2 + 0.0008), 0.0, T / 2), M["metal"], col))
+        parts.append(box("stripe", (0.003, D - 0.05, T * 0.5), (sx * (W / 2 + 0.0012), 0.03, T / 2), M["accent"], col))
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            parts.append(box("bumper", (0.026, 0.026, T + 0.002), (sx * (W / 2 - 0.011), sy * (D / 2 - 0.011), T / 2), M["accent"], col, bevel=0.003))
+    for sx in (-1, 1):
+        parts.append(box("usb", (0.002, 0.012, 0.005), (sx * (W / 2 + 0.0028), 0.0, T / 2), M["metal"], col))
         parts.append(box("foot", (0.03, 0.01, 0.002), (sx * 0.12, -0.09, -0.001), M["rubber"], col))
         parts.append(box("foot", (0.03, 0.01, 0.002), (sx * 0.12, 0.09, -0.001), M["rubber"], col))
     lt = 0.012
@@ -203,6 +214,8 @@ def laptop(M, open_lid):
         lid.location = (0, cy, cz)
         lid.rotation_euler = (-tilt, 0, 0)
         parts.append(lid)
+        back = lt / 2 + 0.0008
+        parts.append(box("logo", (0.24, 0.001, 0.15), (0, cy + math.cos(tilt) * back, cz - math.sin(tilt) * back), M["accent"], col, rot=(-tilt, 0, 0)))
         off = lt / 2 + 0.0006
         screen = plane("AE3_ScreenQuad", 0.3, 0.1875, (0, cy - math.cos(tilt) * off, cz + math.sin(tilt) * off), M["screen"], col, rot=(math.radians(90) - tilt, 0, 0))
         o = join(parts, name)
@@ -219,6 +232,10 @@ def laptop(M, open_lid):
         collider(name + "_lid", (W, lt, D), (0, cy, cz), col, rot=(-tilt, 0, 0))
     else:
         parts.append(box("lid", (W, D, lt), (0, 0, T + lt / 2 + 0.001), M["plastic"], col, bevel=0.003))
+        parts.append(box("logo", (0.24, 0.15, 0.001), (0, 0, T + lt + 0.0015), M["accent"], col))
+        for sx in (-1, 1):
+            for sy in (-1, 1):
+                parts.append(box("lidbumper", (0.026, 0.026, lt + 0.002), (sx * (W / 2 - 0.011), sy * (D / 2 - 0.011), T + lt / 2 + 0.001), M["accent"], col, bevel=0.003))
         o = join(parts, name)
         uv_box(o)
         collider(name, (W, D, T + lt), (0, 0, (T + lt) / 2), col)
@@ -229,11 +246,14 @@ def laptop(M, open_lid):
 def router(M):
     name = "ROOT_AE3_Router"
     col = new_coll(name)
-    parts = [box("body", (0.2, 0.14, 0.032), (0, 0, 0.016), M["olive"], col, bevel=0.004)]
+    parts = [box("body", (0.2, 0.14, 0.032), (0, 0, 0.016), M["olive"], col, bevel=0.004),
+             box("band", (0.204, 0.144, 0.012), (0, 0, 0.008), M["accent"], col),
+             box("logo", (0.15, 0.09, 0.001), (0, 0, 0.0325), M["accent"], col)]
     for i in range(4):
-        parts.append(box("led", (0.006, 0.003, 0.003), (-0.06 + i * 0.02, -0.0705, 0.022), M["led"], col))
+        parts.append(box("led", (0.006, 0.003, 0.003), (-0.06 + i * 0.02, -0.0705, 0.022), M["led"] if i % 2 == 0 else M["ledb"], col))
     for sx in (-1, 1):
         parts.append(cyl("antenna", 0.005, 0.16, (sx * 0.08, 0.06, 0.11), M["rubber"], col))
+        parts.append(cyl("cap", 0.0065, 0.02, (sx * 0.08, 0.06, 0.19), M["accent"], col))
         parts.append(cyl("joint", 0.008, 0.02, (sx * 0.08, 0.06, 0.035), M["metal"], col))
     for i in range(4):
         parts.append(box("port", (0.012, 0.004, 0.009), (-0.05 + i * 0.025, 0.0705, 0.014), M["metal"], col))
@@ -246,7 +266,8 @@ def router(M):
 def usb(M):
     name = "ROOT_AE3_UsbStick"
     col = new_coll(name)
-    parts = [box("body", (0.045, 0.018, 0.008), (0, 0, 0.004), M["plastic"], col, bevel=0.0015),
+    parts = [box("body", (0.045, 0.018, 0.008), (0, 0, 0.004), M["accent"], col, bevel=0.0015),
+             box("grip", (0.02, 0.0185, 0.0085), (-0.008, 0, 0.004), M["plastic"], col),
              box("plug", (0.012, 0.012, 0.0045), (0.0285, 0, 0.004), M["metal"], col),
              box("ring", (0.006, 0.004, 0.003), (-0.025, 0, 0.004), M["metal"], col)]
     o = join(parts, name)
@@ -260,7 +281,8 @@ def battery(M):
     col = new_coll(name)
     parts = [box("body", (0.32, 0.2, 0.16), (0, 0, 0.08), M["olive"], col, bevel=0.008),
              box("lidtrim", (0.33, 0.21, 0.012), (0, 0, 0.16), M["plastic"], col, bevel=0.003),
-             box("handle", (0.2, 0.025, 0.02), (0, 0, 0.215), M["plastic"], col, bevel=0.004)]
+             box("handle", (0.2, 0.025, 0.02), (0, 0, 0.215), M["accent"], col, bevel=0.004),
+             box("band", (0.324, 0.204, 0.05), (0, 0, 0.07), M["accent"], col)]
     for sx in (-1, 1):
         parts.append(box("post", (0.02, 0.02, 0.045), (sx * 0.09, 0, 0.19), M["plastic"], col))
         parts.append(cyl("terminal", 0.012, 0.02, (sx * 0.13, 0.06, 0.176), M["metal"], col))
@@ -277,14 +299,19 @@ def solar(M):
     tilt = math.radians(35)
     pw, ph, pt = 1.0, 0.65, 0.035
     cz = 0.42
-    parts = [box("frame", (pw, ph, pt), (0, 0, cz), M["metal"], col, rot=(tilt, 0, 0)),
+    parts = [box("frame", (pw, ph, pt), (0, 0, cz), M["plastic"], col, rot=(tilt, 0, 0)),
              # cells 0.5 mm above the frame top, offset along the tilted panel normal
              box("cells", (pw - 0.04, ph - 0.04, 0.004), (0, -math.sin(tilt) * (pt / 2 + 0.0025), cz + math.cos(tilt) * (pt / 2 + 0.0025)), M["cells"], col, rot=(tilt, 0, 0))]
     for sx in (-1, 1):
-        parts.append(box("legfront", (0.03, 0.03, 0.26), (sx * 0.42, -0.2, 0.13), M["metal"], col))
-        parts.append(box("legback", (0.03, 0.03, 0.58), (sx * 0.42, 0.22, 0.29), M["metal"], col))
+        parts.append(box("legfront", (0.03, 0.03, 0.26), (sx * 0.42, -0.2, 0.13), M["plastic"], col))
+        parts.append(box("legback", (0.03, 0.03, 0.58), (sx * 0.42, 0.22, 0.29), M["plastic"], col))
         parts.append(box("skid", (0.04, 0.6, 0.02), (sx * 0.42, 0.0, 0.01), M["metal"], col))
-    parts.append(box("junction", (0.12, 0.05, 0.08), (0, 0.24, 0.3), M["plastic"], col))
+    parts.append(box("junction", (0.12, 0.05, 0.08), (0, 0.24, 0.3), M["accent"], col))
+    # accent rim along the lower panel edge
+    parts.append(box("rim", (pw, 0.03, pt + 0.004), (0, -math.cos(tilt) * (ph / 2 - 0.015), cz - math.sin(tilt) * (ph / 2 - 0.015)), M["accent"], col, rot=(tilt, 0, 0)))
+    for sx in (-1, 1):
+        parts.append(box("footcap", (0.05, 0.05, 0.03), (sx * 0.42, -0.3, 0.015), M["accent"], col))
+        parts.append(box("footcap", (0.05, 0.05, 0.03), (sx * 0.42, 0.3, 0.015), M["accent"], col))
     o = join(parts, name)
     uv_box(o)
     collider(name + "_panel", (pw, ph, pt), (0, 0, cz), col, rot=(tilt, 0, 0))
@@ -297,13 +324,18 @@ def server(M):
     col = new_coll(name)
     W, D, H = 0.55, 0.48, 0.3
     parts = [box("case", (W, D, H), (0, 0, H / 2), M["olive"], col, bevel=0.012),
-             box("frontpanel", (W - 0.06, 0.006, H - 0.06), (0, -D / 2 - 0.002, H / 2), M["plastic"], col)]
+             box("frontpanel", (W - 0.06, 0.006, H - 0.06), (0, -D / 2 - 0.002, H / 2), M["plastic"], col),
+             box("topplate", (W - 0.16, D - 0.16, 0.004), (0, 0, H + 0.002), M["accent"], col)]
     for i in range(3):
         parts.append(box("bay", (W - 0.12, 0.004, 0.05), (0, -D / 2 - 0.006, 0.07 + i * 0.075), M["keys"], col))
         parts.append(box("led", (0.008, 0.003, 0.008), (W / 2 - 0.08, -D / 2 - 0.008, 0.07 + i * 0.075), M["led"], col))
+        parts.append(box("ledb", (0.008, 0.003, 0.008), (W / 2 - 0.095, -D / 2 - 0.008, 0.07 + i * 0.075), M["ledb"], col))
     for sx in (-1, 1):
         parts.append(box("handle", (0.02, 0.2, 0.03), (sx * (W / 2 + 0.01), 0, H - 0.04), M["metal"], col))
         parts.append(box("latch", (0.06, 0.02, 0.04), (sx * 0.15, -D / 2 - 0.006, H - 0.03), M["metal"], col))
+        for sy in (-1, 1):
+            for sz in (0.03, H - 0.03):
+                parts.append(box("corner", (0.07, 0.07, 0.07), (sx * (W / 2 - 0.02), sy * (D / 2 - 0.02), sz), M["accent"], col, bevel=0.01))
     o = join(parts, name)
     uv_box(o)
     collider(name, (W + 0.04, D + 0.02, H), (0, 0, H / 2), col)

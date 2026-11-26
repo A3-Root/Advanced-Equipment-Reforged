@@ -10,6 +10,9 @@ class ROOT_AE3_Manager
 	protected ref array<int> m_aChunkDropped = {};
 	protected ref map<int, string> m_mDroppedHead = new map<int, string>();	//!< Start of a dropped request (request id, command)
 	protected ref map<int, float> m_mLastOpen = new map<int, float>();
+	protected ref map<int, float> m_mLastRename = new map<int, float>();
+	protected ref map<int, float> m_mLastEwo = new map<int, float>();
+	protected ref map<int, int> m_mCarriedOpen = new map<int, int>();	//!< Player, number of the pending inventory open request
 	protected bool m_bSystemsStarted;
 	protected ref map<int, int> m_mRateCount = new map<int, int>();
 	protected ref map<string, float> m_mAuthUntil = new map<string, float>();
@@ -37,7 +40,10 @@ class ROOT_AE3_Manager
 	static void Reset()
 	{
 		if (s_Instance)
+		{
 			GetGame().GetCallqueue().Remove(s_Instance.CheckSessions);
+			GetGame().GetCallqueue().Remove(s_Instance.OpenCarried);
+		}
 
 		s_Instance = null;
 	}
@@ -215,12 +221,141 @@ class ROOT_AE3_Manager
 		GetGame().GetCallqueue().CallLater(CheckSessions, 2000, true);
 		ROOT_AE3_PowerSystem.Get().Start();
 		ROOT_AE3_NetworkSystem.Get().Start();
+		ROOT_AE3_EwoSystem.Get().Start();
 	}
 
 	//------------------------------------------------------------------------------------------------
 	ROOT_AE3_Session GetSession(int playerId)
 	{
 		return m_mSessions.Get(playerId);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	bool HasSession(int playerId, ROOT_AE3_ComputerComponent computer)
+	{
+		ROOT_AE3_Session s = m_mSessions.Get(playerId);
+		return s && s.m_Computer == computer;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: opens a computer from the player's own inventory. Wakes it from standby or boots it first.
+	//! mode -1: desktop when allowed, else terminal.
+	protected void OpenCarried(int playerId, RplId deviceId, int mode, int tries, int request)
+	{
+		if (m_mCarriedOpen.Get(playerId) != request)
+			return;
+
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.FromRplId(deviceId);
+		IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(playerId);
+		if (!dev || !player)
+			return;
+
+		ROOT_AE3_ComputerComponent computer = ROOT_AE3_ComputerComponent.Of(dev.GetOwner());
+		if (!computer || !ROOT_AE3_Util.CarriedBy(dev.GetOwner(), player))
+		{
+			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, "The computer is not in your inventory.");
+			return;
+		}
+
+		if (mode < 0)
+		{
+			mode = 1;
+			if (computer.GetInterfaceMode() == 0)
+				mode = 0;
+		}
+
+		ROOT_AE3_PowerComponent p = computer.GetPower();
+		if (p && !p.IsOn())
+		{
+			string reason;
+			if (!p.TurnOn(reason))
+			{
+				ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, reason);
+				return;
+			}
+
+			array<string> f = {dev.GetDeviceName(), "Starting..."};
+			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+		}
+
+		if (computer.IsRunning() && computer.GetScreen() != ROOT_AE3_EScreen.BOOT)
+		{
+			m_mCarriedOpen.Remove(playerId);
+			OpenSession(playerId, deviceId, mode);
+			if (!m_mSessions.Get(playerId))
+				StandbyIfIdle(computer);
+
+			return;
+		}
+
+		if (tries >= 40)
+		{
+			m_mCarriedOpen.Remove(playerId);
+			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, "The computer did not start.");
+			return;
+		}
+
+		GetGame().GetCallqueue().CallLater(OpenCarried, 1000, false, playerId, deviceId, mode, tries + 1, request);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: renames a device the player carries, stands next to, operates or edits as Game Master.
+	protected void RenameDevice(int playerId, RplId deviceId, string name)
+	{
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.FromRplId(deviceId);
+		if (!dev || dev.IsHidden())
+			return;
+
+		IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(playerId);
+		IEntity owner = dev.GetOwner();
+		bool allowed = ROOT_AE3_GmActions.IsGameMaster(playerId) || ROOT_AE3_Util.CarriedBy(owner, player);
+		if (!allowed && player && !ROOT_AE3_Util.IsCarried(owner))
+			allowed = vector.Distance(player.GetOrigin(), owner.GetOrigin()) <= USE_RANGE;
+
+		ROOT_AE3_ComputerComponent computer = ROOT_AE3_ComputerComponent.Of(owner);
+		if (!allowed && computer)
+			allowed = HasSession(playerId, computer);
+
+		array<string> f = {"Advanced Equipment", ""};
+		if (!allowed)
+		{
+			f[1] = "The device is out of reach.";
+			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+			return;
+		}
+
+		dev.SetDeviceName(name);
+		f[1] = "Renamed to " + dev.GetDeviceName() + ".";
+		ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: a carried computer without a session goes to standby.
+	protected void StandbyIfIdle(ROOT_AE3_ComputerComponent computer)
+	{
+		if (!computer || !ROOT_AE3_Util.IsCarried(computer.GetOwner()) || GetSessionOf(computer))
+			return;
+
+		ROOT_AE3_PowerComponent p = computer.GetPower();
+		string reason;
+		if (p && p.IsOn())
+			p.Standby(reason);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: closes and removes the session of a player; a carried computer left without a session goes to standby,
+	//! except keep (the computer the player opens next).
+	protected void DropSession(int playerId, ROOT_AE3_ComputerComponent keep = null)
+	{
+		ROOT_AE3_Session s = m_mSessions.Get(playerId);
+		if (!s)
+			return;
+
+		ROOT_AE3_ComputerComponent computer = s.m_Computer;
+		s.Close();
+		m_mSessions.Remove(playerId);
+		if (computer != keep)
+			StandbyIfIdle(computer);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -256,12 +391,10 @@ class ROOT_AE3_Manager
 	//------------------------------------------------------------------------------------------------
 	void EndSession(int playerId, string reason)
 	{
-		ROOT_AE3_Session s = m_mSessions.Get(playerId);
-		if (!s)
+		if (!m_mSessions.Get(playerId))
 			return;
 
-		s.Close();
-		m_mSessions.Remove(playerId);
+		DropSession(playerId);
 		ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, reason);
 	}
 
@@ -347,14 +480,48 @@ class ROOT_AE3_Manager
 			return;
 		}
 
+		if (op == ROOT_AE3_EMsg.OPEN_CARRIED)
+		{
+			float nowCarried = GetGame().GetWorld().GetWorldTime() / 1000.0;
+			if (nowCarried - m_mLastOpen.Get(playerId) < 1)
+				return;
+
+			m_mLastOpen.Set(playerId, nowCarried);
+			int request = m_mCarriedOpen.Get(playerId) + 1;
+			m_mCarriedOpen.Set(playerId, request);
+			OpenCarried(playerId, deviceId, Math.ClampInt(data.ToInt(), -1, 1), 0, request);
+			return;
+		}
+
+		if (op == ROOT_AE3_EMsg.RENAME)
+		{
+			float nowRename = GetGame().GetWorld().GetWorldTime() / 1000.0;
+			if (nowRename - m_mLastRename.Get(playerId) < 1)
+				return;
+
+			m_mLastRename.Set(playerId, nowRename);
+			RenameDevice(playerId, deviceId, data);
+			return;
+		}
+
+		if (op == ROOT_AE3_EMsg.EWO)
+		{
+			float nowEwo = GetGame().GetWorld().GetWorldTime() / 1000.0;
+			if (nowEwo - m_mLastEwo.Get(playerId) < 0.25)
+				return;
+
+			m_mLastEwo.Set(playerId, nowEwo);
+			ROOT_AE3_EwoSystem.Get().OnRequest(playerId, deviceId, data);
+			return;
+		}
+
 		ROOT_AE3_Session s = m_mSessions.Get(playerId);
 		if (!s)
 			return;
 
 		if (op == ROOT_AE3_EMsg.CLOSE)
 		{
-			s.Close();
-			m_mSessions.Remove(playerId);
+			DropSession(playerId);
 			return;
 		}
 
@@ -416,7 +583,9 @@ class ROOT_AE3_Manager
 		ROOT_AE3_LidComponent lid = ROOT_AE3_LidComponent.Of(dev.GetOwner());
 		ChimeraCharacter character = ChimeraCharacter.Cast(player);
 		bool dead = character && character.GetCharacterController() && character.GetCharacterController().IsDead();
-		if (!player || dead || ROOT_AE3_Util.IsDestroyed(dev.GetOwner()) || ROOT_AE3_Util.IsCarried(dev.GetOwner()) || vector.Distance(player.GetOrigin(), dev.GetOwner().GetOrigin()) > USE_RANGE || (lid && !lid.IsOpen()))
+		bool own = ROOT_AE3_Util.CarriedBy(dev.GetOwner(), player);
+		bool reach = own || (!ROOT_AE3_Util.IsCarried(dev.GetOwner()) && vector.Distance(player.GetOrigin(), dev.GetOwner().GetOrigin()) <= USE_RANGE && (!lid || lid.IsOpen()));
+		if (!player || dead || ROOT_AE3_Util.IsDestroyed(dev.GetOwner()) || !reach)
 		{
 			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, "The computer is out of reach.");
 			return;
@@ -428,12 +597,7 @@ class ROOT_AE3_Manager
 			return;
 		}
 
-		ROOT_AE3_Session old = m_mSessions.Get(playerId);
-		if (old)
-		{
-			old.Close();
-			m_mSessions.Remove(playerId);
-		}
+		DropSession(playerId, computer);
 
 		ROOT_AE3_Session s = new ROOT_AE3_Session(playerId, computer);
 		if (!s.Start(mode, false, reason))
@@ -459,12 +623,7 @@ class ROOT_AE3_Manager
 			return;
 		}
 
-		ROOT_AE3_Session old = m_mSessions.Get(playerId);
-		if (old)
-		{
-			old.Close();
-			m_mSessions.Remove(playerId);
-		}
+		DropSession(playerId, computer);
 
 		ROOT_AE3_Session s = new ROOT_AE3_Session(playerId, computer);
 		ROOT_AE3_Shell.WriteLog(computer, "/var/log/auth.log", "Game Master access as root");
@@ -478,17 +637,14 @@ class ROOT_AE3_Manager
 	//! Server: player left.
 	void OnPlayerDisconnected(int playerId)
 	{
-		ROOT_AE3_Session s = m_mSessions.Get(playerId);
-		if (s)
-		{
-			s.Close();
-			m_mSessions.Remove(playerId);
-		}
-
+		DropSession(playerId);
 		m_mChunks.Remove(playerId);
 		m_aChunkDropped.RemoveItem(playerId);
 		m_mRateCount.Remove(playerId);
 		m_mLastOpen.Remove(playerId);
+		m_mLastRename.Remove(playerId);
+		m_mLastEwo.Remove(playerId);
+		m_mCarriedOpen.Remove(playerId);
 		m_mDroppedHead.Remove(playerId);
 	}
 }

@@ -1,5 +1,6 @@
 //! Game Master attributes (Configs/Editor/AttributeLists/Edit.conf). m_sKey selects the value:
-//! device keys (attributes window of a device) or, with m_bGlobal, ROOT_AE3_Settings keys (game settings).
+//! device keys (attributes window of a device) or, with m_bGlobal, ROOT_AE3_Settings keys (game settings
+//! window and attributes window of the AE3 System module).
 //! Read and written on the server.
 class ROOT_AE3_EditorAttr
 {
@@ -18,12 +19,23 @@ class ROOT_AE3_EditorAttr
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Game mode (game settings window) or the active AE3 System module (its attributes window).
+	static bool IsSettingsHolder(Managed item)
+	{
+		if (BaseGameMode.Cast(item))
+			return true;
+
+		SCR_EditableEntityComponent editable = SCR_EditableEntityComponent.Cast(item);
+		return editable && ROOT_AE3_SystemModuleComponent.IsActiveModule(editable.GetOwner());
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! False when the key does not apply to the item.
 	static bool Read(Managed item, string key, bool global, out float value)
 	{
 		if (global)
 		{
-			if (!BaseGameMode.Cast(item))
+			if (!IsSettingsHolder(item))
 				return false;
 
 			return ROOT_AE3_SettingsManager.Get().GetNumber(key, value);
@@ -128,7 +140,7 @@ class ROOT_AE3_EditorAttr
 	{
 		if (global)
 		{
-			if (BaseGameMode.Cast(item) && ROOT_AE3_SettingsManager.Get().SetNumber(key, value))
+			if (IsSettingsHolder(item) && ROOT_AE3_SettingsManager.Get().SetNumber(key, value))
 				ROOT_AE3_SettingsManager.Broadcast();
 
 			return;

@@ -5,7 +5,8 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 	protected ref array<EditBoxWidget> m_aFields = {};
 
 	//------------------------------------------------------------------------------------------------
-	void ROOT_AE3_GmDialogForm(ROOT_AE3_GmDialog dialog, Widget root, string title, array<string> labels, array<string> defaults)
+	//! extra: label of a third button (id 3, ROOT_AE3_GmDialog.Extra), empty = none.
+	void ROOT_AE3_GmDialogForm(ROOT_AE3_GmDialog dialog, Widget root, string title, array<string> labels, array<string> defaults, string okLabel = "OK", string extra = "")
 	{
 		m_Dialog = dialog;
 		float sw, sh;
@@ -31,8 +32,14 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 			m_aFields.Insert(e);
 		}
 
-		ROOT_AE3_UI.Button(root, x + w - 236, y + h - 44, 104, 30, "OK", 1, this, ROOT_AE3_UI.Rgb(0.91, 0.33, 0.13));
+		ROOT_AE3_UI.Button(root, x + w - 236, y + h - 44, 104, 30, okLabel, 1, this, ROOT_AE3_UI.Rgb(0.91, 0.33, 0.13));
 		ROOT_AE3_UI.Button(root, x + w - 124, y + h - 44, 104, 30, "Cancel", 2, this);
+		if (!extra.IsEmpty())
+		{
+			ROOT_AE3_UI.Button(root, x + 16, y + h - 44, 140, 30, extra, 3, this, ROOT_AE3_UI.Rgb(0.2, 0.45, 0.25));
+			return;
+		}
+
 		if (!m_aFields.IsEmpty() && m_aFields[0])
 		{
 			GetGame().GetWorkspace().SetFocusedWidget(m_aFields[0]);
@@ -67,6 +74,12 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 		if (id == 2)
 		{
 			m_Dialog.Close();
+			return true;
+		}
+
+		if (id == 3)
+		{
+			m_Dialog.Extra();
 			return true;
 		}
 

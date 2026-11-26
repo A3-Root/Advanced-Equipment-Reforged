@@ -105,6 +105,14 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
       Name "ROOT_AE3_StatusAction"
      }
     }
+    ROOT_AE3_RenameAction "{6AF4C426111BD28B}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C426111BD282}" {
+      Name "ROOT_AE3_RenameAction"
+     }
+    }
    }
   }
   RplComponent "{6AF041BB11637E09}" {

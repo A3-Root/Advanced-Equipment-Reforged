@@ -82,6 +82,14 @@ GenericEntity : "{7F671B405CDBF0A2}Prefabs/Props/Airport/GeneratorAirfield_US_01
       Name "ROOT_AE3_StatusAction"
      }
     }
+    ROOT_AE3_RenameAction "{6AF4C426111B85BA}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C426111B85B5}" {
+      Name "ROOT_AE3_RenameAction"
+     }
+    }
    }
   }
  }

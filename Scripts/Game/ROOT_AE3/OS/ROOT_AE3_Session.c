@@ -148,6 +148,9 @@ class ROOT_AE3_Session : Managed
 			return false;
 		}
 
+		if (ROOT_AE3_Util.CarriedBy(m_Computer.GetOwner(), player))
+			return true;
+
 		if (ROOT_AE3_Util.IsCarried(m_Computer.GetOwner()))
 		{
 			reason = "The computer was picked up.";
@@ -157,6 +160,13 @@ class ROOT_AE3_Session : Managed
 		if (vector.Distance(player.GetOrigin(), m_Computer.GetOwner().GetOrigin()) > ROOT_AE3_Manager.USE_RANGE + 1)
 		{
 			reason = "You moved away from the computer.";
+			return false;
+		}
+
+		ROOT_AE3_LidComponent lid = ROOT_AE3_LidComponent.Of(m_Computer.GetOwner());
+		if (lid && !lid.IsOpen())
+		{
+			reason = "The lid is closed.";
 			return false;
 		}
 

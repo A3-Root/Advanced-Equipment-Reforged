@@ -151,11 +151,61 @@ class ROOT_AE3_Window : ROOT_AE3_UiListener
 		m_fH = h;
 		ReleaseHandlers();
 		m_App.ReleaseHandlers();
-		m_wFrame.RemoveFromHierarchy();
+		if (m_wGhost)
+			m_wGhost.RemoveFromHierarchy();
+
+		m_wGhost = null;
+		if (m_wFrame)
+			m_wFrame.RemoveFromHierarchy();
+
 		Create();
 		m_wFrame.SetOpacity(1);
 		m_App.Redraw();
 		BringToFront();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Desktop resized: before the desktop rebuild, the widgets are dropped; app state stays.
+	void Detach()
+	{
+		m_bDragging = false;
+		m_bDragPending = false;
+		m_bResizing = false;
+		ReleaseHandlers();
+		m_App.ReleaseHandlers();
+		if (m_wGhost)
+			m_wGhost.RemoveFromHierarchy();
+
+		if (m_wFrame)
+			m_wFrame.RemoveFromHierarchy();
+
+		m_wGhost = null;
+		m_wFrame = null;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Desktop resized: rebuilds the window in the new window layer, kept inside the window area.
+	void Relayout()
+	{
+		float aw, ah;
+		m_Desktop.GetArea(aw, ah);
+		if (m_bMax)
+		{
+			m_fRestoreW = Math.Min(m_fRestoreW, aw);
+			m_fRestoreH = Math.Min(m_fRestoreH, ah);
+			m_fRestoreX = Math.Clamp(m_fRestoreX, 0, aw - m_fRestoreW);
+			m_fRestoreY = Math.Clamp(m_fRestoreY, 0, ah - m_fRestoreH);
+			Resize(0, 0, aw, ah);
+		}
+		else
+		{
+			float w = Math.Min(m_fW, aw);
+			float h = Math.Min(m_fH, ah);
+			Resize(Math.Clamp(m_fX, 0, aw - w), Math.Clamp(m_fY, 0, ah - h), w, h);
+		}
+
+		if (m_bMin)
+			m_wFrame.SetVisible(false);
 	}
 
 	//------------------------------------------------------------------------------------------------

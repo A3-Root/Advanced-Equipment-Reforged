@@ -4,6 +4,10 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   MeshObject "{6AF041BB1162BD23}" {
    Object "{C886A982424854B3}Assets/ROOT_AE3/ROOT_AE3_UsbStick/ROOT_AE3_UsbStick.xob"
    Materials {
+    MaterialAssignClass "{6AF4C4261115878A}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{A423E78DC18880D1}Assets/ROOT_AE3/Data/AE3_Accent_Red.emat"
+    }
     MaterialAssignClass "{6AF041BB1162B4B9}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
@@ -43,7 +47,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
-    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+    ItemDisplayName ROOT_AE3_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
      Name "#ROOT_AE3-Item_UsbStick_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {

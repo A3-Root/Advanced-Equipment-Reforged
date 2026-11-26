@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{FE467449C09475E2}Assets/ROOT_AE3/ROOT_AE3_Router/Data/AE3_Accent.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

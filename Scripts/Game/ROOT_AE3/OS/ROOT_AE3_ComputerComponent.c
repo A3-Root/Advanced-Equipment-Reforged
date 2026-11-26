@@ -124,6 +124,10 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 		if (!GetGame().InPlayMode() || !IsAuthority())
 			return;
 
+		InventoryItemComponent item = InventoryItemComponent.Cast(owner.FindComponent(InventoryItemComponent));
+		if (item)
+			item.m_OnParentSlotChangedInvoker.Insert(OnSlotChanged);
+
 		GetGame().GetCallqueue().CallLater(InitServer, 100, false);
 	}
 
@@ -139,6 +143,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 		GetGame().GetCallqueue().Remove(PushMirrorDelayed);
 		GetGame().GetCallqueue().Remove(UpdateViewers);
 		GetGame().GetCallqueue().Remove(PushDesktopDelayed);
+		GetGame().GetCallqueue().Remove(RespawnUsbProps);
 		super.OnDelete(owner);
 	}
 
@@ -171,10 +176,6 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 		m_Power = ROOT_AE3_PowerComponent.Of(GetOwner());
 		if (m_Power)
 			m_Power.GetOnStateChanged().Insert(OnPowerState);
-
-		InventoryItemComponent item = InventoryItemComponent.Cast(GetOwner().FindComponent(InventoryItemComponent));
-		if (item)
-			item.m_OnParentSlotChangedInvoker.Insert(OnSlotChanged);
 
 		if (m_sHostname.IsEmpty())
 		{
@@ -456,6 +457,13 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	bool HasUsbDrive()
 	{
 		return m_iUsbMask != 0;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Replicated: bit per occupied USB port.
+	int GetUsbMask()
+	{
+		return m_iUsbMask;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -1075,25 +1083,61 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Picked up into an inventory: sessions end, drives are ejected, the computer goes to standby.
+	//! Picked up: flash drives stay plugged in (port props removed), power links drop, a computer nobody
+	//! operates from this inventory goes to standby. Sessions of other players end by ROOT_AE3_Session.PlayerValid.
+	//! Placed again: port props come back.
 	protected void OnSlotChanged(InventoryStorageSlot oldSlot, InventoryStorageSlot newSlot)
 	{
-		if (!newSlot || !IsAuthority())
+		if (!IsAuthority())
 			return;
 
-		ROOT_AE3_Manager.Get().EndSessionsOf(ROOT_AE3_DeviceComponent.Of(GetOwner()));
-		IEntity picker;
-		if (newSlot.GetOwner())
-			picker = newSlot.GetOwner().GetRootParent();
+		if (!newSlot)
+		{
+			GetGame().GetCallqueue().CallLater(RespawnUsbProps, 200, false);
+			return;
+		}
 
-		ROOT_AE3_UsbManager.EjectAll(this, picker);
+		RemoveUsbProps();
 		ROOT_AE3_PowerComponent p = GetPower();
-		string reason;
-		if (p && p.IsOn())
-			p.Standby(reason);
+		if (!p)
+			return;
 
-		if (p)
-			p.Disconnect();
+		p.Disconnect();
+		IEntity carrier = ROOT_AE3_Util.Carrier(GetOwner());
+		int carrierId;
+		if (carrier)
+			carrierId = GetGame().GetPlayerManager().GetPlayerIdFromControlledEntity(carrier);
+
+		string reason;
+		if (p.IsOn() && (carrierId <= 0 || !ROOT_AE3_Manager.Get().HasSession(carrierId, this)))
+			p.Standby(reason);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void RemoveUsbProps()
+	{
+		foreach (ROOT_AE3_UsbSlot slot : m_aUsbSlots)
+		{
+			if (slot && slot.m_Prop)
+			{
+				SCR_EntityHelper.DeleteEntityAndChildren(slot.m_Prop);
+				slot.m_Prop = null;
+			}
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void RespawnUsbProps()
+	{
+		if (ROOT_AE3_Util.IsCarried(GetOwner()))
+			return;
+
+		for (int i = 0; i < m_aUsbSlots.Count(); i++)
+		{
+			ROOT_AE3_UsbSlot slot = m_aUsbSlots[i];
+			if (slot && !slot.m_Prop)
+				slot.m_Prop = ROOT_AE3_UsbManager.SpawnProp(this, i, slot.m_sPropPrefab);
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -1281,7 +1325,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	protected void UpdateViewers()
 	{
 		ROOT_AE3_Settings s = ROOT_AE3_SettingsManager.Get();
-		if (!s.m_bUiOnTexture || m_iScreen == ROOT_AE3_EScreen.OFF || !ROOT_AE3_ScreenComponent.Of(GetOwner()))
+		if (!s.m_bUiOnTexture || m_iScreen == ROOT_AE3_EScreen.OFF || !ROOT_AE3_ScreenComponent.Of(GetOwner()) || ROOT_AE3_Util.IsCarried(GetOwner()))
 		{
 			m_aViewers.Clear();
 			return;

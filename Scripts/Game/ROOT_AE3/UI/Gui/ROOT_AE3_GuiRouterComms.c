@@ -428,7 +428,7 @@ class ROOT_AE3_GuiRouterComms
 			case "net_scan":
 			{
 				array<ROOT_AE3_NetworkComponent> found = {};
-				sys.Scan(c.GetOwner().GetOrigin(), found);
+				sys.Scan(ROOT_AE3_Util.WorldPos(c.GetOwner()), found);
 				array<string> res = {};
 				foreach (ROOT_AE3_NetworkComponent r : found)
 				{
@@ -436,7 +436,7 @@ class ROOT_AE3_GuiRouterComms
 					if (!r.GetPassword().IsEmpty())
 						sec = "password";
 
-					array<string> e = {r.GetSsid(), r.GetGateway(), Math.Round(vector.Distance(c.GetOwner().GetOrigin(), r.GetOwner().GetOrigin())).ToString() + " m", sec};
+					array<string> e = {r.GetSsid(), r.GetGateway(), Math.Round(vector.Distance(ROOT_AE3_Util.WorldPos(c.GetOwner()), ROOT_AE3_Util.WorldPos(r.GetOwner()))).ToString() + " m", sec};
 					res.Insert(ROOT_AE3_Codec.JoinSub(e));
 				}
 
@@ -753,7 +753,7 @@ class ROOT_AE3_GuiRouterComms
 			range = 500;
 
 		range = Math.Clamp(range, 100, 5000);
-		vector origin = c.GetOwner().GetOrigin();
+		vector origin = ROOT_AE3_Util.WorldPos(c.GetOwner());
 		bool sameNet = ROOT_AE3_SettingsManager.Get().m_bDesktopMapSameNetworkOnly;
 		ROOT_AE3_NetworkComponent own = c.GetNetwork();
 		array<string> res = {range.ToString()};
@@ -764,7 +764,7 @@ class ROOT_AE3_GuiRouterComms
 
 			vector pos = d.GetOwner().GetOrigin();
 			vector delta = pos - origin;
-			if (Math.AbsFloat(delta[0]) > range || Math.AbsFloat(delta[2]) > range || ROOT_AE3_Util.IsCarried(d.GetOwner()))
+			if (d.IsHidden() || Math.AbsFloat(delta[0]) > range || Math.AbsFloat(delta[2]) > range || ROOT_AE3_Util.IsCarried(d.GetOwner()))
 				continue;
 
 			string kind = "computer";

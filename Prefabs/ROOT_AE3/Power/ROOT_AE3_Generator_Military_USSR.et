@@ -82,6 +82,14 @@ GameEntity : "{6597847D2AC253F5}Prefabs/Props/Military/Generators/GeneratorMilit
       Name "ROOT_AE3_StatusAction"
      }
     }
+    ROOT_AE3_RenameAction "{6AF4C426111843B1}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C4261118438B}" {
+      Name "ROOT_AE3_RenameAction"
+     }
+    }
    }
   }
  }

@@ -1,4 +1,6 @@
 //! Game Master dialog: action panel for the selected devices, then the field form of the chosen action.
+//! Also the player rename form (key RENAME_KEY, sent as ROOT_AE3_EMsg.RENAME instead of a Game Master request)
+//! and the inventory form of a carried computer (key DEVICE_KEY: Open, or Rename as RENAME_KEY).
 class ROOT_AE3_GmDialog : ChimeraMenuBase
 {
 	protected static string s_sKey;
@@ -8,6 +10,11 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	protected static ref array<RplId> s_aTargets = {};
 	protected static ref array<string> s_aKeys = {};		//!< Panel: actions that apply to the selection
 	protected static string s_sDevices;
+
+	protected static IEntity s_Device;	//!< DEVICE_KEY: the carried computer
+
+	static const string RENAME_KEY = "_rename";
+	static const string DEVICE_KEY = "_device";
 
 	protected ref ROOT_AE3_GmDialogForm m_Form;
 	protected ref ROOT_AE3_GmPanel m_Panel;
@@ -62,11 +69,42 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Player: name form for one device.
+	static void OpenRename(IEntity device)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (!d)
+			return;
+
+		array<string> labels = {"Name (empty = default)"};
+		array<string> defaults = {d.GetCustomName()};
+		array<RplId> targets = {d.GetRplId()};
+		Request(RENAME_KEY, "Rename " + d.GetDeviceName(), labels, defaults, targets);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Player: form of a computer in the own inventory: Open, or Rename with the name field.
+	static void OpenDevice(IEntity device)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (!d)
+			return;
+
+		s_Device = device;
+		array<string> labels = {"Name (empty = default)"};
+		array<string> defaults = {d.GetCustomName()};
+		array<RplId> targets = {d.GetRplId()};
+		Request(DEVICE_KEY, d.GetDeviceName(), labels, defaults, targets);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override void OnMenuOpen()
 	{
 		super.OnMenuOpen();
 		if (s_sKey.IsEmpty())
 			m_Panel = new ROOT_AE3_GmPanel(this, GetRootWidget(), s_sDevices, s_aKeys);
+		else if (s_sKey == DEVICE_KEY)
+			m_Form = new ROOT_AE3_GmDialogForm(this, GetRootWidget(), s_sTitle, s_aLabels, s_aDefaults, "Rename", "Open");
 		else
 			m_Form = new ROOT_AE3_GmDialogForm(this, GetRootWidget(), s_sTitle, s_aLabels, s_aDefaults);
 
@@ -119,8 +157,33 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Third form button. DEVICE_KEY: opens the carried computer.
+	void Extra()
+	{
+		IEntity device = s_Device;
+		Close();
+		if (s_sKey == DEVICE_KEY && device)
+			ROOT_AE3_Client.Get().OpenCarried(device);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	void Submit(notnull array<string> values)
 	{
+		if (s_sKey == RENAME_KEY || s_sKey == DEVICE_KEY)
+		{
+			string name;
+			if (!values.IsEmpty())
+				name = values[0];
+
+			foreach (RplId id : s_aTargets)
+			{
+				ROOT_AE3_Net.SendToServer(id, ROOT_AE3_EMsg.RENAME, name);
+			}
+
+			Close();
+			return;
+		}
+
 		foreach (int i, string v : values)
 		{
 			values[i] = ROOT_AE3_Codec.Clean(v);

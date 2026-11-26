@@ -23,6 +23,14 @@ MetaFileClass {
      SourceMaterial "AE3_Rubber"
      AssignedMaterial "{A32D5268DF98CB16}Assets/ROOT_AE3/ROOT_AE3_Laptop_Closed/Data/AE3_Rubber.emat"
     }
+    MaterialAssignClass "{6AF4BE7511B40DC2}" {
+     SourceMaterial "AE3_LED_Blue"
+     AssignedMaterial "{8731B765F880B940}Assets/ROOT_AE3/ROOT_AE3_Laptop_Closed/Data/AE3_LED_Blue.emat"
+    }
+    MaterialAssignClass "{6AF4BE7511B40DDD}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{E0ED699FE533CA8C}Assets/ROOT_AE3/ROOT_AE3_Laptop_Closed/Data/AE3_Accent.emat"
+    }
    }
    MeshParams {
     MeshParam ROOT_AE3_Laptop_Closed {

@@ -159,7 +159,7 @@ class ROOT_AE3_Settings
 	[Attribute("2", desc: "Extra power draw in W while waiting at a table", params: "0 500 1", category: "Games")]
 	float m_fGamesIdleDraw;
 
-	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Desktop window size", enums: { ParamEnum("Fullscreen", "0"), ParamEnum("Large", "1"), ParamEnum("Medium", "2"), ParamEnum("Small", "3") }, category: "Desktop")]
+	[Attribute("1", uiwidget: UIWidgets.ComboBox, desc: "Desktop window size", enums: { ParamEnum("Fullscreen", "0"), ParamEnum("Large", "1"), ParamEnum("Medium", "2"), ParamEnum("Small", "3") }, category: "Desktop")]
 	int m_iDesktopSize;
 
 	[Attribute("1", desc: "Table hosts may take extra practice seats and play every side themselves", category: "Games")]
@@ -167,6 +167,72 @@ class ROOT_AE3_Settings
 
 	[Attribute("1", desc: "Table hosts may add bot players", category: "Games")]
 	bool m_bGamesBots;
+
+	[Attribute("0", desc: "77th JSOC EWO mode: EWO packs broadcast a wireless network and charge carried laptops", category: "EWO")]
+	bool m_bEwoMode;
+
+	[Attribute("Radio_ANPRC77", desc: "Prefab names (comma separated, part of the prefab path) of the packs that act as EWO packs", category: "EWO")]
+	string m_sEwoPrefabs;
+
+	[Attribute("400", desc: "Energy of an EWO pack, in laptop battery percent", params: "10 5000 10", category: "EWO")]
+	float m_fEwoEnergyMax;
+
+	[Attribute("100", desc: "Wireless range of an EWO network in m", params: "5 1000 5", category: "EWO")]
+	float m_fEwoWifiRange;
+
+	[Attribute("10", desc: "Range in m to the power source an EWO pack recharges from", params: "2 50 1", category: "EWO")]
+	float m_fEwoSourceRange;
+
+	[Attribute("3", desc: "Energy per minute a broadcasting EWO network uses", params: "0 60 0.5", category: "EWO")]
+	float m_fEwoWifiDrain;
+
+	[Attribute("10", desc: "Energy per minute an EWO pack delivers to each charging laptop", params: "1 60 1", category: "EWO")]
+	float m_fEwoChargeRate;
+
+	[Attribute("5", desc: "Energy per minute an EWO pack takes in from a running power source", params: "1 60 1", category: "EWO")]
+	float m_fEwoRechargeRate;
+
+	//------------------------------------------------------------------------------------------------
+	//! Text settings by key (Game Master System module). False for an unknown key.
+	bool GetText(string key, out string value)
+	{
+		switch (key)
+		{
+			case "root_password": value = m_sDefaultRootPassword; return true;
+			case "ewo_prefabs": value = m_sEwoPrefabs; return true;
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	bool SetText(string key, string value)
+	{
+		switch (key)
+		{
+			case "root_password": m_sDefaultRootPassword = value; return true;
+			case "ewo_prefabs": m_sEwoPrefabs = value; return true;
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Keys of GetNumber / SetNumber and GetText / SetText.
+	static void Keys(notnull array<string> numbers, notnull array<string> texts)
+	{
+		array<string> n = {
+			"allow_root_login", "cli_elevate", "logout_on_end", "debug_any_login", "error_sound", "ui_on_texture",
+			"file_browsing", "map_same_network", "games_enabled", "games_hosting", "games_same_network", "games_bots",
+			"games_practice", "web_images", "startup_time", "shutdown_time", "transfer_local", "transfer_usb",
+			"transfer_network", "range_default", "range_multiplier", "ui_range", "power_interval", "default_mode",
+			"default_theme", "desktop_size", "terminal_design", "ewo_mode", "ewo_energy", "ewo_range", "ewo_source_range",
+			"ewo_drain", "ewo_charge", "ewo_recharge"
+		};
+		array<string> t = {"root_password", "ewo_prefabs"};
+		numbers.Copy(n);
+		texts.Copy(t);
+	}
 
 	//------------------------------------------------------------------------------------------------
 	//! Numeric and on/off settings by key (Game Master settings attributes). False for an unknown key.
@@ -201,6 +267,13 @@ class ROOT_AE3_Settings
 			case "default_theme": value = m_iDesktopDefaultTheme; return true;
 			case "desktop_size": value = m_iDesktopSize; return true;
 			case "terminal_design": value = m_iTerminalDesign; return true;
+			case "ewo_mode": value = ROOT_AE3_Util.BoolNum(m_bEwoMode); return true;
+			case "ewo_energy": value = m_fEwoEnergyMax; return true;
+			case "ewo_range": value = m_fEwoWifiRange; return true;
+			case "ewo_source_range": value = m_fEwoSourceRange; return true;
+			case "ewo_drain": value = m_fEwoWifiDrain; return true;
+			case "ewo_charge": value = m_fEwoChargeRate; return true;
+			case "ewo_recharge": value = m_fEwoRechargeRate; return true;
 		}
 
 		return false;
@@ -225,19 +298,26 @@ class ROOT_AE3_Settings
 			case "games_bots": m_bGamesBots = value != 0; return true;
 			case "games_practice": m_bGamesDebugSeats = value != 0; return true;
 			case "web_images": m_bDesktopWebImages = value != 0; return true;
-			case "startup_time": m_fStartupTime = value; return true;
-			case "shutdown_time": m_fShutdownTime = value; return true;
-			case "transfer_local": m_fTransferSpeedLocal = value; return true;
-			case "transfer_usb": m_fTransferSpeedUsb = value; return true;
-			case "transfer_network": m_fTransferSpeedNetwork = value; return true;
-			case "range_default": m_fDefaultWirelessRange = value; return true;
-			case "range_multiplier": m_fWirelessRangeMultiplier = value; return true;
-			case "ui_range": m_fUiPlayerRange = value; return true;
-			case "power_interval": m_fPowerUpdateInterval = value; return true;
-			case "default_mode": m_iDesktopDefaultMode = Math.Round(value); return true;
-			case "default_theme": m_iDesktopDefaultTheme = Math.Round(value); return true;
-			case "desktop_size": m_iDesktopSize = Math.Round(value); return true;
-			case "terminal_design": m_iTerminalDesign = Math.Round(value); return true;
+			case "startup_time": m_fStartupTime = Math.Clamp(value, 3, 15); return true;
+			case "shutdown_time": m_fShutdownTime = Math.Clamp(value, 1, 15); return true;
+			case "transfer_local": m_fTransferSpeedLocal = Math.Clamp(value, 0, 102400); return true;
+			case "transfer_usb": m_fTransferSpeedUsb = Math.Clamp(value, 0, 102400); return true;
+			case "transfer_network": m_fTransferSpeedNetwork = Math.Clamp(value, 0, 102400); return true;
+			case "range_default": m_fDefaultWirelessRange = Math.Clamp(value, 1, 10000); return true;
+			case "range_multiplier": m_fWirelessRangeMultiplier = Math.Clamp(value, 0.1, 10); return true;
+			case "ui_range": m_fUiPlayerRange = Math.Clamp(value, 1, 10); return true;
+			case "power_interval": m_fPowerUpdateInterval = Math.Clamp(value, 1, 60); return true;
+			case "default_mode": m_iDesktopDefaultMode = Math.ClampInt(Math.Round(value), 0, 2); return true;
+			case "default_theme": m_iDesktopDefaultTheme = Math.ClampInt(Math.Round(value), 0, 2); return true;
+			case "desktop_size": m_iDesktopSize = Math.ClampInt(Math.Round(value), 0, 3); return true;
+			case "terminal_design": m_iTerminalDesign = Math.ClampInt(Math.Round(value), 0, 19); return true;
+			case "ewo_mode": m_bEwoMode = value != 0; return true;
+			case "ewo_energy": m_fEwoEnergyMax = Math.Clamp(value, 10, 5000); return true;
+			case "ewo_range": m_fEwoWifiRange = Math.Clamp(value, 5, 1000); return true;
+			case "ewo_source_range": m_fEwoSourceRange = Math.Clamp(value, 2, 50); return true;
+			case "ewo_drain": m_fEwoWifiDrain = Math.Clamp(value, 0, 60); return true;
+			case "ewo_charge": m_fEwoChargeRate = Math.Clamp(value, 1, 60); return true;
+			case "ewo_recharge": m_fEwoRechargeRate = Math.Clamp(value, 1, 60); return true;
 		}
 
 		return false;
@@ -252,7 +332,7 @@ class ROOT_AE3_Settings
 			m_sTerminalDialogTitle, m_iDesktopDefaultTheme.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopEnableFileBrowsing),
 			ROOT_AE3_Util.BoolStr(m_bUiOnTexture), m_fUiPlayerRange.ToString(), m_iUiMaxConcurrentViewers.ToString(),
 			m_fUiKeystrokeSyncInterval.ToString(), m_iDesktopDefaultMode.ToString(), m_iDeviceNameFallback.ToString(),
-			m_iDesktopSize.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopWebImages)
+			m_iDesktopSize.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopWebImages), ROOT_AE3_Util.BoolStr(m_bEwoMode), m_sEwoPrefabs
 		};
 		return ROOT_AE3_Codec.JoinSub(f);
 	}
@@ -278,5 +358,10 @@ class ROOT_AE3_Settings
 		m_iDeviceNameFallback = f[11].ToInt();
 		m_iDesktopSize = f[12].ToInt();
 		m_bDesktopWebImages = f[13] == "1";
+		if (f.Count() >= 16)
+		{
+			m_bEwoMode = f[14] == "1";
+			m_sEwoPrefabs = f[15];
+		}
 	}
 }

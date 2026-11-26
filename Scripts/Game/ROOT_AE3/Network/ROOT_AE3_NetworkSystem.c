@@ -258,7 +258,7 @@ class ROOT_AE3_NetworkSystem
 	{
 		foreach (ROOT_AE3_NetworkComponent r : m_aRouters)
 		{
-			if (r && r.IsPowered() && vector.Distance(pos, r.GetOwner().GetOrigin()) <= RangeOf(r))
+			if (r && r.IsPowered() && vector.Distance(pos, ROOT_AE3_Util.WorldPos(r.GetOwner())) <= RangeOf(r))
 				found.Insert(r);
 		}
 	}
@@ -293,7 +293,7 @@ class ROOT_AE3_NetworkSystem
 				return false;
 			}
 
-			if (vector.Distance(client.GetOwner().GetOrigin(), router.GetOwner().GetOrigin()) > RangeOf(router))
+			if (vector.Distance(ROOT_AE3_Util.WorldPos(client.GetOwner()), ROOT_AE3_Util.WorldPos(router.GetOwner())) > RangeOf(router))
 			{
 				reason = "Network is out of range.";
 				return false;
@@ -593,14 +593,15 @@ class ROOT_AE3_NetworkSystem
 			if (!r)
 				continue;
 
-			if (ROOT_AE3_Util.IsCarried(c.GetOwner()) || ROOT_AE3_Util.IsCarried(r.GetOwner()))
+			ROOT_AE3_ConnectionComponent link = ROOT_AE3_ConnectionComponent.Of(c.GetOwner());
+			bool wired = link && link.IsWiredTo(r.GetOwner());
+			if (ROOT_AE3_Util.IsCarried(r.GetOwner()) || (wired && ROOT_AE3_Util.IsCarried(c.GetOwner())))
 			{
 				Disconnect(c);
 				continue;
 			}
 
-			ROOT_AE3_ConnectionComponent link = ROOT_AE3_ConnectionComponent.Of(c.GetOwner());
-			if (link && link.IsWiredTo(r.GetOwner()))
+			if (wired)
 			{
 				if (link.WireStretched(r.GetOwner()))
 					Disconnect(c);
@@ -609,7 +610,7 @@ class ROOT_AE3_NetworkSystem
 			}
 
 			string blocked;
-			if (!r.IsPowered() || vector.Distance(c.GetOwner().GetOrigin(), r.GetOwner().GetOrigin()) > RangeOf(r) || !Allowed(c, r, blocked))
+			if (!r.IsPowered() || vector.Distance(ROOT_AE3_Util.WorldPos(c.GetOwner()), ROOT_AE3_Util.WorldPos(r.GetOwner())) > RangeOf(r) || !Allowed(c, r, blocked))
 				Disconnect(c);
 		}
 	}

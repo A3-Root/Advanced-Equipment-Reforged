@@ -1,4 +1,4 @@
-//! Persistence of power state, battery level and fuel. Server only.
+//! Persistence of power state, battery level, fuel and custom device name. Server only.
 class ROOT_AE3_PowerSerializer : ScriptedComponentSerializer
 {
 	//------------------------------------------------------------------------------------------------
@@ -14,7 +14,11 @@ class ROOT_AE3_PowerSerializer : ScriptedComponentSerializer
 		if (!p)
 			return ESerializeResult.DEFAULT;
 
-		context.WriteValue("version", 1);
+		context.WriteValue("version", 2);
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.Of(owner);
+		if (dev)
+			context.WriteValue("name", dev.GetCustomName());
+
 		context.WriteValue("state", p.GetState());
 		context.WriteValue("level", p.GetLevel());
 		context.WriteValue("fuel", p.GetFuel());
@@ -37,6 +41,10 @@ class ROOT_AE3_PowerSerializer : ScriptedComponentSerializer
 		p.SetLevel(level);
 		p.SetFuel(fuel);
 		p.SetRestoredState(state);
+		string name;
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.Of(owner);
+		if (version >= 2 && dev && context.ReadValue("name", name))
+			dev.SetDeviceName(name);
 
 		return true;
 	}

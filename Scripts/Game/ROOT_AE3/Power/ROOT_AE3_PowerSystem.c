@@ -55,7 +55,7 @@ class ROOT_AE3_PowerSystem
 			return;
 
 		m_bRunning = true;
-		m_fInterval = ROOT_AE3_SettingsManager.Get().m_fPowerUpdateInterval;
+		m_fInterval = Math.Max(ROOT_AE3_SettingsManager.Get().m_fPowerUpdateInterval, 0.5);
 		GetGame().GetCallqueue().CallLater(Tick, m_fInterval * 1000, true);
 	}
 
@@ -110,6 +110,14 @@ class ROOT_AE3_PowerSystem
 	protected void Tick()
 	{
 		float dt = m_fInterval;
+		float interval = Math.Max(ROOT_AE3_SettingsManager.Get().m_fPowerUpdateInterval, 0.5);
+		if (interval != m_fInterval)
+		{
+			m_fInterval = interval;
+			GetGame().GetCallqueue().Remove(Tick);
+			GetGame().GetCallqueue().CallLater(Tick, m_fInterval * 1000, true);
+		}
+
 		for (int i = m_aAll.Count() - 1; i >= 0; i--)
 		{
 			if (!m_aAll[i])
@@ -135,9 +143,11 @@ class ROOT_AE3_PowerSystem
 			if (!p.IsProvider())
 				continue;
 
-			if (!p.GetConsumers().IsEmpty() && ROOT_AE3_Util.IsCarried(p.GetOwner()))
+			bool carried = ROOT_AE3_Util.IsCarried(p.GetOwner());
+			if (carried && !p.GetConsumers().IsEmpty())
 			{
 				p.DisconnectConsumers();
+				p.SetExternalFactor(0);
 				continue;
 			}
 
@@ -170,10 +180,15 @@ class ROOT_AE3_PowerSystem
 			if (p.GetRole() == ROOT_AE3_EPowerRole.SOLAR && demand > available)
 				supplying = false;
 
-			// Batteries charge from what is left after the consumers.
+			// Batteries and external loads (EWO packs) charge from what is left after the consumers.
+			if (!carried)
+				charge += p.GetExternalLoadW();
+
 			float factor = 0;
 			if (supplying && charge > 0)
 				factor = Math.Clamp((available - demand) / charge, 0, 1);
+
+			p.SetExternalFactor(factor);
 
 			foreach (ROOT_AE3_PowerComponent c : p.GetConsumers())
 			{

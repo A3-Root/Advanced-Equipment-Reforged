@@ -29,7 +29,7 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 		float bestDist = m_fReach;
 		foreach (ROOT_AE3_DeviceComponent d : ROOT_AE3_Manager.Get().GetDevices())
 		{
-			if (!d || d.GetOwner() == owner || ROOT_AE3_Util.IsCarried(d.GetOwner()))
+			if (!d || d.IsHidden() || d.GetOwner() == owner || ROOT_AE3_Util.IsCarried(d.GetOwner()))
 				continue;
 
 			ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(d.GetOwner());

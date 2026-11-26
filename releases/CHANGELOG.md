@@ -54,6 +54,22 @@
 - Graphical game boards in the desktop Games app for all eight games: drawn boards, cards, dice and tokens; moves by clicking.
 - Games app lobby banner with a picture of the game, waiting room with seat cards, table with seat chips and a side panel.
 - Rules method `Gui(seat)`: board state for the graphical boards (game_view field 12, seat names after it).
+- Inventory "Use" on a carried laptop (uniform, vest, backpack, also in vehicles): wakes or boots it and opens the desktop or terminal.
+- Device names: Rename action, Game Master "Rename device", `ROOT_AE3_API.SetDeviceName`; shown in the inventory with hostname, battery, state and flash drives.
+- Desktop window size button (taskbar) and F11, stored per player in the profile.
+- 77th JSOC EWO mode: AN/PRC-77 (configurable) packs with energy pool, wireless network, laptop charging and power source recharge; EWO panel from inventory "Use".
+- AE3 System module (Game Master Systems, World Editor) with all mission settings; device values keep priority.
+- Game Master global attributes for EWO; module actions for default root password and EWO pack prefabs.
+- `ROOT_AE3_API.SetGlobalNumber` / `SetGlobalText`.
+- Accent colour parts (bumpers, stripes, logo plates, caps) and a blue network LED on all device models.
+- Flash drives in red, blue and yellow.
+- `tools/build_strings.py` builds the runtime string table from the .st file.
+- Inventory Use on a carried laptop shows its name field with Open and Rename.
+- Inventory Use enabled for gamepad.
+- EWO panel for packs carried or placed in the vicinity; it updates every 3 s and closes when the pack is out of reach, the player dies or EWO mode is off.
+- Persistence saves the names of all devices and the AE3 System module settings (`ROOT_AE3_SystemModuleSerializer`).
+- `ROOT_AE3_DeviceComponent` attribute hidden (set on the EWO router).
+- `ROOT_AE3_PowerComponent.SetExternalLoad` / `GetExternalFactor`: loads outside AE3 links served from what consumers leave.
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -80,3 +96,24 @@
 - Web and base64 images no longer pass through `string.Trim` / `Substring` (output cut at 8191 characters); images larger than about 6 KB load.
 - Binary images cut short by the download (the engine returns web data as text) are reported with the number of bytes received.
 - Media files are written with `FileHandle.WriteArray`.
+- Picking up a laptop keeps its flash drives plugged in; port props are hidden while carried and return when placed.
+- Picking up a laptop ends only other players' sessions; the carrier's session continues.
+- Carried laptops stay on wireless networks within range of the carrier.
+- Variants recoloured: Black with orange, Olive with coyote, Sand with ranger green accents; brighter plastics.
+- Game Master previews re-rendered in the variant colours.
+- Inventory Use closes the inventory through `Action_CloseInventory`.
+- Carried computers do not mirror their screen and go to standby when their session ends.
+- Restoring a save into a carried laptop does not spawn flash drive props; the pick-up listener is set at init.
+- Sessions on a placed laptop end when its lid is closed.
+- EWO networks get a random 8 character password and the lowest free gateway number 1-254; the router exists only while broadcasting, is hidden from the Map app and is configured only when name or password change.
+- EWO recharge loads the power source; pack state stays while EWO mode is off.
+- Rename and EWO requests are rate limited per player.
+- AE3 System module applies its settings at init; only the active module can be edited; deleting it activates the next module or the mission defaults.
+- Power update interval follows setting changes at runtime.
+- Numeric settings are clamped to their attribute ranges; Game Master EWO energy slider up to 5000, range up to 1000.
+- Desktop window size default Large; changing it keeps open windows and their content; taskbar button labelled "Size".
+- Inventory tooltip labels in the string table; the Use hint only on computers.
+- Larger variant accents (laptop side bands and lid plate, router and battery bands, server top plate); solar panel frame and legs take the variant colour, accent rim on the panel; previews re-rendered.
+
+### Removed
+- Plain base laptop, router, battery pack, solar panel and portable server from Game Master and arsenals (3 variants each remain).

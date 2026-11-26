@@ -11,6 +11,10 @@ MetaFileClass {
      SourceMaterial "AE3_Metal"
      AssignedMaterial "{AF80E949B28EABE2}Assets/ROOT_AE3/ROOT_AE3_UsbStick/Data/AE3_Metal.emat"
     }
+    MaterialAssignClass "{6AF4C3CF11C4FF0F}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{A5DE82B18D47B0FF}Assets/ROOT_AE3/ROOT_AE3_UsbStick/Data/AE3_Accent.emat"
+    }
    }
    MeshParams {
     MeshParam ROOT_AE3_UsbStick {

@@ -9,5 +9,6 @@ enum ROOT_AE3_EDeviceType
 	BATTERY,
 	SOLAR,
 	LAMP,
-	OTHER
+	OTHER,
+	SYSTEM	//!< AE3 System module
 }

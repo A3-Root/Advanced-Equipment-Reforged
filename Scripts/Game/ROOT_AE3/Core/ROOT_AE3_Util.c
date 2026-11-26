@@ -69,6 +69,61 @@ class ROOT_AE3_Util
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! In the inventory of the character (any depth: uniform, vest, backpack; also while seated in a vehicle).
+	static bool CarriedBy(IEntity ent, IEntity character)
+	{
+		if (!character || !IsCarried(ent))
+			return false;
+
+		IEntity p = ent.GetParent();
+		while (p)
+		{
+			if (p == character)
+				return true;
+
+			p = p.GetParent();
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! World position: the carrier's position for an item in an inventory.
+	static vector WorldPos(IEntity ent)
+	{
+		if (!ent)
+			return vector.Zero;
+
+		if (IsCarried(ent))
+		{
+			IEntity root = ent.GetRootParent();
+			if (root)
+				return root.GetOrigin();
+		}
+
+		return ent.GetOrigin();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Character whose inventory holds the item, null when not carried by a character.
+	static IEntity Carrier(IEntity ent)
+	{
+		if (!IsCarried(ent))
+			return null;
+
+		IEntity p = ent.GetParent();
+		while (p)
+		{
+			if (ChimeraCharacter.Cast(p))
+				return p;
+
+			p = p.GetParent();
+		}
+
+		return null;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	static string PadRight(string s, int len)
 	{
 		while (s.Length() < len)

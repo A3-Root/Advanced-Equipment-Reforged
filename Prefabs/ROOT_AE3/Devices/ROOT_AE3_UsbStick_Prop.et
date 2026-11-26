@@ -4,6 +4,10 @@ GenericEntity {
   MeshObject "{6AF041BB11629F38}" {
    Object "{C886A982424854B3}Assets/ROOT_AE3/ROOT_AE3_UsbStick/ROOT_AE3_UsbStick.xob"
    Materials {
+    MaterialAssignClass "{6AF4C426111A6467}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{A423E78DC18880D1}Assets/ROOT_AE3/Data/AE3_Accent_Red.emat"
+    }
     MaterialAssignClass "{6AF041BB1162916B}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"

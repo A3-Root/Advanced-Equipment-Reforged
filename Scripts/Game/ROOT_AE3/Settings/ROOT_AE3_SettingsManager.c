@@ -1,4 +1,4 @@
-//! Access to the active settings. Server: mission header or defaults, cached at first use.
+//! Access to the active settings. Server: AE3 System module, else mission header, else defaults; cached at first use.
 //! Client: values received with the last session (see ROOT_AE3_Settings.PackClient).
 class ROOT_AE3_SettingsManager
 {
@@ -21,6 +21,14 @@ class ROOT_AE3_SettingsManager
 			s_Settings = new ROOT_AE3_Settings();
 
 		return s_Settings;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: settings of the AE3 System module (ROOT_AE3_SystemModuleComponent).
+	static void SetModuleSettings(ROOT_AE3_Settings settings)
+	{
+		if (settings)
+			s_Settings = settings;
 	}
 
 	//------------------------------------------------------------------------------------------------

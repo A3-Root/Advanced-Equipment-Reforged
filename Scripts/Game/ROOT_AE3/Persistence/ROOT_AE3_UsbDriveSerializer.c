@@ -1,4 +1,4 @@
-//! Persistence of flash drive content and label. Server only.
+//! Persistence of flash drive content, label and custom device name. Server only.
 class ROOT_AE3_UsbDriveSerializer : ScriptedComponentSerializer
 {
 	//------------------------------------------------------------------------------------------------
@@ -14,7 +14,11 @@ class ROOT_AE3_UsbDriveSerializer : ScriptedComponentSerializer
 		if (!d)
 			return ESerializeResult.DEFAULT;
 
-		context.WriteValue("version", 1);
+		context.WriteValue("version", 2);
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.Of(owner);
+		if (dev)
+			context.WriteValue("name", dev.GetCustomName());
+
 		context.WriteValue("label", d.GetLabel());
 		context.WriteValue("fs", d.GetFilesystem().Serialize());
 		return ESerializeResult.OK;
@@ -36,6 +40,11 @@ class ROOT_AE3_UsbDriveSerializer : ScriptedComponentSerializer
 
 		d.SetLabel(label);
 		d.SetFilesystem(ROOT_AE3_Filesystem.Deserialize(fs));
+		string name;
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.Of(owner);
+		if (version >= 2 && dev && context.ReadValue("name", name))
+			dev.SetDeviceName(name);
+
 		return true;
 	}
 }

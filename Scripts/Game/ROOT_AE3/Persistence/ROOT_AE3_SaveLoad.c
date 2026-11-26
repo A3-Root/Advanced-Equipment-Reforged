@@ -147,6 +147,10 @@ class ROOT_AE3_SaveLoad
 			c.GetPrefMap().Set(prefs[i], prefs[i + 1]);
 		}
 
+		ROOT_AE3_DeviceComponent named = ROOT_AE3_DeviceComponent.Of(c.GetOwner());
+		if (named && c.GetPrefMap().Contains(ROOT_AE3_DeviceComponent.PREF_NAME))
+			named.SetDeviceName(c.GetPrefMap().Get(ROOT_AE3_DeviceComponent.PREF_NAME));
+
 		c.GetCalendar().Clear();
 		array<string> cal = ROOT_AE3_Codec.SplitSub(parts[10]);
 		int stride = 5;
@@ -197,7 +201,8 @@ class ROOT_AE3_SaveLoad
 			slot.m_Fs = ROOT_AE3_Filesystem.Deserialize(UnescapeFs(usb[i + 3]));
 			slot.m_sPropPrefab = usb[i + 4];
 			c.SetUsbDrive(usb[i].ToInt(), slot);
-			slot.m_Prop = ROOT_AE3_UsbManager.SpawnProp(c, usb[i].ToInt(), slot.m_sPropPrefab);
+			if (!ROOT_AE3_Util.IsCarried(c.GetOwner()))
+				slot.m_Prop = ROOT_AE3_UsbManager.SpawnProp(c, usb[i].ToInt(), slot.m_sPropPrefab);
 		}
 
 		ROOT_AE3_LidComponent lidComp = ROOT_AE3_LidComponent.Of(c.GetOwner());

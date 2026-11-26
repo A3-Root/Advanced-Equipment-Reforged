@@ -22,6 +22,9 @@ class ROOT_AE3_Client
 	ROOT_AE3_ComputerMenu m_Menu;
 	bool m_bMenuOpening;
 	protected bool m_bSettingsRequested;
+	protected int m_iDesktopSize = -1;	//!< Client window size 0-3, -1 = setting default
+	protected bool m_bPrefsLoaded;
+	protected static const string PREFS_FILE = "$profile:ROOT_AE3/client.txt";
 
 	//------------------------------------------------------------------------------------------------
 	static ROOT_AE3_Client Get()
@@ -49,6 +52,64 @@ class ROOT_AE3_Client
 
 		m_DeviceId = d.GetRplId();
 		ROOT_AE3_Net.SendToServer(m_DeviceId, ROOT_AE3_EMsg.OPEN, mode.ToString());
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Desktop window size 0 fullscreen, 1 large, 2 medium, 3 small: the player's choice, else the setting.
+	int DesktopSize()
+	{
+		if (!m_bPrefsLoaded)
+		{
+			m_bPrefsLoaded = true;
+			FileHandle fh = FileIO.OpenFile(PREFS_FILE, FileMode.READ);
+			if (fh)
+			{
+				string line;
+				if (fh.ReadLine(line) > 0)
+					m_iDesktopSize = line.ToInt(-1);
+
+				fh.Close();
+			}
+		}
+
+		if (m_iDesktopSize >= 0 && m_iDesktopSize <= 3)
+			return m_iDesktopSize;
+
+		return Math.ClampInt(ROOT_AE3_SettingsManager.Get().m_iDesktopSize, 0, 3);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Stores the player's window size in the profile.
+	void SetDesktopSize(int size)
+	{
+		m_iDesktopSize = Math.ClampInt(size, 0, 3);
+		FileIO.MakeDirectory("$profile:ROOT_AE3");
+		FileHandle fh = FileIO.OpenFile(PREFS_FILE, FileMode.WRITE);
+		if (!fh)
+			return;
+
+		fh.WriteLine(m_iDesktopSize.ToString());
+		fh.Close();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Local player asks to use a computer from the own inventory. mode -1 auto, 0 terminal, 1 desktop.
+	void OpenCarried(IEntity device, int mode = -1)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (!d)
+			return;
+
+		ROOT_AE3_Net.SendToServer(d.GetRplId(), ROOT_AE3_EMsg.OPEN_CARRIED, mode.ToString());
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Local player renames a device (server checks reach). Empty name = default name.
+	static void Rename(IEntity device, string name)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (d)
+			ROOT_AE3_Net.SendToServer(d.GetRplId(), ROOT_AE3_EMsg.RENAME, name);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -134,6 +195,7 @@ class ROOT_AE3_Client
 			case ROOT_AE3_EMsg.SCREEN: OnScreen(data); return;
 			case ROOT_AE3_EMsg.SCREEN_INPUT: OnScreen(data); return;
 			case ROOT_AE3_EMsg.SOUND: ROOT_AE3_Sound.PlayLocal(data.ToInt()); return;
+			case ROOT_AE3_EMsg.EWO_STATE: ROOT_AE3_EwoPanel.OnState(data); return;
 		}
 
 		if (op == ROOT_AE3_EMsg.NOTIFY && !m_Menu)

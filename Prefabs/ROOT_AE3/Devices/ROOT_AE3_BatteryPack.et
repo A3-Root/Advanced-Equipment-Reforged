@@ -4,6 +4,10 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   MeshObject "{6AF041BB117D932C}" {
    Object "{6FBCBDC6ECBC17C8}Assets/ROOT_AE3/ROOT_AE3_BatteryPack/ROOT_AE3_BatteryPack.xob"
    Materials {
+    MaterialAssignClass "{6AF4C426111549B3}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat"
+    }
     MaterialAssignClass "{6AF041BB11626405}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
@@ -63,7 +67,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
-    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+    ItemDisplayName ROOT_AE3_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
      Name "#ROOT_AE3-Item_BatteryPack_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
@@ -116,6 +120,14 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
      }
      UIInfo UIInfo "{6AF041BB11626611}" {
       Name "ROOT_AE3_StatusAction"
+     }
+    }
+    ROOT_AE3_RenameAction "{6AF4C42611154A14}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C42611154AEF}" {
+      Name "ROOT_AE3_RenameAction"
      }
     }
    }

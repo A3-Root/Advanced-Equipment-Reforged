@@ -9,6 +9,14 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   MeshObject "{6AF041BB116248DE}" {
    Object "{E124D93187244507}Assets/ROOT_AE3/ROOT_AE3_Laptop_Open/ROOT_AE3_Laptop_Open.xob"
    Materials {
+    MaterialAssignClass "{6AF4C42611150E29}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF4C42611150E34}" {
+     SourceMaterial "AE3_LED_Blue"
+     AssignedMaterial "{83593EBE15E53DEF}Assets/ROOT_AE3/Data/AE3_LED_Blue.emat"
+    }
     MaterialAssignClass "{6AF041BB11625246}" {
      SourceMaterial "AE3_Plastic_Dark"
      AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat"
@@ -53,7 +61,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    m_sOpenModel "{E124D93187244507}Assets/ROOT_AE3/ROOT_AE3_Laptop_Open/ROOT_AE3_Laptop_Open.xob"
    m_sClosedModel "{98F45E642D8060A7}Assets/ROOT_AE3/ROOT_AE3_Laptop_Closed/ROOT_AE3_Laptop_Closed.xob"
    m_aRemap {
-    "AE3_Plastic_Dark" "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat" "AE3_Plastic_Olive" "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat" "AE3_Metal" "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat" "AE3_Keys" "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat" "AE3_Screen" "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat" "AE3_LED" "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat" "AE3_SolarCells" "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat" "AE3_Rubber" "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat"
+    "AE3_Plastic_Dark" "{20B61DA722305D98}Assets/ROOT_AE3/Data/AE3_Plastic_Dark.emat" "AE3_Plastic_Olive" "{EE23D17BA860D058}Assets/ROOT_AE3/Data/AE3_Plastic_Olive.emat" "AE3_Metal" "{2F4E280681D4177D}Assets/ROOT_AE3/Data/AE3_Metal.emat" "AE3_Keys" "{8F260F3F2AD19A41}Assets/ROOT_AE3/Data/AE3_Keys.emat" "AE3_Screen" "{08164CE68094C8D6}Assets/ROOT_AE3/Data/AE3_Screen.emat" "AE3_LED" "{36A9DC2B23547521}Assets/ROOT_AE3/Data/AE3_LED.emat" "AE3_SolarCells" "{7C60B5DED537EC00}Assets/ROOT_AE3/Data/AE3_SolarCells.emat" "AE3_Rubber" "{DE2513B590625AA8}Assets/ROOT_AE3/Data/AE3_Rubber.emat" "AE3_Accent" "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat" "AE3_LED_Blue" "{83593EBE15E53DEF}Assets/ROOT_AE3/Data/AE3_LED_Blue.emat"
    }
   }
   ROOT_AE3_NetworkComponent "{6AF041BB11622D5F}" {
@@ -97,7 +105,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
-    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+    ItemDisplayName ROOT_AE3_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
      Name "#ROOT_AE3-Item_Laptop_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
@@ -210,6 +218,14 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
      }
      UIInfo UIInfo "{6AF041BB11622506}" {
       Name "ROOT_AE3_StatusAction"
+     }
+    }
+    ROOT_AE3_RenameAction "{6AF4C42611150A40}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF4C42611150A58}" {
+      Name "ROOT_AE3_RenameAction"
      }
     }
    }

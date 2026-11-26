@@ -3,6 +3,9 @@ GenericEntity : "{970C853CDA5C984F}Prefabs/ROOT_AE3/Devices/ROOT_AE3_Router.et" 
  components {
   MeshObject "{6AF041BB1162E7B8}" {
    Materials {
+    MaterialAssignClass "{6AF4C4261115CAE8}" {
+     AssignedMaterial "{5E34CA544DFDBD6E}Assets/ROOT_AE3/Data/AE3_Accent_Ranger.emat"
+    }
     MaterialAssignClass "{6AF041BB1162F934}" {
      AssignedMaterial "{8C92E50E701258E7}Assets/ROOT_AE3/Data/AE3_Plastic_Sand.emat"
     }
@@ -16,7 +19,7 @@ GenericEntity : "{970C853CDA5C984F}Prefabs/ROOT_AE3/Devices/ROOT_AE3_Router.et" 
   }
   SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
    Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
-    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+    ItemDisplayName ROOT_AE3_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
      Name "#ROOT_AE3-Item_Router_Sand_Name"
     }
    }

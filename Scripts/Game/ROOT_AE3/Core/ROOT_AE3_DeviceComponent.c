@@ -10,8 +10,14 @@ class ROOT_AE3_DeviceComponent : ScriptComponent
 	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Device type", enums: ParamEnumArray.FromEnum(ROOT_AE3_EDeviceType), category: "Advanced Equipment")]
 	protected ROOT_AE3_EDeviceType m_eType;
 
-	[Attribute("", desc: "Device name; empty = settings fallback", category: "Advanced Equipment")]
+	[Attribute("", desc: "Device name; empty = settings fallback", category: "Advanced Equipment"), RplProp()]
 	protected string m_sDeviceName;
+
+	[Attribute("0", desc: "Hidden device: not shown on the Map app and cannot be renamed by players", category: "Advanced Equipment")]
+	protected bool m_bHidden;
+
+	static const int NAME_MAX = 32;
+	static const string PREF_NAME = "_device_name";	//!< Computer preference that persists the name
 
 	protected RplComponent m_RplComponent;
 
@@ -37,6 +43,12 @@ class ROOT_AE3_DeviceComponent : ScriptComponent
 	ROOT_AE3_EDeviceType GetDeviceType()
 	{
 		return m_eType;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	bool IsHidden()
+	{
+		return m_bHidden;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -67,6 +79,41 @@ class ROOT_AE3_DeviceComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Name given in the World Editor, by a player or by the Game Master; empty when none.
+	string GetCustomName()
+	{
+		return m_sDeviceName;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority. Printable ASCII, at most NAME_MAX characters; "|" removed. Empty = settings fallback.
+	void SetDeviceName(string name)
+	{
+		if (!IsAuthority())
+			return;
+
+		string clean;
+		int n = Math.Min(name.Length(), 256);
+		for (int i = 0; i < n && clean.Length() < NAME_MAX; i++)
+		{
+			int c = name.ToAscii(i);
+			if (c >= 32 && c < 127 && c != 124)
+				clean += name.Get(i);
+		}
+
+		clean.TrimInPlace();
+		if (clean != m_sDeviceName)
+		{
+			m_sDeviceName = clean;
+			Replication.BumpMe();
+		}
+
+		ROOT_AE3_ComputerComponent computer = ROOT_AE3_ComputerComponent.Of(GetOwner());
+		if (computer)
+			computer.GetPrefMap().Set(PREF_NAME, clean);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	static string GenericName(ROOT_AE3_EDeviceType type)
 	{
 		switch (type)
@@ -80,6 +127,7 @@ class ROOT_AE3_DeviceComponent : ScriptComponent
 			case ROOT_AE3_EDeviceType.BATTERY: return "Battery";
 			case ROOT_AE3_EDeviceType.SOLAR: return "Solar Panel";
 			case ROOT_AE3_EDeviceType.LAMP: return "Lamp";
+			case ROOT_AE3_EDeviceType.SYSTEM: return "AE3 System";
 		}
 
 		return "Device";

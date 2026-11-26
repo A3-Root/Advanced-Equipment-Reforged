@@ -14,6 +14,9 @@ class ROOT_AE3_GmActions
 			"root_password", "Root password", "Users",
 			"root_login", "Root login policy", "Users",
 			"access", "Interface access", "Users",
+			"global_root_password", "Default root password", "Mission settings",
+			"global_ewo_prefabs", "EWO pack prefabs", "Mission settings",
+			"rename", "Rename device", "System",
 			"hostname", "Hostname", "System",
 			"interface", "Interface mode", "System",
 			"open_root", "Open interface as root", "System",
@@ -93,6 +96,27 @@ class ROOT_AE3_GmActions
 			case "remove_sudoer": title = "Remove sudoer"; labels.Insert("User name"); defaults.Insert("user"); return true;
 			case "root_password": title = "Root password"; labels.Insert("Password (empty = setting default)"); defaults.Insert(""); return true;
 			case "root_login": title = "Root login"; labels.Insert("0 setting, 1 allow, 2 deny"); defaults.Insert("0"); return true;
+			case "global_root_password":
+			{
+				string pw;
+				ROOT_AE3_SettingsManager.Get().GetText("root_password", pw);
+				title = "Default root password";
+				labels.Insert("Root password of computers without their own");
+				defaults.Insert(pw);
+				return true;
+			}
+
+			case "global_ewo_prefabs":
+			{
+				string prefabs;
+				ROOT_AE3_SettingsManager.Get().GetText("ewo_prefabs", prefabs);
+				title = "EWO pack prefabs";
+				labels.Insert("Prefab names, comma separated");
+				defaults.Insert(prefabs);
+				return true;
+			}
+
+			case "rename": title = "Rename device"; labels.Insert("Name (empty = default)"); defaults.Insert(""); return true;
 			case "hostname": title = "Hostname"; labels.Insert("Hostname"); defaults.Insert(""); return true;
 			case "interface": title = "Interface"; labels.Insert("-1 setting, 0 terminal, 1 desktop, 2 both"); defaults.Insert("-1"); return true;
 			case "add_file":
@@ -183,6 +207,11 @@ class ROOT_AE3_GmActions
 			case "add_media":
 				return "storage";
 
+			case "rename": return "any";
+			case "global_root_password":
+			case "global_ewo_prefabs":
+				return "module";
+
 			case "battery": return "battery";
 			case "fuel": return "generator";
 			case "router": return "router";
@@ -223,6 +252,8 @@ class ROOT_AE3_GmActions
 			}
 
 			case "network": return ROOT_AE3_NetworkComponent.Of(e) != null;
+			case "any": return ROOT_AE3_DeviceComponent.Of(e) != null;
+			case "module": return ROOT_AE3_SystemModuleComponent.IsActiveModule(e);
 		}
 
 		return false;
@@ -390,6 +421,9 @@ class ROOT_AE3_GmActions
 			case "remove_sudoer": return R(ROOT_AE3_API.RemoveSudoer(e, V(v, 0)));
 			case "root_password": return R(ROOT_AE3_API.SetRootPassword(e, V(v, 0)));
 			case "root_login": return R(ROOT_AE3_API.SetRootLogin(e, V(v, 0).ToInt()));
+			case "rename": return R(ROOT_AE3_API.SetDeviceName(e, V(v, 0)));
+			case "global_root_password": return R(ROOT_AE3_API.SetGlobalText("root_password", V(v, 0)));
+			case "global_ewo_prefabs": return R(ROOT_AE3_API.SetGlobalText("ewo_prefabs", V(v, 0)));
 			case "hostname": return R(ROOT_AE3_API.SetHostname(e, V(v, 0)));
 			case "interface":
 			{

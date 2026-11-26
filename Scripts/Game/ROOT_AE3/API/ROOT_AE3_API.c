@@ -159,6 +159,41 @@ class ROOT_AE3_API
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Server. Device name shown in the inventory, the status action, network lists and the Game Master dialog.
+	//! Printable ASCII, at most 32 characters; empty = settings fallback.
+	static bool SetDeviceName(IEntity device, string name)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (!d || !d.IsAuthority())
+			return false;
+
+		d.SetDeviceName(name);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server. Mission-wide number or on/off setting by key (ROOT_AE3_Settings.SetNumber keys), sent to clients.
+	static bool SetGlobalNumber(string key, float value)
+	{
+		if (!Replication.IsServer() || !ROOT_AE3_SettingsManager.Get().SetNumber(key, value))
+			return false;
+
+		ROOT_AE3_SettingsManager.Broadcast();
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server. Mission-wide text setting: "root_password" (default root password), "ewo_prefabs" (EWO pack prefab names).
+	static bool SetGlobalText(string key, string value)
+	{
+		if (!Replication.IsServer() || !ROOT_AE3_SettingsManager.Get().SetText(key, value))
+			return false;
+
+		ROOT_AE3_SettingsManager.Broadcast();
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	static bool SetHostname(IEntity device, string hostname)
 	{
 		ROOT_AE3_ComputerComponent c = Computer(device);
