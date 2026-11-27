@@ -502,7 +502,7 @@ class ROOT_AE3_Intel
 		if (target != sender || from != to)
 			target.GetFilesystem().AppendLog(ChatLog(to, from), line, 63);
 
-		NotifyOperator(target, "Message from " + from, text);
+		NotifyOperator(target, "Message from " + from, text, ROOT_AE3_Sound.MESSAGE);
 		return true;
 	}
 
@@ -512,7 +512,7 @@ class ROOT_AE3_Intel
 		text = ROOT_AE3_Util.Clip(OneLine(text), 1024);
 		string line = string.Format("[%1] %2@%3: %4\n", ROOT_AE3_Util.Now(), fromUser, fromIp, text);
 		target.GetFilesystem().AppendLog("/var/mail/inbox", line, 63);
-		NotifyOperator(target, "Message from " + fromIp, text);
+		NotifyOperator(target, "Message from " + fromIp, text, ROOT_AE3_Sound.MESSAGE);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -526,14 +526,14 @@ class ROOT_AE3_Intel
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static void NotifyOperator(ROOT_AE3_ComputerComponent computer, string title, string text)
+	static void NotifyOperator(ROOT_AE3_ComputerComponent computer, string title, string text, int sound = ROOT_AE3_Sound.MAIL)
 	{
 		float now = GetGame().GetWorld().GetWorldTime() / 1000.0;
 		if (now - s_mLastNotify.Get(computer) < 1)
 			return;
 
 		s_mLastNotify.Set(computer, now);
-		ROOT_AE3_Sound.Play(computer.GetOwner(), ROOT_AE3_Sound.MAIL);
+		ROOT_AE3_Sound.Play(computer.GetOwner(), sound);
 		ROOT_AE3_Session s = ROOT_AE3_Manager.Get().GetSessionOf(computer);
 		if (s)
 			s.Notify(title, text);

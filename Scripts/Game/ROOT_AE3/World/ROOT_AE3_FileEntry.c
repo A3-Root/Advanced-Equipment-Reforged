@@ -17,10 +17,10 @@ class ROOT_AE3_FileEntry
 	[Attribute("rw-r--", desc: "Permissions: owner rwx then everyone rwx, '-' = not set")]
 	string m_sPermissions;
 
-	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Encryption of the content", enums: { ParamEnum("None", "0"), ParamEnum("Caesar", "1"), ParamEnum("Columnar", "2") })]
+	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Encryption of the content (ROOT_AE3_Encryption)", enums: { ParamEnum("None", "0"), ParamEnum("Caesar", "1"), ParamEnum("Columnar", "2"), ParamEnum("Vigenere", "3"), ParamEnum("ROT", "4"), ParamEnum("Affine", "5"), ParamEnum("Rail fence", "6"), ParamEnum("Morse", "7"), ParamEnum("Spelling alphabet", "8"), ParamEnum("Bacon", "9"), ParamEnum("Substitution", "10"), ParamEnum("Base32", "11"), ParamEnum("Base64", "12"), ParamEnum("Ascii85", "13"), ParamEnum("Unicode", "14"), ParamEnum("Integer", "15") })]
 	int m_iEncryption;
 
-	[Attribute("", desc: "Encryption key: shift for Caesar, keyword for Columnar")]
+	[Attribute("", desc: "Encryption key: Caesar shift, Columnar / Vigenere keyword, ROT variant, Affine a,b, rail count, Bacon 'extended', 26-letter alphabet, Integer radix; empty = default")]
 	string m_sKey;
 
 	[Attribute("", desc: "Password protection (unlock FILE PASSWORD); empty = none")]
@@ -34,10 +34,14 @@ class ROOT_AE3_FileEntry
 	string BuildContent()
 	{
 		string c = m_sContent;
-		if (m_iEncryption == 1)
-			c = ROOT_AE3_Encryption.Caesar(c, m_sKey.ToInt());
-		else if (m_iEncryption == 2)
-			c = ROOT_AE3_Encryption.Columnar(c, m_sKey);
+		if (m_iEncryption > 0)
+		{
+			string key = m_sKey;
+			if (key.IsEmpty())
+				key = ROOT_AE3_Encryption.DefaultKey(m_iEncryption);
+
+			c = ROOT_AE3_Encryption.Apply(m_iEncryption, c, key);
+		}
 
 		if (!m_sPassword.IsEmpty())
 			c = ROOT_AE3_Intel.Lock(c, m_sPassword);

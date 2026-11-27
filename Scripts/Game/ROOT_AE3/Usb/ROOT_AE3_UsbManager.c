@@ -138,7 +138,7 @@ class ROOT_AE3_UsbManager
 				inv.TryInsertItem(item);
 		}
 
-		ROOT_AE3_Sound.Play(c.GetOwner(), ROOT_AE3_Sound.USB);
+		ROOT_AE3_Sound.Play(c.GetOwner(), ROOT_AE3_Sound.USB_OUT);
 		return true;
 	}
 

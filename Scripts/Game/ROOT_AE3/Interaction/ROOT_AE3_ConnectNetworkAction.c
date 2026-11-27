@@ -1,5 +1,5 @@
 //! Network cable of a device, in two steps (ROOT_AE3_CableHand): "Plug in network cable" on the first device (needs a
-//! carried network cable; the longest is used), then "Plug network cable into ..." on the other end (computer to router,
+//! carried network cable; with several lengths a form asks which one, ROOT_AE3_GmDialog.OpenCable), then "Plug network cable into ..." on the other end (computer to router,
 //! router to router). The second step fails while the devices are farther apart than the cable.
 //! Without a held cable: "Unplug network cable" on a wired device gives the cable item back.
 class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
@@ -81,9 +81,18 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Authority. The step follows the held cable of the player on the server, not the client's view.
+	//! The step follows the held cable of the player on the server, not the client's view. Several carried cable
+	//! lengths: the server waits for the form of the local player (ROOT_AE3_EMsg.CABLE_TAKE).
 	override void PerformAction(IEntity pOwnerEntity, IEntity pUserEntity)
 	{
+		bool choose = ROOT_AE3_CableHand.LocalKind() != ROOT_AE3_CableHand.NET && !Wired(pOwnerEntity);
+		array<float> lengths = {};
+		if (choose)
+			ROOT_AE3_CableComponent.CarriedLengths(pUserEntity, lengths);
+
+		if (choose && lengths.Count() > 1 && pUserEntity == SCR_PlayerController.GetLocalControlledEntity())
+			ROOT_AE3_GmDialog.OpenCable(pOwnerEntity, lengths);
+
 		if (!IsAuthority(pOwnerEntity) || !InReach(pOwnerEntity, pUserEntity))
 			return;
 
@@ -109,6 +118,11 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 			Unplug(pOwnerEntity, pUserEntity);
 			return;
 		}
+
+		array<float> carried = {};
+		ROOT_AE3_CableComponent.CarriedLengths(pUserEntity, carried);
+		if (carried.Count() > 1)
+			return;
 
 		if (!ROOT_AE3_CableHand.Take(pUserEntity, ROOT_AE3_CableHand.NET, pOwnerEntity, reason))
 			Report(pUserEntity, reason);

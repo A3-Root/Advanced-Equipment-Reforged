@@ -1,4 +1,4 @@
-//! armaOS program 'crypto': Encrypts or decrypts text or a file with caesar or columnar.
+//! armaOS program 'crypto': Encrypts or decrypts text or a file with any ROOT_AE3_Encryption algorithm.
 class ROOT_AE3_Cmd_Crypto : ROOT_AE3_Command
 {
 	//------------------------------------------------------------------------------------------------
@@ -22,7 +22,16 @@ class ROOT_AE3_Cmd_Crypto : ROOT_AE3_Command
 	//------------------------------------------------------------------------------------------------
 	override string GetManual()
 	{
-		return "Usage crypto: 'crypto -m encrypt|decrypt [-a caesar|columnar] -k KEY [-o OUTFILE] TEXT|FILE'. Caesar keys are integer shifts, columnar keys are words (column count = key length, spaces become '_').";
+		string algos;
+		for (int i = 1; i < ROOT_AE3_Encryption.COUNT; i++)
+		{
+			if (i > 1)
+				algos += "|";
+
+			algos += ROOT_AE3_Encryption.Name(i);
+		}
+
+		return "Usage crypto: 'crypto -m encrypt|decrypt [-a " + algos + "] [-k KEY] [-o OUTFILE] TEXT|FILE'. Keys: caesar shift (3), columnar and vigenere key word, rot variant (rot5 rot13 rot18 rot47), affine a,b (5,8), railfence rails (3), bacon extended (26 letters), substitution 26-letter alphabet, integer radix (2 8 10 16). morse, spelling, base32, base64, ascii85 and unicode take no key. Columnar encryption turns spaces into '_'.";
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -30,7 +39,7 @@ class ROOT_AE3_Cmd_Crypto : ROOT_AE3_Command
 	{
 		map<string, string> opt = new map<string, string>();
 		string input;
-		if (!ROOT_AE3_CryptoArgs.Parse(args, opt, input) || !opt.Contains("m") || !opt.Contains("k") || input.IsEmpty())
+		if (!ROOT_AE3_CryptoArgs.Parse(args, opt, input) || !opt.Contains("m") || input.IsEmpty())
 		{
 			ctx.Err(GetManual());
 			return;
@@ -51,46 +60,33 @@ class ROOT_AE3_Cmd_Crypto : ROOT_AE3_Command
 		if (!ROOT_AE3_CryptoArgs.ReadInput(ctx, input, text))
 			return;
 
-		string key = opt.Get("k");
-		string result;
-		if (algo == "caesar")
-		{
-			if (!ROOT_AE3_Util.IsInt(key) || key.ToInt() <= 0)
-			{
-				ctx.Err("crypto: caesar keys are positive integers");
-				return;
-			}
-
-			int shift = key.ToInt();
-			if (mode == "decrypt")
-				shift = -shift;
-
-			result = ROOT_AE3_Encryption.Caesar(text, shift);
-		}
-		else if (algo == "columnar")
-		{
-			if (key.Length() < 2)
-			{
-				ctx.Err("crypto: columnar keys need at least 2 characters");
-				return;
-			}
-
-			if (mode == "encrypt")
-			{
-				text.Replace(" ", "_");
-				result = ROOT_AE3_Encryption.Columnar(text, key);
-			}
-			else
-			{
-				result = ROOT_AE3_Encryption.Columnar(text, key, true);
-			}
-		}
-		else
+		int id = ROOT_AE3_Encryption.FromName(algo);
+		if (id <= 0)
 		{
 			ctx.Err("crypto: unknown algorithm " + algo);
 			return;
 		}
 
+		string key = ROOT_AE3_Encryption.DefaultKey(id);
+		if (opt.Contains("k"))
+			key = opt.Get("k");
+		else if (!ROOT_AE3_Encryption.KeyHint(id).IsEmpty() && id != ROOT_AE3_Encryption.ROT && id != ROOT_AE3_Encryption.BACON && id != ROOT_AE3_Encryption.INTEGER)
+		{
+			ctx.Err("crypto: " + algo + " needs a key (-k): " + ROOT_AE3_Encryption.KeyHint(id));
+			return;
+		}
+
+		string bad = ROOT_AE3_Encryption.CheckKey(id, key);
+		if (!bad.IsEmpty())
+		{
+			ctx.Err("crypto: " + bad);
+			return;
+		}
+
+		if (id == ROOT_AE3_Encryption.COLUMNAR && mode == "encrypt")
+			text.Replace(" ", "_");
+
+		string result = ROOT_AE3_Encryption.Apply(id, text, key, mode == "decrypt");
 		if (!opt.Contains("o"))
 		{
 			ctx.Out(result);

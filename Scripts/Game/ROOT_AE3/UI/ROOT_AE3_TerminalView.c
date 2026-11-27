@@ -1,5 +1,6 @@
-//! armaOS terminal: header bar, scrollable console, prompt and input line. Text is rendered client-side
-//! from the lines sent by the server; Enter sends the line, Tab completes, history buttons recall lines.
+//! armaOS terminal: header bar and scrollable console. Text is rendered client-side from the lines sent by the
+//! server; the prompt and the typed text follow the last line with a cursor (the edit box that takes the keys is
+//! not drawn). Enter sends the line, Tab completes, Up / Down recall lines.
 class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 {
 	protected ref ROOT_AE3_DesignReply m_DesignReply;
@@ -31,6 +32,10 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	protected string m_sLastSynced;
 	protected float m_fSyncTimer;
 	protected bool m_bShown;
+	protected string m_sShownInput;
+	protected float m_fSincePrompt;
+	protected float m_fBlink;
+	protected bool m_bCursor = true;
 
 	//------------------------------------------------------------------------------------------------
 	void ROOT_AE3_TerminalView(Widget parent)
@@ -88,7 +93,10 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 		float inputY = y + h - fs - 18;
 		m_wConsole = ROOT_AE3_UI.Text(m_wRoot, x + 12, y + 44, w - 24, inputY - y - 50, "", fs, null, true, false);
 		m_wPrompt = ROOT_AE3_UI.Text(m_wRoot, x + 12, inputY + 2, w * 0.4, fs + 8, "", fs, null, true);
+		m_wPrompt.SetVisible(false);
 		m_wInput = ROOT_AE3_UI.Edit(m_wRoot, x + 12, inputY, w - 200, fs + 10, "", ID_INPUT, this, false, true);
+		if (m_wInput)
+			m_wInput.SetOpacity(0);
 		ROOT_AE3_UI.Button(m_wRoot, x + w - 182, inputY, 50, fs + 10, "Tab", ID_TAB, this, ROOT_AE3_UI.Rgb(1, 1, 1, 0.12));
 		ROOT_AE3_UI.Button(m_wRoot, x + w - 126, inputY, 50, fs + 10, "Up", ID_UP, this, ROOT_AE3_UI.Rgb(1, 1, 1, 0.12));
 		ROOT_AE3_UI.Button(m_wRoot, x + w - 70, inputY, 58, fs + 10, "Down", ID_DOWN, this, ROOT_AE3_UI.Rgb(1, 1, 1, 0.12));
@@ -161,11 +169,18 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 		if (!m_wConsole)
 			return;
 
-		array<string> lines = ROOT_AE3_Client.Get().m_aLines;
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		array<string> lines = {};
+		int start = Math.Max(0, c.m_aLines.Count() - 150);
+		for (int i = start; i < c.m_aLines.Count(); i++)
+		{
+			lines.Insert(c.m_aLines[i]);
+		}
+
+		lines.Insert(InputLine());
 		int cols = Columns();
 		array<string> wrapped = {};
-		int start = Math.Max(0, lines.Count() - 150);
-		for (int i = start; i < lines.Count(); i++)
+		for (int i = 0; i < lines.Count(); i++)
 		{
 			string l = lines[i];
 			while (l.Length() > cols)
@@ -199,9 +214,33 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Prompt, typed text (stars while hidden) and cursor; empty while a command runs.
+	protected string InputLine()
+	{
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		if (c.m_bBusy)
+			return "";
+
+		string typed;
+		if (m_wInput)
+			typed = m_wInput.GetText();
+
+		m_sShownInput = typed;
+		if (c.m_bHidden)
+			typed = ROOT_AE3_Util.Repeat("*", typed.Length());
+
+		string cursor = " ";
+		if (m_bCursor)
+			cursor = "_";
+
+		return c.m_sPrompt + typed + cursor;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	void RefreshPrompt()
 	{
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		m_fSincePrompt = 0;
 		string prompt = c.m_sPrompt;
 		if (c.m_bBusy)
 			prompt = "";
@@ -216,6 +255,8 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 			m_wInput.SetObfuscationChar("*");
 		else
 			m_wInput.SetObfuscationChar("");
+
+		Refresh();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -263,6 +304,21 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	//------------------------------------------------------------------------------------------------
 	void Update(float dt)
 	{
+		m_fSincePrompt += dt;
+		m_fBlink += dt;
+		if (m_fBlink >= 0.5)
+		{
+			m_fBlink = 0;
+			m_bCursor = !m_bCursor;
+			Refresh();
+		}
+		else if (m_wInput && m_wInput.GetText() != m_sShownInput)
+		{
+			m_bCursor = true;
+			m_fBlink = 0;
+			Refresh();
+		}
+
 		bool up = ROOT_AE3_Keys.Pressed(KeyCode.KC_UP);
 		bool down = ROOT_AE3_Keys.Pressed(KeyCode.KC_DOWN);
 		if (ROOT_AE3_Keys.Pressed(KeyCode.KC_TAB))
@@ -295,6 +351,10 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 		{
 			if (GetGame().GetInputManager().GetActionValue("MouseLeft") > 0)
 				return false;
+
+			// Write mode ends without Enter when the box is refocused after a prompt: no empty line then.
+			if (m_wInput && m_wInput.GetText().IsEmpty() && m_fSincePrompt < 0.6)
+				return true;
 
 			Submit();
 			return true;

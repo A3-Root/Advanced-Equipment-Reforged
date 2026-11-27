@@ -1,4 +1,4 @@
-//! armaOS program 'crack': Attacks caesar or columnar ciphertext without the key.
+//! armaOS program 'crack': Attacks ciphertext without the key (caesar, columnar, rot, affine, railfence, encodings).
 class ROOT_AE3_Cmd_Crack : ROOT_AE3_Command
 {
 	//------------------------------------------------------------------------------------------------
@@ -22,7 +22,7 @@ class ROOT_AE3_Cmd_Crack : ROOT_AE3_Command
 	//------------------------------------------------------------------------------------------------
 	override string GetManual()
 	{
-		return "Usage crack: 'crack -m bruteforce|statistics|key [-a caesar|columnar] [-o OUTFILE] TEXT|FILE'. caesar: bruteforce prints all 26 shifts, statistics guesses the shift from letter frequency. columnar: key lists candidate key lengths, bruteforce prints the grid for each length.";
+		return "Usage crack: 'crack -m bruteforce|statistics|key [-a caesar|columnar|rot|affine|railfence|morse|spelling|bacon|base32|base64|ascii85|unicode|integer] [-o OUTFILE] TEXT|FILE'. caesar: bruteforce prints all 26 shifts, statistics guesses the shift from letter frequency. columnar: key lists candidate key lengths, bruteforce prints the grid for each length. rot: all four variants. affine: all 312 keys. railfence: 2 to 12 rails. Encodings (morse to integer) decode directly.";
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -62,6 +62,38 @@ class ROOT_AE3_Cmd_Crack : ROOT_AE3_Command
 			int shift = GuessShift(text);
 			lines.Insert(string.Format("Most frequent letter taken as E: shift %1", shift));
 			lines.Insert(ROOT_AE3_Encryption.Caesar(text, -shift));
+		}
+		else if (algo == "rot" && mode == "bruteforce")
+		{
+			array<string> variants = {"rot5", "rot13", "rot18", "rot47"};
+			foreach (string variant : variants)
+			{
+				lines.Insert(variant + ": " + ROOT_AE3_Encryption.Rot(text, variant, true));
+			}
+		}
+		else if (algo == "affine" && mode == "bruteforce")
+		{
+			for (int a = 1; a < 26; a += 2)
+			{
+				if (a == 13)
+					continue;
+
+				for (int b = 0; b < 26; b++)
+				{
+					lines.Insert(string.Format("%1,%2: %3", a, b, ROOT_AE3_Encryption.Affine(text, a, b, true)));
+				}
+			}
+		}
+		else if (algo == "railfence" && mode == "bruteforce")
+		{
+			for (int rails = 2; rails <= Math.Min(12, text.Length() - 1); rails++)
+			{
+				lines.Insert(string.Format("%1 rails: %2", rails, ROOT_AE3_Encryption.RailFence(text, rails, true)));
+			}
+		}
+		else if (mode == "bruteforce" && ROOT_AE3_Encryption.FromName(algo) >= ROOT_AE3_Encryption.MORSE && ROOT_AE3_Encryption.FromName(algo) != ROOT_AE3_Encryption.SUBSTITUTION)
+		{
+			lines.Insert(ROOT_AE3_Encryption.Apply(ROOT_AE3_Encryption.FromName(algo), text, "", true));
 		}
 		else if (algo == "columnar" && mode == "key")
 		{

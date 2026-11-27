@@ -386,13 +386,14 @@ def cable(M):
 
 
 def cable_segment(M):
-    """Cable piece for cable lines: 0.25 m from the origin along Reforger +Z (Blender -Y), radius 5 mm, no collider."""
-    name = "ROOT_AE3_CableSegment"
-    col = new_coll(name)
-    o = cyl("segment", 0.005, 0.25, (0, -0.125, 0), M["plastic"], col, rot=(math.radians(90), 0, 0), verts=8)
-    o.name = name
-    uv_box(o)
-    export(col, name, lod_ratio=1)
+    """Cable pieces for cable lines: 0.25 m from the origin along Reforger +Z (Blender -Y), no collider.
+    ROOT_AE3_CableSegment: network cable, radius 7 mm; ROOT_AE3_CableSegmentPower: power cable, radius 11 mm."""
+    for name, r in (("ROOT_AE3_CableSegment", 0.007), ("ROOT_AE3_CableSegmentPower", 0.011)):
+        col = new_coll(name)
+        o = cyl("segment", r, 0.25, (0, -0.125, 0), M["plastic"], col, rot=(math.radians(90), 0, 0), verts=10)
+        o.name = name
+        uv_box(o)
+        export(col, name, lod_ratio=1)
 
 
 BUILDERS = {

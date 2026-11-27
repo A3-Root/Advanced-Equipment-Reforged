@@ -163,9 +163,6 @@ class ROOT_AE3_ShellContext
 		if (m_bError && ROOT_AE3_SettingsManager.Get().m_bEnableErrorSound)
 			ROOT_AE3_Sound.Play(m_Session.m_Computer.GetOwner(), ROOT_AE3_Sound.ERROR);
 
-		if (m_Term.m_eInput == ROOT_AE3_ETermInput.SHELL && !m_Term.m_App)
-			m_Session.Out("");
-
 		m_Session.SendPrompt();
 	}
 

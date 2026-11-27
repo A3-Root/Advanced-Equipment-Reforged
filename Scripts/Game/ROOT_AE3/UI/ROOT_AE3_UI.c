@@ -176,8 +176,9 @@ class ROOT_AE3_UI
 		if (ROOT_AE3_Theme.IsTactical())
 		{
 			text.ToUpper();
+			float hair = Hair();
 			Rect(parent, x, y, width, height, ROOT_AE3_Theme.Border());
-			b = Hit(parent, x + 1, y + 1, width - 2, height - 2, id, listener, bg, hover);
+			b = Hit(parent, x + hair, y + hair, width - hair * 2, height - hair * 2, id, listener, bg, hover);
 		}
 		else
 		{
@@ -248,8 +249,20 @@ class ROOT_AE3_UI
 		if (!edge)
 			edge = ROOT_AE3_Theme.Border();
 
+		float hair = Hair();
 		Rect(parent, x, y, width, height, edge);
-		return Rect(parent, x + 1, y + 1, width - 2, height - 2, fill);
+		return Rect(parent, x + hair, y + hair, width - hair * 2, height - hair * 2, fill);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Width in reference units of at least one screen pixel (1-unit lines vanish when the UI is scaled below 1).
+	static float Hair()
+	{
+		float scale = GetGame().GetWorkspace().DPIScale(1);
+		if (scale <= 0 || scale >= 1)
+			return 1;
+
+		return Math.Ceil(1 / scale);
 	}
 
 	//------------------------------------------------------------------------------------------------

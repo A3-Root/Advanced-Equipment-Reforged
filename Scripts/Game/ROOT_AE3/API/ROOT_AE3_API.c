@@ -207,12 +207,27 @@ class ROOT_AE3_API
 	// Files ------------------------------------------------------------------------------------------
 
 	//------------------------------------------------------------------------------------------------
-	//! Creates or overwrites a file. perms like "rw-r--". encryption 0 none, 1 caesar, 2 columnar.
+	//! Creates or overwrites a file. perms like "rw-r--". encryption: ROOT_AE3_Encryption id (0 none, 1 caesar,
+	//! 2 columnar, 3 vigenere, 4 rot, 5 affine, 6 railfence, 7 morse, 8 spelling, 9 bacon, 10 substitution, 11 base32,
+	//! 12 base64, 13 ascii85, 14 unicode, 15 integer); key empty = default key of the algorithm.
 	static bool AddFile(IEntity device, string path, string content, string owner = "root", string perms = "rw-r--", int encryption = 0, string key = "", string password = "", int size = -1)
 	{
 		ROOT_AE3_Filesystem fs = Fs(device);
 		if (!fs)
 			return false;
+
+		if (encryption < 0 || encryption >= ROOT_AE3_Encryption.COUNT)
+		{
+			s_sLastError = "Unknown encryption.";
+			return false;
+		}
+
+		if (encryption > 0 && !key.IsEmpty())
+		{
+			s_sLastError = ROOT_AE3_Encryption.CheckKey(encryption, key);
+			if (!s_sLastError.IsEmpty())
+				return false;
+		}
 
 		ROOT_AE3_FileEntry f = new ROOT_AE3_FileEntry();
 		f.m_sPath = path;

@@ -313,7 +313,7 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 		if (placed && sl && !ROOT_AE3_Util.IsCarried(source))
 		{
 			if (!m_PowerView)
-				m_PowerView = new ROOT_AE3_CableView(POWER_MATERIAL);
+				m_PowerView = new ROOT_AE3_CableView(POWER_MATERIAL, ROOT_AE3_CableView.POWER_MODEL);
 
 			PowerPort(a, aDir);
 			sl.PowerPort(b, bDir);

@@ -47,6 +47,23 @@ class ROOT_AE3_CableComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Distinct lengths of the carried cables, ascending.
+	static void CarriedLengths(IEntity character, notnull array<float> lengths)
+	{
+		lengths.Clear();
+		array<IEntity> items = {};
+		Carried(character, items);
+		foreach (IEntity item : items)
+		{
+			float l = Of(item).GetLength();
+			if (!lengths.Contains(l))
+				lengths.Insert(l);
+		}
+
+		lengths.Sort();
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Carried cable of that length (any length when length <= 0: the longest).
 	static IEntity FindCarried(IEntity character, float length)
 	{
@@ -86,7 +103,8 @@ class ROOT_AE3_CableComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Authority: spawns a cable item at the device and puts it into the character's inventory when possible.
+	//! Authority: spawns a cable item and puts it into the character's inventory when possible (character null and
+	//! the device carried: the carrier). Otherwise it lies at the device, or at the feet of the carrier.
 	static IEntity Give(ResourceName prefab, IEntity device, IEntity character)
 	{
 		if (prefab.IsEmpty() || !device)
@@ -96,10 +114,21 @@ class ROOT_AE3_CableComponent : ScriptComponent
 		if (!res || !res.IsValid())
 			return null;
 
+		IEntity carrier = ROOT_AE3_Util.Carrier(device);
+		if (!character)
+			character = carrier;
+
+		vector pos = device.GetOrigin() + "0 0.02 0";
+		if (carrier)
+		{
+			pos = carrier.GetOrigin() + carrier.VectorToParent("0 0 0.4");
+			pos[1] = Math.Max(GetGame().GetWorld().GetSurfaceY(pos[0], pos[2]), carrier.GetOrigin()[1]) + 0.02;
+		}
+
 		EntitySpawnParams p = new EntitySpawnParams();
 		p.TransformMode = ETransformMode.WORLD;
-		device.GetWorldTransform(p.Transform);
-		p.Transform[3] = device.GetOrigin() + "0 0.15 0";
+		Math3D.MatrixIdentity4(p.Transform);
+		p.Transform[3] = pos;
 		IEntity item = GetGame().SpawnEntityPrefab(res, GetGame().GetWorld(), p);
 		if (!item || !character)
 			return item;

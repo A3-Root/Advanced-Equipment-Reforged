@@ -86,6 +86,11 @@
 - Taskbar search, tray (flash drive, network, power), quick panel, clock opening Calendar and show desktop.
 - Floodlight built-in generator (10 L, 0.5 L/h): devices with a fuel tank run without a power source; Game Master attribute "Fuel use" (0 = no fuel used), `ROOT_AE3_API.SetFuelUse`, Refuel and fuel slider on them.
 - Desktop style civilian (Windows) / military (Tactical): Game Master panel action "Desktop style" and the Advanced Equipment settings attribute "Desktop style".
+- Desktop search finds files as well as apps (start menu and taskbar search).
+- Ciphers from Root's Cyber Warfare: Vigenere, ROT, Affine, rail fence, Morse, spelling alphabet, Bacon, substitution, Base32, Base64, Ascii85, Unicode and integer, besides Caesar and Columnar; `crypto` and `crack` take them.
+- Sounds: start, shut down, standby, flash drive in / out, error, mail and message chimes (`Sounds/ROOT_AE3`).
+- Choice of network cable when several lengths are carried.
+- Spare cable length lies in a coil on the floor halfway between the devices.
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -152,6 +157,13 @@
 - Generators, solar panel and battery take power cables; generators and the floodlight have power port positions.
 - Taskbar no longer stops with "Wrong parameter value" before the first tray update.
 - Cable lines are built from segment entities (`ROOT_AE3_CableSegment.xob`) instead of a procedural mesh, which crashed Workbench when drawn.
+- Game Master "Add file" form: where (desktop or home of a user, top folder, other folder), file name, who can open it, protection (password, cipher or both) with one key field per cipher.
+- Network cables 7 mm and power cables 11 mm thick; cable lines stay above the floor under them.
+- Terminal: the prompt and typed text follow the last line with a cursor; no blank line after each command and no empty line sent when the input is refocused.
+- Military style: no grid lines on the desktop; the sign-in panel and outlined borders keep their edges at UI scales below 1.
+- Desktop keeps an opaque base layer under the background.
+- Picking up a device with a network cable puts the cable item into the carrier's inventory or at the carrier's feet.
+- README and wiki rewritten by audience (players, Game Master, World Editor, server admins, systems, reference, developers).
 
 ### Removed
 - Power plug into the nearest source within 6 m (replaced by the power cable taken from the source).

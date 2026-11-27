@@ -456,6 +456,23 @@ class ROOT_AE3_GuiRouter
 				return;
 			}
 
+			case "fs_find":
+			{
+				array<string> found = {};
+				fs.Find(p1, A(f, 3), fsUser, found, 12);
+				array<string> rows = {A(f, 3)};
+				foreach (string fp : found)
+				{
+					string ferr;
+					ROOT_AE3_FsNode fnode = fs.Resolve(fp, fsUser, ferr);
+					if (fnode)
+						rows.Insert(Entry(fp, fnode));
+				}
+
+				Reply(s, rid, true, cmd, rows);
+				return;
+			}
+
 			case "fs_search":
 			{
 				array<string> results = {};

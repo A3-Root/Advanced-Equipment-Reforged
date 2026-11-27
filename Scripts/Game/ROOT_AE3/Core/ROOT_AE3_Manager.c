@@ -335,6 +335,26 @@ class ROOT_AE3_Manager
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Server: the player plugs the chosen network cable into a placed device within reach (first step).
+	protected void TakeCable(int playerId, RplId deviceId, float length)
+	{
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.FromRplId(deviceId);
+		IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(playerId);
+		if (!dev || !player || dev.IsHidden() || ROOT_AE3_Util.IsCarried(dev.GetOwner()) || ROOT_AE3_Util.IsDestroyed(dev.GetOwner()))
+			return;
+
+		if (vector.Distance(player.GetOrigin(), dev.GetOwner().GetOrigin()) > USE_RANGE + 1)
+			return;
+
+		string reason;
+		if (!ROOT_AE3_CableHand.Take(player, ROOT_AE3_CableHand.NET, dev.GetOwner(), reason, length))
+		{
+			array<string> f = {"Advanced Equipment", reason};
+			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Server: a carried computer without a session goes to standby.
 	protected void StandbyIfIdle(ROOT_AE3_ComputerComponent computer)
 	{
@@ -507,6 +527,17 @@ class ROOT_AE3_Manager
 			int request = m_mCarriedOpen.Get(playerId) + 1;
 			m_mCarriedOpen.Set(playerId, request);
 			OpenCarried(playerId, deviceId, Math.ClampInt(data.ToInt(), -1, 1), 0, request);
+			return;
+		}
+
+		if (op == ROOT_AE3_EMsg.CABLE_TAKE)
+		{
+			float nowCable = GetGame().GetWorld().GetWorldTime() / 1000.0;
+			if (nowCable - m_mLastRename.Get(playerId) < 0.5)
+				return;
+
+			m_mLastRename.Set(playerId, nowCable);
+			TakeCable(playerId, deviceId, data.ToFloat());
 			return;
 		}
 

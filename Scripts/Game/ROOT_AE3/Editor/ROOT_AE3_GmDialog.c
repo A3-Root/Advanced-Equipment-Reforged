@@ -1,7 +1,8 @@
 //! Game Master dialog: action panel for the selected devices, then the field form of the chosen action.
 //! The fields of an action, with the current values of the first selected device, come from the server
 //! (SCR_PlayerController.ROOT_AE3_GmQuery, answered by OnFields).
-//! Also the player rename form (key RENAME_KEY, sent as ROOT_AE3_EMsg.RENAME instead of a Game Master request).
+//! Also the player rename form (key RENAME_KEY, sent as ROOT_AE3_EMsg.RENAME) and the network cable choice (key
+//! CABLE_KEY, sent as ROOT_AE3_EMsg.CABLE_TAKE) instead of a Game Master request.
 class ROOT_AE3_GmDialog : ChimeraMenuBase
 {
 	protected static string s_sKey;
@@ -14,6 +15,7 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	protected static ROOT_AE3_GmDialog s_Open;
 
 	static const string RENAME_KEY = "_rename";
+	static const string CABLE_KEY = "_cable";
 
 	protected ref ROOT_AE3_GmDialogForm m_Form;
 	protected ref ROOT_AE3_GmPanel m_Panel;
@@ -102,6 +104,27 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 		array<ref ROOT_AE3_GmField> fields = {ROOT_AE3_GmField.Make(ROOT_AE3_EGmField.TEXT, "Name (empty = default)", d.GetCustomName())};
 		array<RplId> targets = {d.GetRplId()};
 		OpenLocal(RENAME_KEY, "Rename " + d.GetDeviceName(), fields, targets);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Player: which carried network cable to plug into device first (lengths in m).
+	static void OpenCable(IEntity device, notnull array<float> lengths)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (!d || lengths.IsEmpty())
+			return;
+
+		array<string> values = {};
+		array<string> labels = {};
+		foreach (float l : lengths)
+		{
+			values.Insert(l.ToString());
+			labels.Insert(l.ToString() + " m network cable");
+		}
+
+		array<ref ROOT_AE3_GmField> fields = {ROOT_AE3_GmField.Choice("Cable", values, labels, values[values.Count() - 1])};
+		array<RplId> targets = {d.GetRplId()};
+		OpenLocal(CABLE_KEY, "Plug in network cable: " + d.GetDeviceName(), fields, targets);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -219,6 +242,20 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	//------------------------------------------------------------------------------------------------
 	void Submit(notnull array<string> values)
 	{
+		if (s_sKey == CABLE_KEY)
+		{
+			if (!values.IsEmpty())
+			{
+				foreach (RplId id : s_aTargets)
+				{
+					ROOT_AE3_Net.SendToServer(id, ROOT_AE3_EMsg.CABLE_TAKE, values[0]);
+				}
+			}
+
+			Close();
+			return;
+		}
+
 		if (s_sKey == RENAME_KEY)
 		{
 			string name;

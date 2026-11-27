@@ -46,6 +46,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected static const int MI_FILE_RENAME = 15;
 	protected static const int MI_FILE_DELETE = 16;
 	protected static const int ID_FILE = 2000;
+	protected static const int ID_SFILE = 3000;
 	protected static const float BAR_H = 48;
 	protected static const float CELL_W = 90;
 	protected static const float CELL_H = 96;
@@ -80,6 +81,8 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected int m_iSelIcon = -1;
 	protected int m_iSelFile = -1;
 	protected ref array<ref array<string>> m_aDeskFiles = {};	//!< ~/Desktop entries (fs_list fields)
+	protected ref array<ref array<string>> m_aFound = {};		//!< Start menu file results (fs_find, fs_list fields)
+	protected string m_sFindQuery;
 	protected ImageWidget m_wWall;
 	protected float m_fW, m_fH;
 	protected float m_fGridW, m_fGridH;
@@ -326,6 +329,8 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		m_aDeskFiles.Clear();
 		ROOT_AE3_Theme.s_iTheme = ROOT_AE3_Client.Get().m_sTheme.ToInt();
 		ROOT_AE3_Theme.s_iStyle = ROOT_AE3_Client.Get().m_iStyle;
+		// Opaque base that takes no input, then the click target for the background.
+		ROOT_AE3_UI.Rect(m_wRoot, 0, 0, m_fW, m_fH, ROOT_AE3_UI.Rgb(0, 0, 0));
 		ROOT_AE3_UI.Rect(m_wRoot, 0, 0, m_fW, m_fH, ROOT_AE3_UI.Rgb(0, 0, 0), ID_BG, this);
 		BuildWallpaper(ROOT_AE3_Client.Get().m_sWallpaper);
 		if (ROOT_AE3_Theme.IsTactical())
@@ -398,22 +403,10 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Tactical style: dark tint over the wallpaper, map grid every 64 px, corner marks.
+	//! Tactical style: dark tint over the wallpaper and the node name.
 	protected void BuildGrid()
 	{
 		ROOT_AE3_UI.Rect(m_wRoot, 0, 0, m_fW, m_fH, ROOT_AE3_UI.Rgb(0, 0, 0, 0.72));
-		Color line = ROOT_AE3_Theme.Border();
-		line.SetA(0.12);
-		for (float gx = 64; gx < m_fW; gx += 64)
-		{
-			ROOT_AE3_UI.Rect(m_wRoot, gx, 0, 1, m_fH, line);
-		}
-
-		for (float gy = 64; gy < m_fH; gy += 64)
-		{
-			ROOT_AE3_UI.Rect(m_wRoot, 0, gy, m_fW, 1, line);
-		}
-
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
 		string host = c.m_sHostname;
 		host.ToUpper();
@@ -492,9 +485,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	{
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
 		float w = 460;
-		float h = 300;
+		float h = 290;
+		if (c.m_iInterface == 1)
+			h = 250;
+
 		float x = (m_fW - w) * 0.5;
-		float y = (m_fH - h) * 0.5;
+		float y = Math.Max(8, (m_fH - h) * 0.5);
 		Color ink = ROOT_AE3_Theme.Accent();
 		ROOT_AE3_UI.Box(m_wRoot, x, y, w, h, ROOT_AE3_Theme.Panel(), ink);
 		ROOT_AE3_UI.Rect(m_wRoot, x + 1, y + 1, w - 2, 34, ROOT_AE3_Theme.Title());
@@ -516,7 +512,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		ROOT_AE3_UI.Button(m_wRoot, x + 24, y + 190, w - 48, 34, "Authenticate", ID_LOGIN, this, ink, ROOT_AE3_Theme.OnAccent(), 15);
 		if (c.m_iInterface != 1)
-			ROOT_AE3_UI.Button(m_wRoot, x + 24, y + 232, w - 48, 28, "Command line", ID_TERMINAL, this, ROOT_AE3_Theme.Panel(), ROOT_AE3_Theme.Text(), 13);
+			ROOT_AE3_UI.Button(m_wRoot, x + 24, y + 234, w - 48, 32, "Use terminal", ID_TERMINAL, this, ROOT_AE3_Theme.Panel(), ROOT_AE3_Theme.Text(), 13);
 
 		m_wLoginMsg = ROOT_AE3_UI.Text(m_wRoot, x, y + h + 10, w, 40, "", 14, ROOT_AE3_Theme.Danger(), false, true, 1);
 		ROOT_AE3_UI.Text(m_wRoot, 0, m_fH - 30, m_fW - 24, 18, "TAB NEXT FIELD   ENTER AUTHENTICATE", 12, ROOT_AE3_Theme.Muted(), false, false, 2);
@@ -640,7 +636,16 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (!m_aDeskFiles.IsIndexValid(index))
 			return;
 
-		array<string> e = m_aDeskFiles[index];
+		OpenEntry(m_aDeskFiles[index]);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Opens an fs_list entry with the app for its kind (folder, image, locked file, program, text).
+	protected void OpenEntry(notnull array<string> e)
+	{
+		if (e.Count() < 8)
+			return;
+
 		if (e[1] == "dir")
 		{
 			OpenApp(ROOT_AE3_AppFiles, e[0]);
@@ -655,7 +660,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		if (e[6] == "1")
 		{
-			OpenApp(ROOT_AE3_AppFiles, DesktopDir());
+			OpenApp(ROOT_AE3_AppFiles, ROOT_AE3_Filesystem.Parent(e[0]));
 			return;
 		}
 
@@ -1323,7 +1328,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (m_wSearch)
 			m_wSearch.SetColor(ROOT_AE3_Theme.Text());
 
-		string hint = "Type here to search";
+		string hint = "Search apps and files";
 		string apps = "Apps";
 		if (ROOT_AE3_Theme.IsTactical())
 		{
@@ -1384,9 +1389,10 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return;
 		}
 
+		float filesH = FoundHeight(f);
 		int cols = Math.Max(1, Math.Floor(gw / 96));
 		float cw = gw / cols;
-		int maxRows = Math.Max(1, Math.Floor(gh / 86));
+		int maxRows = Math.Max(1, Math.Floor((gh - filesH) / 86));
 		foreach (int i, typename t : m_aApps)
 		{
 			ROOT_AE3_App app = ROOT_AE3_App.Cast(t.Spawn());
@@ -1413,8 +1419,56 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			ROOT_AE3_UI.Text(m_wMenuGrid, x + 4, y + 52, cw - 8, 30, title, 12, ROOT_AE3_Theme.Text(), false, true, 1);
 		}
 
-		if (m_aMenuApps.IsEmpty())
-			ROOT_AE3_UI.Text(m_wMenuGrid, 0, 40, gw, 20, "No apps match your search.", 14, ROOT_AE3_Theme.Muted(), false, false, 1);
+		float fy = Math.Ceil(m_aMenuApps.Count() / (cols * 1.0)) * 86 + 4;
+		if (m_aMenuApps.IsEmpty() && m_aFound.IsEmpty())
+		{
+			string none = "No apps match your search.";
+			if (f.Length() >= 2)
+				none = "No apps or files match your search.";
+
+			ROOT_AE3_UI.Text(m_wMenuGrid, 0, 40, gw, 20, none, 14, ROOT_AE3_Theme.Muted(), false, false, 1);
+		}
+
+		BuildFound(f, fy, gw);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected float FoundHeight(string f)
+	{
+		if (f.Length() < 2 || m_aFound.IsEmpty())
+			return 0;
+
+		return 30 + Math.Min(m_aFound.Count(), 6) * 30;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Start menu file results: heading, then rows with icon, name and folder.
+	protected void BuildFound(string f, float y, float gw)
+	{
+		if (f.Length() < 2 || m_aFound.IsEmpty())
+			return;
+
+		bool tac = ROOT_AE3_Theme.IsTactical();
+		string heading = "Files";
+		if (tac)
+			heading = "[ FILES ]";
+
+		ROOT_AE3_UI.Text(m_wMenuGrid, 12, y, gw - 24, 20, heading, 14, ROOT_AE3_Theme.Muted(), tac);
+		y += 26;
+		int shown;
+		foreach (int i, array<string> e : m_aFound)
+		{
+			if (shown >= 6 || y + 28 > m_fGridH)
+				break;
+
+			shown++;
+			string name = ROOT_AE3_Filesystem.BaseName(e[0]);
+			ROOT_AE3_UI.Hit(m_wMenuGrid, 4, y, gw - 8, 28, ID_SFILE + i, m_MenuGridListener, ROOT_AE3_UI.Rgb(0, 0, 0, 0));
+			ROOT_AE3_UI.Icon(m_wMenuGrid, 12, y + 5, 18, ROOT_AE3_Icons.ForFile(e[1], e[5] == "1", e[6] == "1", e[7] == "1", name));
+			ROOT_AE3_UI.Text(m_wMenuGrid, 40, y + 5, gw * 0.45, 18, name, 13, ROOT_AE3_Theme.Text(), tac);
+			ROOT_AE3_UI.Text(m_wMenuGrid, 40 + gw * 0.45, y + 5, gw * 0.55 - 52, 18, ROOT_AE3_Filesystem.Parent(e[0]), 12, ROOT_AE3_Theme.Muted(), tac, false, 2);
+			y += 30;
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -1422,7 +1476,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected void FillMenuList(string f)
 	{
 		float gw = m_fGridW;
-		float gh = m_fGridH;
+		float gh = m_fGridH - FoundHeight(f);
 		int rows = Math.Max(1, Math.Floor(gh / 30));
 		float cw = gw * 0.5;
 		foreach (int i, typename t : m_aApps)
@@ -1457,8 +1511,11 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			ROOT_AE3_UI.Text(m_wMenuGrid, x + 72, y + 6, cw - 84, 18, title, 13, ROOT_AE3_Theme.Text(), true);
 		}
 
-		if (m_aMenuApps.IsEmpty())
+		if (m_aMenuApps.IsEmpty() && m_aFound.IsEmpty())
 			ROOT_AE3_UI.Text(m_wMenuGrid, 0, 40, gw, 20, "NO MATCH", 14, ROOT_AE3_Theme.Muted(), true, false, 1);
+
+		int used = Math.Min(m_aMenuApps.Count(), rows);
+		BuildFound(f, used * 30 + 4, gw);
 	}
 
 	// Context menu ----------------------------------------------------------------------------------
@@ -1911,7 +1968,6 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		ROOT_AE3_UI.Text(m_wToast, x + 58, y + 14, w - 72, 20, title, 15, ROOT_AE3_Theme.Text());
 		ROOT_AE3_UI.Text(m_wToast, x + 58, y + 38, w - 72, 46, text, 13, ROOT_AE3_Theme.Muted(), false, true);
 		m_fToastTimer = 6;
-		SCR_UISoundEntity.SoundEvent(SCR_SoundEvent.HINT);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -2006,6 +2062,23 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return;
 		}
 
+		if (cmd == "fs_find")
+		{
+			if (!ok || payload.IsEmpty() || payload[0] != m_sFindQuery || !m_wMenu)
+				return;
+
+			m_aFound.Clear();
+			for (int fi = 1; fi < payload.Count(); fi++)
+			{
+				array<string> fe = ROOT_AE3_Codec.SplitSub(payload[fi]);
+				if (fe.Count() >= 8)
+					m_aFound.Insert(fe);
+			}
+
+			FillMenuGrid(m_sFindQuery);
+			return;
+		}
+
 		if (cmd == "fs_list")
 		{
 			if (!ok || payload.IsEmpty() || payload[0] != DesktopDir())
@@ -2046,12 +2119,33 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 			if (!finished)
 			{
-				FillMenuGrid(m_wSearch.GetText());
+				string q = m_wSearch.GetText().Trim();
+				m_aFound.Clear();
+				m_sFindQuery = q;
+				FillMenuGrid(q);
+				if (q.Length() >= 2)
+				{
+					string root = ROOT_AE3_Filesystem.HomeOf(ROOT_AE3_Client.Get().m_sUser);
+					if (ROOT_AE3_SettingsManager.Get().m_bDesktopEnableFileBrowsing)
+						root = "/";
+
+					array<string> args = {root, q};
+					ROOT_AE3_Client.Get().Request("fs_find", args, this);
+				}
+
 				return true;
 			}
 
 			if (!m_aMenuApps.IsEmpty())
+			{
 				OpenApp(m_aApps[m_aMenuApps[0]]);
+			}
+			else if (!m_aFound.IsEmpty())
+			{
+				array<string> first = m_aFound[0];
+				CloseStart();
+				OpenEntry(first);
+			}
 
 			return true;
 		}
@@ -2271,6 +2365,14 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (id >= ID_QUICK && id <= ID_QUICK + 12)
 		{
 			OnQuick(id - ID_QUICK);
+			return true;
+		}
+
+		if (id >= ID_SFILE && id < ID_SFILE + m_aFound.Count())
+		{
+			array<string> found = m_aFound[id - ID_SFILE];
+			CloseStart();
+			OpenEntry(found);
 			return true;
 		}
 

@@ -114,8 +114,9 @@ class ROOT_AE3_CableHand
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Server: first plug. Network: the longest carried network cable; power: the cable of the source.
-	static bool Take(IEntity character, int kind, IEntity device, out string reason)
+	//! Server: first plug. Network: the carried network cable of that length (length <= 0: the longest); power: the
+	//! cable of the source.
+	static bool Take(IEntity character, int kind, IEntity device, out string reason, float length = 0)
 	{
 		int playerId = GetGame().GetPlayerManager().GetPlayerIdFromControlledEntity(character);
 		if (playerId <= 0 || !device)
@@ -126,10 +127,13 @@ class ROOT_AE3_CableHand
 		held.m_Device = device;
 		if (kind == NET)
 		{
-			IEntity item = ROOT_AE3_CableComponent.FindCarried(character, 0);
+			IEntity item = ROOT_AE3_CableComponent.FindCarried(character, length);
 			if (!item)
 			{
 				reason = "No network cable in your inventory.";
+				if (length > 0)
+					reason = string.Format("No %1 m network cable in your inventory.", length);
+
 				return false;
 			}
 
@@ -378,12 +382,12 @@ class ROOT_AE3_CableHand
 		if (!s_View)
 		{
 			if (s_iKind == POWER)
-				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.POWER_MATERIAL);
+				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.POWER_MATERIAL, ROOT_AE3_CableView.POWER_MODEL);
 			else
 				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.NET_MATERIAL);
 		}
 
 		float len = Math.Max(vector.Distance(a, hand) + 0.4, Math.Min(s_fLength, vector.Distance(a, hand) * 1.15 + 0.3));
-		s_View.Update(a, aDir, hand, "0 -1 0", len);
+		s_View.Update(a, aDir, hand, "0 -1 0", len, false);
 	}
 }
