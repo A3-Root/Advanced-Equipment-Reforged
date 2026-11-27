@@ -1,10 +1,12 @@
-[ComponentEditorProps(category: "Advanced Equipment", description: "Power and network links set in the World Editor (by entity name)")]
+[ComponentEditorProps(category: "Advanced Equipment", description: "Power and network links set in the World Editor (by entity name), cable ports")]
 class ROOT_AE3_ConnectionComponentClass : ScriptComponentClass
 {
 }
 
 //! Wired power / network links. Editor links are made on the authority after the world loaded;
-//! wired network links ignore the wireless range.
+//! wired network links ignore the wireless range. A wired network link keeps its cable length and the cable
+//! item prefab (given back when unplugged, dropped at the device when the cable is pulled out).
+//! Clients draw the network cable to the router and the power cable to the source (ROOT_AE3_CableView).
 class ROOT_AE3_ConnectionComponent : ScriptComponent
 {
 	[Attribute("", desc: "Entity name of the power source", category: "Connections")]
@@ -13,24 +15,59 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 	[Attribute("", desc: "Entity name of the router (network) or parent router (for routers)", category: "Connections")]
 	protected string m_sNetwork;
 
+	[Attribute("0 0.05 0", desc: "Model-relative position of the network port", category: "Cable ports")]
+	protected vector m_vNetPort;
+
+	[Attribute("0 0 -1", desc: "Model-relative direction out of the network port", category: "Cable ports")]
+	protected vector m_vNetPortDir;
+
+	[Attribute("0 0 0", desc: "Offset between network ports (routers: cables of other devices use ports 1-3)", category: "Cable ports")]
+	protected vector m_vNetPortStep;
+
+	[Attribute("0 0.05 0", desc: "Model-relative position of the power port", category: "Cable ports")]
+	protected vector m_vPowerPort;
+
+	[Attribute("0 0 -1", desc: "Model-relative direction out of the power port", category: "Cable ports")]
+	protected vector m_vPowerPortDir;
+
+	protected static const ResourceName NET_MATERIAL = "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat";
+	protected static const ResourceName POWER_MATERIAL = "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat";
+
 	protected ref array<IEntity> m_aWired = {};
-	protected ref array<float> m_aWiredLength = {};
+	protected ref array<float> m_aWiredCable = {};			//!< Cable length in m
+	protected ref array<ResourceName> m_aWiredItem = {};	//!< Cable item prefab, empty = no item
 	protected bool m_bRestored;
+
+	[RplProp()]
+	protected RplId m_NetPeer = RplId.Invalid();		//!< Router at the other end of the network cable
+
+	[RplProp()]
+	protected float m_fNetCable;
+
+	protected ref ROOT_AE3_CableView m_NetView;
+	protected ref ROOT_AE3_CableView m_PowerView;
 
 	//------------------------------------------------------------------------------------------------
 	override protected void OnPostInit(IEntity owner)
 	{
 		super.OnPostInit(owner);
-		if (!GetGame().InPlayMode() || !Replication.IsServer())
+		if (!GetGame().InPlayMode())
 			return;
 
-		GetGame().GetCallqueue().CallLater(LinkFromEditor, 1500, false);
+		if (Replication.IsServer())
+			GetGame().GetCallqueue().CallLater(LinkFromEditor, 1500, false);
+
+		if (!System.IsConsoleApp())
+			GetGame().GetCallqueue().CallLater(UpdateViews, 250, true);
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override protected void OnDelete(IEntity owner)
 	{
 		GetGame().GetCallqueue().Remove(LinkFromEditor);
+		GetGame().GetCallqueue().Remove(UpdateViews);
+		m_NetView = null;
+		m_PowerView = null;
 		super.OnDelete(owner);
 	}
 
@@ -79,32 +116,93 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
-	void AddWired(IEntity other)
+	//! Authority. cable < 0: no cable item, length = current distance + 2 m.
+	void AddWired(IEntity other, float cable = -1, ResourceName item = "")
 	{
 		if (!other || m_aWired.Contains(other))
 			return;
 
+		if (cable <= 0)
+			cable = vector.Distance(GetOwner().GetOrigin(), other.GetOrigin()) + 2;
+
 		m_aWired.Insert(other);
-		m_aWiredLength.Insert(vector.Distance(GetOwner().GetOrigin(), other.GetOrigin()));
+		m_aWiredCable.Insert(cable);
+		m_aWiredItem.Insert(item);
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(other);
+		if (d)
+		{
+			m_NetPeer = d.GetRplId();
+			m_fNetCable = cable;
+			Replication.BumpMe();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Authority. A cable item still recorded with the link is dropped at the device.
 	void RemoveWired(IEntity other)
 	{
 		int i = m_aWired.Find(other);
 		if (i < 0)
 			return;
 
+		ResourceName item = m_aWiredItem[i];
 		m_aWired.Remove(i);
-		m_aWiredLength.Remove(i);
+		m_aWiredCable.Remove(i);
+		m_aWiredItem.Remove(i);
+		if (!item.IsEmpty())
+			ROOT_AE3_CableComponent.Give(item, GetOwner(), null);
+
+		m_NetPeer = RplId.Invalid();
+		m_fNetCable = 0;
+		Replication.BumpMe();
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Cable to other stretched beyond its plugged length.
+	//! Authority: cable item prefab of the link to other; the link no longer drops it when removed.
+	ResourceName TakeCable(IEntity other)
+	{
+		int i = m_aWired.Find(other);
+		if (i < 0)
+			return ResourceName.Empty;
+
+		ResourceName item = m_aWiredItem[i];
+		m_aWiredItem[i] = ResourceName.Empty;
+		return item;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Router at the end of the network cable (replicated), invalid = no cable.
+	RplId GetNetPeer()
+	{
+		return m_NetPeer;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	float GetCableLength(IEntity other)
+	{
+		int i = m_aWired.Find(other);
+		if (i < 0)
+			return 0;
+
+		return m_aWiredCable[i];
+	}
+
+	//------------------------------------------------------------------------------------------------
+	ResourceName GetCableItem(IEntity other)
+	{
+		int i = m_aWired.Find(other);
+		if (i < 0)
+			return ResourceName.Empty;
+
+		return m_aWiredItem[i];
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Distance to other beyond the cable length.
 	bool WireStretched(IEntity other)
 	{
 		int i = m_aWired.Find(other);
-		return i >= 0 && vector.Distance(GetOwner().GetOrigin(), other.GetOrigin()) > m_aWiredLength[i] + 2;
+		return i >= 0 && vector.Distance(GetOwner().GetOrigin(), other.GetOrigin()) > m_aWiredCable[i];
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -124,7 +222,8 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 
 	//------------------------------------------------------------------------------------------------
 	//! Authority: wired network link of a device to a router (router to router cascades).
-	static bool ConnectNetwork(IEntity device, IEntity router, out string reason)
+	//! cable: cable length in m (< 0: no cable item, distance + 2 m); item: cable item prefab given back on unplug.
+	static bool ConnectNetwork(IEntity device, IEntity router, out string reason, float cable = -1, ResourceName item = "")
 	{
 		ROOT_AE3_NetworkComponent d = ROOT_AE3_NetworkComponent.Of(device);
 		ROOT_AE3_NetworkComponent r = ROOT_AE3_NetworkComponent.Of(router);
@@ -139,8 +238,90 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 
 		ROOT_AE3_ConnectionComponent link = Of(device);
 		if (link)
-			link.AddWired(router);
+			link.AddWired(router, cable, item);
 
 		return true;
+	}
+
+	// Cable ports and views (clients) -----------------------------------------------------------------
+
+	//------------------------------------------------------------------------------------------------
+	//! World position and direction of the network port; index > 0 adds index * m_vNetPortStep.
+	void NetPort(int index, out vector pos, out vector dir)
+	{
+		IEntity owner = GetOwner();
+		float k = index;
+		pos = owner.CoordToParent(m_vNetPort + m_vNetPortStep * k);
+		dir = owner.VectorToParent(m_vNetPortDir).Normalized();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	void PowerPort(out vector pos, out vector dir)
+	{
+		IEntity owner = GetOwner();
+		pos = owner.CoordToParent(m_vPowerPort);
+		dir = owner.VectorToParent(m_vPowerPortDir).Normalized();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Client, every 250 ms: cable to the router and to the power source while both ends are placed.
+	protected void UpdateViews()
+	{
+		IEntity owner = GetOwner();
+		bool placed = owner && !ROOT_AE3_Util.IsCarried(owner);
+		vector a, aDir, b, bDir;
+
+		IEntity router;
+		ROOT_AE3_DeviceComponent rd = ROOT_AE3_DeviceComponent.FromRplId(m_NetPeer);
+		if (m_NetPeer != RplId.Invalid() && rd)
+			router = rd.GetOwner();
+
+		ROOT_AE3_ConnectionComponent rl = Of(router);
+		if (placed && rl && !ROOT_AE3_Util.IsCarried(router))
+		{
+			if (!m_NetView)
+				m_NetView = new ROOT_AE3_CableView(NET_MATERIAL, 0.003);
+
+			NetPort(0, a, aDir);
+			ROOT_AE3_DeviceComponent own = ROOT_AE3_DeviceComponent.Of(owner);
+			int port = 1;
+			if (own)
+			{
+				int rid = own.GetRplId();
+				int slot = rid % 3;
+				port = 1 + slot;
+			}
+
+			rl.NetPort(port, b, bDir);
+			m_NetView.Update(a, aDir, b, bDir, m_fNetCable);
+		}
+		else
+		{
+			m_NetView = null;
+		}
+
+		IEntity source;
+		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(owner);
+		if (p && p.GetProviderId() != RplId.Invalid())
+		{
+			ROOT_AE3_DeviceComponent sd = ROOT_AE3_DeviceComponent.FromRplId(p.GetProviderId());
+			if (sd)
+				source = sd.GetOwner();
+		}
+
+		ROOT_AE3_ConnectionComponent sl = Of(source);
+		if (placed && sl && !ROOT_AE3_Util.IsCarried(source))
+		{
+			if (!m_PowerView)
+				m_PowerView = new ROOT_AE3_CableView(POWER_MATERIAL, 0.004);
+
+			PowerPort(a, aDir);
+			sl.PowerPort(b, bDir);
+			m_PowerView.Update(a, aDir, b, bDir, p.GetLinkLength() + 1.5);
+		}
+		else
+		{
+			m_PowerView = null;
+		}
 	}
 }

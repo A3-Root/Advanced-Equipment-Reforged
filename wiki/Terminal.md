@@ -9,9 +9,9 @@
 | `find name`, `grep [-i] [-v] pattern file...` | search names and contents (regular expressions) |
 | `chown path user` | change owner |
 | `unlock [-p] file password` | read or permanently unlock a locked file |
-| `mount usbN`, `umount usbN`, `lsusb` | flash drives |
+| `mount usbN`, `umount usbN`, `lsusb` | flash drives (plugging a drive mounts it) |
 | `sudo cmd`, `su [user]`, `exit` | privileges |
-| `ip [r]`, `ifconfig`, `wifi scan`, `wifi connect ssid [password]`, `wifi disconnect`, `ping ip`, `ssh user@ip password`, `msg ip text` | network |
+| `ip [r]`, `ifconfig`, `wifi scan`, `wifi connect ssid [password]`, `wifi disconnect`, `ping ip`, `ssh user@host password` (IP address or hostname), `sshd [on\|off\|status]`, `msg ip text` | network |
 | `date`, `history`, `clear`, `whoami`, `echo text`, `man cmd`, `help` | misc |
 | `shutdown`, `standby`, `desktop` | device |
 | `crypto -m encrypt\|decrypt [-a caesar\|columnar] -k key [-o file] text\|file` | cipher (installed when enabled) |

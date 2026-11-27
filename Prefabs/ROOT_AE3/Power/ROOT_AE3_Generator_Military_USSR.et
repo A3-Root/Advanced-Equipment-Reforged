@@ -33,6 +33,7 @@ GameEntity : "{6597847D2AC253F5}Prefabs/Props/Military/Generators/GeneratorMilit
   SCR_EditableEntityComponent "{6AF041BB11630495}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11630764}" {
     Name "#ROOT_AE3-Editable_Generator_Military_USSR_Name"
+    m_Image "{42F65903A3BBB28A}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_Generator_Military_USSR.edds"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE SIZE_M THEME_MILITARY
     }

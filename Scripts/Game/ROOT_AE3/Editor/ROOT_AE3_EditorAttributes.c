@@ -86,6 +86,18 @@ class ROOT_AE3_EditorAttr
 				return true;
 			}
 
+			case "network_speed":
+			{
+				if (!n)
+					return false;
+
+				value = n.GetDeviceSpeed();
+				if (n.IsRouter())
+					value = n.GetRouterSpeed();
+
+				return true;
+			}
+
 			case "accept":
 			{
 				if (!n || !n.IsRouter())
@@ -128,6 +140,15 @@ class ROOT_AE3_EditorAttr
 					return false;
 
 				value = c.GetInterfaceModeRaw();
+				return true;
+			}
+
+			case "ui_style":
+			{
+				if (!c)
+					return false;
+
+				value = c.GetUiStyleRaw();
 				return true;
 			}
 		}
@@ -187,6 +208,7 @@ class ROOT_AE3_EditorAttr
 				break;
 			}
 
+			case "network_speed": ROOT_AE3_API.SetTransferSpeed(e, value); break;
 			case "accept":
 			{
 				if (n)
@@ -213,6 +235,7 @@ class ROOT_AE3_EditorAttr
 
 			case "root_login": ROOT_AE3_API.SetRootLogin(e, value); break;
 			case "interface": ROOT_AE3_API.SetInterfaceMode(e, value); break;
+			case "ui_style": ROOT_AE3_API.SetUiStyle(e, value); break;
 		}
 	}
 }

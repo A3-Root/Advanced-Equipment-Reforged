@@ -267,6 +267,7 @@ class ROOT_AE3_Manager
 		ROOT_AE3_PowerComponent p = computer.GetPower();
 		if (p && !p.IsOn())
 		{
+			bool boot = p.GetState() != ROOT_AE3_EPowerState.STANDBY;
 			string reason;
 			if (!p.TurnOn(reason))
 			{
@@ -274,8 +275,12 @@ class ROOT_AE3_Manager
 				return;
 			}
 
-			array<string> f = {dev.GetDeviceName(), "Starting..."};
-			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+			// Waking from standby opens at once; only a boot shows a note.
+			if (boot)
+			{
+				array<string> f = {dev.GetDeviceName(), "Starting..."};
+				ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+			}
 		}
 
 		if (computer.IsRunning() && computer.GetScreen() != ROOT_AE3_EScreen.BOOT)
@@ -330,6 +335,65 @@ class ROOT_AE3_Manager
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Server: plugs a carried network cable of the given length between a placed device and a router.
+	//! data: router RplId, cable length.
+	protected void PlugCable(int playerId, RplId deviceId, string data)
+	{
+		array<string> v = ROOT_AE3_Codec.Split(data);
+		array<string> f = {"Advanced Equipment", ""};
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.FromRplId(deviceId);
+		ROOT_AE3_DeviceComponent rdev;
+		if (v.Count() >= 2)
+			rdev = ROOT_AE3_DeviceComponent.FromRplId(v[0].ToInt());
+
+		IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(playerId);
+		if (!dev || !rdev || !player || dev.IsHidden() || rdev.IsHidden())
+			return;
+
+		IEntity owner = dev.GetOwner();
+		IEntity router = rdev.GetOwner();
+		if (ROOT_AE3_Util.IsCarried(owner) || ROOT_AE3_Util.IsDestroyed(owner) || vector.Distance(player.GetOrigin(), owner.GetOrigin()) > USE_RANGE + 1)
+			f[1] = "The device is out of reach.";
+
+		float len = v[1].ToFloat();
+		IEntity cable = ROOT_AE3_CableComponent.FindCarried(player, len);
+		ROOT_AE3_NetworkComponent r = ROOT_AE3_NetworkComponent.Of(router);
+		if (f[1].IsEmpty() && !cable)
+			f[1] = string.Format("No %1 m network cable in your inventory.", len);
+
+		if (f[1].IsEmpty() && (!r || !r.IsRouter() || ROOT_AE3_Util.IsCarried(router)))
+			f[1] = "That router is not available.";
+
+		if (f[1].IsEmpty() && vector.Distance(owner.GetOrigin(), router.GetOrigin()) > len)
+			f[1] = string.Format("The router is farther than %1 m.", len);
+
+		ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(owner);
+		if (f[1].IsEmpty() && n && !n.IsRouter() && !r.AcceptsConnections())
+			f[1] = "The router does not accept new connections.";
+
+		string reason;
+		if (f[1].IsEmpty())
+		{
+			EntityPrefabData pd = cable.GetPrefabData();
+			ResourceName prefab;
+			if (pd)
+				prefab = pd.GetPrefabName();
+
+			if (ROOT_AE3_ConnectionComponent.ConnectNetwork(owner, router, reason, len, prefab))
+			{
+				ROOT_AE3_CableComponent.Consume(player, cable);
+				f[1] = string.Format("%1 plugged into %2 (%3 m cable).", dev.GetDeviceName(), rdev.GetDeviceName(), len);
+			}
+			else
+			{
+				f[1] = reason;
+			}
+		}
+
+		ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Server: a carried computer without a session goes to standby.
 	protected void StandbyIfIdle(ROOT_AE3_ComputerComponent computer)
 	{
@@ -369,6 +433,18 @@ class ROOT_AE3_Manager
 		}
 
 		return null;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sends SESSION again to everyone using the computer (style changed).
+	void ResendSessionsOf(ROOT_AE3_ComputerComponent computer)
+	{
+		for (int i = 0, n = m_mSessions.Count(); i < n; i++)
+		{
+			ROOT_AE3_Session s = m_mSessions.GetElement(i);
+			if (s && s.m_Computer == computer)
+				s.SendSession();
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -504,6 +580,17 @@ class ROOT_AE3_Manager
 			return;
 		}
 
+		if (op == ROOT_AE3_EMsg.PLUG_NET)
+		{
+			float nowPlug = GetGame().GetWorld().GetWorldTime() / 1000.0;
+			if (nowPlug - m_mLastRename.Get(playerId) < 1)
+				return;
+
+			m_mLastRename.Set(playerId, nowPlug);
+			PlugCable(playerId, deviceId, data);
+			return;
+		}
+
 		if (op == ROOT_AE3_EMsg.EWO)
 		{
 			float nowEwo = GetGame().GetWorld().GetWorldTime() / 1000.0;
@@ -580,12 +667,15 @@ class ROOT_AE3_Manager
 
 		string reason;
 		IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(playerId);
+		if (!player)
+			return;
+
 		ROOT_AE3_LidComponent lid = ROOT_AE3_LidComponent.Of(dev.GetOwner());
 		ChimeraCharacter character = ChimeraCharacter.Cast(player);
 		bool dead = character && character.GetCharacterController() && character.GetCharacterController().IsDead();
 		bool own = ROOT_AE3_Util.CarriedBy(dev.GetOwner(), player);
 		bool reach = own || (!ROOT_AE3_Util.IsCarried(dev.GetOwner()) && vector.Distance(player.GetOrigin(), dev.GetOwner().GetOrigin()) <= USE_RANGE && (!lid || lid.IsOpen()));
-		if (!player || dead || ROOT_AE3_Util.IsDestroyed(dev.GetOwner()) || !reach)
+		if (dead || ROOT_AE3_Util.IsDestroyed(dev.GetOwner()) || !reach)
 		{
 			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, "The computer is out of reach.");
 			return;
@@ -599,14 +689,14 @@ class ROOT_AE3_Manager
 
 		DropSession(playerId, computer);
 
+		// Registered before Start: requests the client sends on SESSION find the session.
 		ROOT_AE3_Session s = new ROOT_AE3_Session(playerId, computer);
+		m_mSessions.Set(playerId, s);
 		if (!s.Start(mode, false, reason))
 		{
+			m_mSessions.Remove(playerId);
 			ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.ENDED, reason);
-			return;
 		}
-
-		m_mSessions.Set(playerId, s);
 	}
 
 	//------------------------------------------------------------------------------------------------

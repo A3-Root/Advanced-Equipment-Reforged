@@ -421,14 +421,40 @@ class ROOT_AE3_NetworkSystem
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Device holding an IP (client or router).
+	//! Device holding an IP (client or router), or the connected computer with that hostname.
 	ROOT_AE3_NetworkComponent Resolve(string ip)
 	{
+		int a, b, c, d;
+		if (!ROOT_AE3_Util.ParseIp(ip, a, b, c, d))
+			return ResolveHost(ip);
+
 		ROOT_AE3_NetworkComponent r = ResolveRouter(ip);
 		if (!r)
 			return null;
 
 		return r.GetDhcp().Get(ip);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Connected computer with a hostname (case insensitive).
+	ROOT_AE3_NetworkComponent ResolveHost(string host)
+	{
+		string want = ROOT_AE3_Util.Lower(host);
+		if (want.IsEmpty())
+			return null;
+
+		foreach (ROOT_AE3_DeviceComponent dev : ROOT_AE3_Manager.Get().GetDevices())
+		{
+			ROOT_AE3_ComputerComponent comp = ROOT_AE3_ComputerComponent.Of(dev.GetOwner());
+			if (!comp || ROOT_AE3_Util.Lower(comp.GetHostname()) != want)
+				continue;
+
+			ROOT_AE3_NetworkComponent n = comp.GetNetwork();
+			if (n && !n.GetAddress().IsEmpty())
+				return n;
+		}
+
+		return null;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -494,6 +520,13 @@ class ROOT_AE3_NetworkSystem
 	bool SshAllowed(ROOT_AE3_NetworkComponent from, ROOT_AE3_NetworkComponent target, out string reason)
 	{
 		int hops;
+		ROOT_AE3_PowerComponent tp = ROOT_AE3_PowerComponent.Of(target.GetOwner());
+		if (tp && tp.GetState() == ROOT_AE3_EPowerState.STANDBY)
+		{
+			reason = "Host is in standby.";
+			return false;
+		}
+
 		if (!CanReach(from, target, hops))
 		{
 			reason = "Host unreachable.";
@@ -502,7 +535,7 @@ class ROOT_AE3_NetworkSystem
 
 		if (!target.IsSshEnabled())
 		{
-			reason = "Connection refused.";
+			reason = "Connection refused: remote access is off on the host.";
 			return false;
 		}
 

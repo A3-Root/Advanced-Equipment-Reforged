@@ -223,8 +223,17 @@ class ROOT_AE3_API
 		f.m_sKey = key;
 		f.m_sPassword = password;
 		f.m_iSize = size;
-		string err;
-		return f.Apply(fs, err);
+		s_sLastError = "";
+		return f.Apply(fs, s_sLastError);
+	}
+
+	protected static string s_sLastError;
+
+	//------------------------------------------------------------------------------------------------
+	//! Error text of the last failed AddFile.
+	static string GetLastError()
+	{
+		return s_sLastError;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -633,6 +642,18 @@ class ROOT_AE3_API
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Server. Desktop style: -1 setting, 0 Windows, 1 Tactical; open sessions switch at once.
+	static bool SetUiStyle(IEntity device, int style)
+	{
+		ROOT_AE3_ComputerComponent c = Computer(device);
+		if (!c || !Replication.IsServer())
+			return false;
+
+		c.SetUiStyle(style);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! mode 0 terminal, 1 desktop; entries: identity IDs, faction keys or player names, empty = everyone.
 	static bool SetInterfaceAccess(IEntity device, int mode, notnull array<string> entries)
 	{
@@ -690,6 +711,18 @@ class ROOT_AE3_API
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Server: remote access (SSH logins) of a computer. Returns false without a network client.
+	static bool SetSshEnabled(IEntity device, bool enabled)
+	{
+		ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(device);
+		if (!Replication.IsServer() || !n || n.IsRouter())
+			return false;
+
+		n.SetSshEnabled(enabled);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Static address inside the router subnet (empty = DHCP); reconnects a connected device.
 	static bool SetStaticIp(IEntity device, string ip)
 	{
@@ -708,10 +741,20 @@ class ROOT_AE3_API
 
 		ROOT_AE3_ConnectionComponent wire = ROOT_AE3_ConnectionComponent.Of(device);
 		bool wired = wire && wire.IsWiredTo(r.GetOwner());
+		float cable;
+		ResourceName item;
+		if (wired)
+		{
+			cable = wire.GetCableLength(r.GetOwner());
+			item = wire.TakeCable(r.GetOwner());
+		}
+
 		string reason;
 		bool ok = ROOT_AE3_NetworkSystem.Get().Connect(n, r, r.GetPassword(), reason, true);
 		if (ok && wired)
-			wire.AddWired(r.GetOwner());
+			wire.AddWired(r.GetOwner(), cable, item);
+		else if (wired)
+			ROOT_AE3_CableComponent.Give(item, device, null);
 
 		return ok;
 	}

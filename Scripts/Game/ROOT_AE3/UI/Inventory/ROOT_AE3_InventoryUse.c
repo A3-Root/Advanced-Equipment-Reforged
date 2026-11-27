@@ -1,5 +1,5 @@
-//! Inventory "Use" on Advanced Equipment items: computers in the own inventory show the device form
-//! (Open: wake or boot first, then open; Rename), EWO packs in the own inventory or the vicinity open the EWO panel.
+//! Inventory "Use" on Advanced Equipment items: computers in the own inventory open (wake or boot first),
+//! EWO packs in the own inventory or the vicinity open the EWO panel.
 class ROOT_AE3_InventoryUse
 {
 	//------------------------------------------------------------------------------------------------
@@ -23,7 +23,7 @@ class ROOT_AE3_InventoryUse
 
 		if (ROOT_AE3_ComputerComponent.Of(item))
 		{
-			ROOT_AE3_GmDialog.OpenDevice(item);
+			ROOT_AE3_Client.Get().OpenCarried(item);
 			return;
 		}
 
@@ -87,6 +87,6 @@ modded class SCR_InventoryMenuUI
 		}
 
 		Action_CloseInventory();
-		GetGame().GetCallqueue().CallLater(ROOT_AE3_InventoryUse.Use, 0, false, item);
+		GetGame().GetCallqueue().CallLater(ROOT_AE3_InventoryUse.Use, 100, false, item);
 	}
 }

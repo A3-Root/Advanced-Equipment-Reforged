@@ -860,14 +860,14 @@ class ROOT_AE3_AppFiles : ROOT_AE3_App
 				ROOT_AE3_UI.Rect(m_wProps, bx, ry, 22, 22, ROOT_AE3_Theme.Muted());
 				ROOT_AE3_UI.Hit(m_wProps, bx + 1, ry + 1, 20, 20, ID_PERM + bit, m_PropsListener, fill, ROOT_AE3_Theme.Hover());
 				if (m_aPerm[bit])
-					ROOT_AE3_UI.Icon(m_wProps, bx + 4, ry + 4, 14, "g_check", ROOT_AE3_UI.Rgb(1, 1, 1));
+					ROOT_AE3_UI.Icon(m_wProps, bx + 4, ry + 4, 14, "g_check", ROOT_AE3_Theme.OnAccent());
 			}
 
 			ry += 32;
 		}
 
 		ROOT_AE3_UI.Rect(m_wProps, x + 1, y + ph - 60, pw - 2, 59, ROOT_AE3_Theme.Bar());
-		ROOT_AE3_UI.Button(m_wProps, x + pw - 236, y + ph - 46, 104, 32, "OK", ID_PROPS_OK, m_PropsListener, ROOT_AE3_Theme.Accent(), ROOT_AE3_UI.Rgb(1, 1, 1), 14);
+		ROOT_AE3_UI.Button(m_wProps, x + pw - 236, y + ph - 46, 104, 32, "OK", ID_PROPS_OK, m_PropsListener, ROOT_AE3_Theme.Accent(), ROOT_AE3_Theme.OnAccent(), 14);
 		ROOT_AE3_UI.Rect(m_wProps, x + pw - 124, y + ph - 46, 104, 32, ROOT_AE3_Theme.Border());
 		ROOT_AE3_UI.Button(m_wProps, x + pw - 123, y + ph - 45, 102, 30, "Cancel", ID_PROPS_CANCEL, m_PropsListener, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 14);
 	}

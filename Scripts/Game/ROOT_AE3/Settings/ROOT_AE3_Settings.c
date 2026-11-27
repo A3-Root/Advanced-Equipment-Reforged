@@ -111,10 +111,16 @@ class ROOT_AE3_Settings
 	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Default desktop theme", enums: { ParamEnum("Dark", "0"), ParamEnum("Light", "1"), ParamEnum("Olive", "2") }, category: "Desktop")]
 	int m_iDesktopDefaultTheme;
 
+	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Default desktop style of computers", enums: { ParamEnum("Windows", "0"), ParamEnum("Tactical", "1") }, category: "Desktop")]
+	int m_iDesktopStyle;
+
 	[Attribute("1", desc: "Photos, wallpapers and the Browser may load web addresses (pages, images, videos); each client downloads them", category: "Desktop")]
 	bool m_bDesktopWebImages;
 
-	[Attribute("0", desc: "Map app shows only devices on the same network", category: "Desktop")]
+	[Attribute("https://wsrv.nl/?output=png&w=1024&encoding=base64&url=%1", desc: "Address that returns a web image as base64 text, %1 = image address (the image address is sent to this service); empty = direct download", category: "Desktop")]
+	string m_sDesktopWebImageProxy;
+
+	[Attribute("1", desc: "Map app shows only the computer, its router, routers linked to it and devices connected to it", category: "Desktop")]
 	bool m_bDesktopMapSameNetworkOnly;
 
 	// Network
@@ -200,6 +206,7 @@ class ROOT_AE3_Settings
 		{
 			case "root_password": value = m_sDefaultRootPassword; return true;
 			case "ewo_prefabs": value = m_sEwoPrefabs; return true;
+			case "web_image_proxy": value = m_sDesktopWebImageProxy; return true;
 		}
 
 		return false;
@@ -212,6 +219,7 @@ class ROOT_AE3_Settings
 		{
 			case "root_password": m_sDefaultRootPassword = value; return true;
 			case "ewo_prefabs": m_sEwoPrefabs = value; return true;
+			case "web_image_proxy": m_sDesktopWebImageProxy = value; return true;
 		}
 
 		return false;
@@ -226,10 +234,10 @@ class ROOT_AE3_Settings
 			"file_browsing", "map_same_network", "games_enabled", "games_hosting", "games_same_network", "games_bots",
 			"games_practice", "web_images", "startup_time", "shutdown_time", "transfer_local", "transfer_usb",
 			"transfer_network", "range_default", "range_multiplier", "ui_range", "power_interval", "default_mode",
-			"default_theme", "desktop_size", "terminal_design", "ewo_mode", "ewo_energy", "ewo_range", "ewo_source_range",
+			"default_theme", "desktop_style", "desktop_size", "terminal_design", "ewo_mode", "ewo_energy", "ewo_range", "ewo_source_range",
 			"ewo_drain", "ewo_charge", "ewo_recharge"
 		};
-		array<string> t = {"root_password", "ewo_prefabs"};
+		array<string> t = {"root_password", "ewo_prefabs", "web_image_proxy"};
 		numbers.Copy(n);
 		texts.Copy(t);
 	}
@@ -265,6 +273,7 @@ class ROOT_AE3_Settings
 			case "power_interval": value = m_fPowerUpdateInterval; return true;
 			case "default_mode": value = m_iDesktopDefaultMode; return true;
 			case "default_theme": value = m_iDesktopDefaultTheme; return true;
+			case "desktop_style": value = m_iDesktopStyle; return true;
 			case "desktop_size": value = m_iDesktopSize; return true;
 			case "terminal_design": value = m_iTerminalDesign; return true;
 			case "ewo_mode": value = ROOT_AE3_Util.BoolNum(m_bEwoMode); return true;
@@ -309,6 +318,7 @@ class ROOT_AE3_Settings
 			case "power_interval": m_fPowerUpdateInterval = Math.Clamp(value, 1, 60); return true;
 			case "default_mode": m_iDesktopDefaultMode = Math.ClampInt(Math.Round(value), 0, 2); return true;
 			case "default_theme": m_iDesktopDefaultTheme = Math.ClampInt(Math.Round(value), 0, 2); return true;
+			case "desktop_style": m_iDesktopStyle = Math.ClampInt(Math.Round(value), 0, 1); return true;
 			case "desktop_size": m_iDesktopSize = Math.ClampInt(Math.Round(value), 0, 3); return true;
 			case "terminal_design": m_iTerminalDesign = Math.ClampInt(Math.Round(value), 0, 19); return true;
 			case "ewo_mode": m_bEwoMode = value != 0; return true;
@@ -332,7 +342,8 @@ class ROOT_AE3_Settings
 			m_sTerminalDialogTitle, m_iDesktopDefaultTheme.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopEnableFileBrowsing),
 			ROOT_AE3_Util.BoolStr(m_bUiOnTexture), m_fUiPlayerRange.ToString(), m_iUiMaxConcurrentViewers.ToString(),
 			m_fUiKeystrokeSyncInterval.ToString(), m_iDesktopDefaultMode.ToString(), m_iDeviceNameFallback.ToString(),
-			m_iDesktopSize.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopWebImages), ROOT_AE3_Util.BoolStr(m_bEwoMode), m_sEwoPrefabs
+			m_iDesktopSize.ToString(), ROOT_AE3_Util.BoolStr(m_bDesktopWebImages), ROOT_AE3_Util.BoolStr(m_bEwoMode), m_sEwoPrefabs,
+			m_sDesktopWebImageProxy
 		};
 		return ROOT_AE3_Codec.JoinSub(f);
 	}
@@ -363,5 +374,8 @@ class ROOT_AE3_Settings
 			m_bEwoMode = f[14] == "1";
 			m_sEwoPrefabs = f[15];
 		}
+
+		if (f.Count() >= 17)
+			m_sDesktopWebImageProxy = f[16];
 	}
 }

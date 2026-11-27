@@ -188,7 +188,8 @@ class ROOT_AE3_SnakeView : ROOT_AE3_UiListener
 		float y = row * m_fCell;
 		PolygonDrawCommand p = new PolygonDrawCommand();
 		p.m_iColor = color;
-		p.m_Vertices = {x, y, x + m_fCell - 1, y, x + m_fCell - 1, y + m_fCell - 1, x, y + m_fCell - 1};
+		array<float> v = {x, y, x + m_fCell - 1, y, x + m_fCell - 1, y + m_fCell - 1, x, y + m_fCell - 1};
+		p.m_Vertices = ROOT_AE3_UI.ToPixels(v);
 		m_aCommands.Insert(p);
 	}
 
@@ -200,7 +201,8 @@ class ROOT_AE3_SnakeView : ROOT_AE3_UiListener
 		float w = m_fCell * m_iCols;
 		float h = m_fCell * m_iRows;
 		bg.m_iColor = 0xFF101810;
-		bg.m_Vertices = {0, 0, w, 0, w, h, 0, h};
+		array<float> v = {0, 0, w, 0, w, h, 0, h};
+		bg.m_Vertices = ROOT_AE3_UI.ToPixels(v);
 		m_aCommands.Insert(bg);
 		if (m_iFood >= 0)
 			Cell(m_iFood, 0xFFFF4040);

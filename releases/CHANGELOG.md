@@ -70,6 +70,17 @@
 - Persistence saves the names of all devices and the AE3 System module settings (`ROOT_AE3_SystemModuleSerializer`).
 - `ROOT_AE3_DeviceComponent` attribute hidden (set on the EWO router).
 - `ROOT_AE3_PowerComponent.SetExternalLoad` / `GetExternalFactor`: loads outside AE3 links served from what consumers leave.
+- Game Master action "Connect to network" for single devices: router list with distance, wireless or cable, ignore range.
+- Game Master device attribute "Transfer speed".
+- Game Master forms show the current values of the device with on / off, choice, multiline, password and permission fields.
+- Remote access switch: desktop Network app button, terminal `sshd on|off|status`, `ROOT_AE3_API.SetSshEnabled`.
+- `ssh` and Remote Access accept hostnames.
+- Setting `m_sDesktopWebImageProxy` (System module action "Web image proxy"): web images load as base64 through `wsrv.nl` by default.
+- Editor previews for the airfield and military generators.
+- Closed sessions keep the open desktop windows and unsaved text on the client for the same computer and user.
+- Network cable items 5 m, 15 m and 30 m (inventory, arsenal, Game Master); plugging asks for the router and cable length.
+- Plugged network cables and power links are drawn between device ports on every client.
+- Desktop styles Windows and Tactical per computer: Game Master attribute "Desktop style", World Editor attribute, setting `m_iDesktopStyle`, `ROOT_AE3_API.SetUiStyle`.
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -114,6 +125,22 @@
 - Desktop window size default Large; changing it keeps open windows and their content; taskbar button labelled "Size".
 - Inventory tooltip labels in the string table; the Use hint only on computers.
 - Larger variant accents (laptop side bands and lid plate, router and battery bands, server top plate); solar panel frame and legs take the variant colour, accent rim on the panel; previews re-rendered.
+- Game Master "Router settings" is "Router name and password" (SSID, password, SSH allow list); range, accept connections and external SSH are device attributes.
+- Game Master "Add file": content field multiline, owner from the computer users, permission buttons, encryption choice with its key field, optional shown size; failures name the reason.
+- Game Master "Connect network (selection)" is "Connect selection to router".
+- Laptops accept SSH logins by default.
+- SSH to a computer in standby or with remote access off names the cause.
+- Plugging a flash drive mounts it at `/mnt/usbN`; empty `/mnt/usbN` folders take no files and list "No drive in usbN".
+- Floodlight lights only on machines with a display and unsubscribes from the power state on delete.
+- Floodlight and solar panel prefabs have no parent prefab (duplicate mesh and physics components blocked placing).
+- Flash drive props sit in the USB port, plug into the case, on both sides of the laptop.
+- Remote Access: connect card with recent hosts, then a file browser with back, forward, up, refresh, address bar, icons, preview and context menu.
+- Ping, System Info, About, Settings and My Computer apps rebuilt (result log, cards, meters, navigation pane).
+- Game boards and Snake draw in the same units as their click areas: boards fill the window and clicks hit the right square at any resolution.
+- The Terminal desktop icon switches to the terminal without opening a window; the next session opens on the desktop.
+- Inventory "Use" on a carried laptop opens it directly; waking from standby shows no "Starting..." note.
+- Map app (setting on by default): only the computer, its router, routers linked to it and devices connected to it.
+- Game Master slider attributes no longer log "Incompatible parameter" (vanilla slider change handler).
 
 ### Removed
 - Plain base laptop, router, battery pack, solar panel and portable server from Game Master and arsenals (3 variants each remain).

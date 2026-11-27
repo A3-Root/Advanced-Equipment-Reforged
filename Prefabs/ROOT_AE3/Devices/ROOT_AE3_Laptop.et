@@ -49,6 +49,8 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    m_iUsbPorts 2
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB11622A5D}" {
+   m_vNetPort 0.08 0.011 -0.121
+   m_vPowerPort -0.08 0.011 -0.121
   }
   ROOT_AE3_DeviceComponent "{6AF041BB11625293}" {
    m_eType LAPTOP
@@ -65,6 +67,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    }
   }
   ROOT_AE3_NetworkComponent "{6AF041BB11622D5F}" {
+   m_bSshEnabled 1
   }
   ROOT_AE3_PowerComponent "{6AF041BB11622D7C}" {
    m_eRole CONSUMER

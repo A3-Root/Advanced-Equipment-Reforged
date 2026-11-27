@@ -192,6 +192,20 @@ class ROOT_AE3_WebMedia
 			return;
 		}
 
+		// Images go through the base64 proxy (the engine passes web data as text and cuts binary files).
+		string proxy = ROOT_AE3_SettingsManager.Get().m_sDesktopWebImageProxy;
+		proxy.TrimInPlace();
+		if (mode == "url" && !proxy.IsEmpty() && proxy.Contains("%1"))
+		{
+			url = string.Format(proxy, UrlEncode(url));
+			scheme = url.IndexOf("://");
+			if (scheme < 0)
+			{
+				Reply(target, tag, false, "The web image proxy setting is not a valid address.");
+				return;
+			}
+		}
+
 		int slash = url.IndexOfFrom(scheme + 3, "/");
 		string server = url + "/";
 		string request = "";
@@ -221,6 +235,25 @@ class ROOT_AE3_WebMedia
 		s_aJobs.Insert(job);
 		ctx.SetTimeout(30);
 		ctx.GET(job.m_Cb, request);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Percent-encodes everything except unreserved characters (RFC 3986).
+	static string UrlEncode(string text)
+	{
+		string hex = "0123456789ABCDEF";
+		string res;
+		for (int i = 0, n = text.Length(); i < n; i++)
+		{
+			int c = text.ToAscii(i) & 0xFF;
+			bool keep = (c >= 48 && c <= 57) || (c >= 65 && c <= 90) || (c >= 97 && c <= 122) || c == 45 || c == 46 || c == 95 || c == 126;
+			if (keep)
+				res += text.Get(i);
+			else
+				res += "%" + hex.Get(c / 16) + hex.Get(c % 16);
+		}
+
+		return res;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -263,7 +296,7 @@ class ROOT_AE3_WebMedia
 				}
 
 				if (job.m_sMode != "video" && !Format(bytes).IsEmpty() && !Complete(bytes))
-					error = string.Format("Only %1 bytes of the image arrived: the engine passes web data as text and cuts binary files at the first zero byte. Use an address that returns the image as base64 text, or paste the base64 text.", bytes.Count());
+					error = string.Format("Only %1 bytes of the image arrived: the engine passes web data as text and cuts binary files at the first zero byte. Set the web image proxy (System module, Web image proxy) or paste the base64 text.", bytes.Count());
 				else
 					path = SaveBytes(job.m_sId, bytes, ext, error);
 			}

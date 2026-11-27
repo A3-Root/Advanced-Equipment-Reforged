@@ -461,6 +461,23 @@ class ROOT_AE3_GuiRouterComms
 				return true;
 			}
 
+			case "net_ssh":
+			{
+				if (!c.IsSudoer(user))
+				{
+					Msg(s, rid, false, cmd, "Changing remote access needs root or a sudoer.");
+					return true;
+				}
+
+				n.SetSshEnabled(A(f, 2) == "1");
+				if (n.IsSshEnabled())
+					Msg(s, rid, true, cmd, "Remote access on.");
+				else
+					Msg(s, rid, true, cmd, "Remote access off.");
+
+				return true;
+			}
+
 			case "net_disconnect":
 			{
 				sys.Disconnect(n);
@@ -488,7 +505,7 @@ class ROOT_AE3_GuiRouterComms
 				int at = target.IndexOf("@");
 				if (at < 0)
 				{
-					Msg(s, rid, false, cmd, "Use user@ip.");
+					Msg(s, rid, false, cmd, "Use user@host (IP address or hostname).");
 					return true;
 				}
 
@@ -747,6 +764,8 @@ class ROOT_AE3_GuiRouterComms
 	//------------------------------------------------------------------------------------------------
 	//! Range, then "name|kind|dx|dz|address" per device; kinds self, router, computer, power.
 	//! Devices within range m (east, north offsets) of the computer; range 100-5000, default 500.
+	//! Setting m_bDesktopMapSameNetworkOnly: only the computer, its router, the routers linked to it and the
+	//! devices connected to it; no power devices.
 	protected static void MapData(ROOT_AE3_Session s, string rid, ROOT_AE3_ComputerComponent c, float range)
 	{
 		if (range <= 0)
@@ -756,6 +775,12 @@ class ROOT_AE3_GuiRouterComms
 		vector origin = ROOT_AE3_Util.WorldPos(c.GetOwner());
 		bool sameNet = ROOT_AE3_SettingsManager.Get().m_bDesktopMapSameNetworkOnly;
 		ROOT_AE3_NetworkComponent own = c.GetNetwork();
+		ROOT_AE3_NetworkComponent ownRouter;
+		if (own && own.IsRouter())
+			ownRouter = own;
+		else if (own && own.IsConnected())
+			ownRouter = own.GetParent();
+
 		array<string> res = {range.ToString()};
 		foreach (ROOT_AE3_DeviceComponent d : ROOT_AE3_Manager.Get().GetDevices())
 		{
@@ -783,10 +808,13 @@ class ROOT_AE3_GuiRouterComms
 			if (n)
 				ip = n.GetAddress();
 
-			if (sameNet && kind != "self" && kind != "power")
+			if (sameNet && kind != "self")
 			{
-				int hops;
-				if (!n || !ROOT_AE3_NetworkSystem.Get().CanReach(own, n, hops))
+				if (!n || !ownRouter)
+					continue;
+
+				bool linked = n == ownRouter || n.GetParent() == ownRouter || (n.IsRouter() && ownRouter.GetParent() == n);
+				if (!linked)
 					continue;
 			}
 

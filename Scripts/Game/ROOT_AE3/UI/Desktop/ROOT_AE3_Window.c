@@ -57,11 +57,24 @@ class ROOT_AE3_Window : ROOT_AE3_UiListener
 		if (!m_bMax)
 			ROOT_AE3_UI.Shadow(m_wFrame, 0, 0, m_fW, m_fH, 10);
 
-		ROOT_AE3_UI.Rect(m_wFrame, 0, 0, m_fW, m_fH, ROOT_AE3_Theme.Border(), ID_BODY, this);
+		bool tac = ROOT_AE3_Theme.IsTactical();
+		Color edge = ROOT_AE3_Theme.Border();
+		if (tac)
+			edge = ROOT_AE3_Theme.Accent();
+
+		ROOT_AE3_UI.Rect(m_wFrame, 0, 0, m_fW, m_fH, edge, ID_BODY, this);
 		ROOT_AE3_UI.Rect(m_wFrame, 1, 1, m_fW - 2, m_fH - 2, ROOT_AE3_Theme.Panel());
 		ROOT_AE3_UI.Rect(m_wFrame, 1, 1, m_fW - 2, TITLE_H, ROOT_AE3_Theme.Title(), ID_TITLE, this);
-		ROOT_AE3_UI.Icon(m_wFrame, 12, 9, 18, m_App.GetIcon());
-		m_wTitle = ROOT_AE3_UI.Text(m_wFrame, 40, 9, m_fW - 200, 18, m_App.GetTitle(), 14, ROOT_AE3_Theme.Text());
+		if (tac)
+		{
+			ROOT_AE3_UI.Rect(m_wFrame, 1, TITLE_H, m_fW - 2, 1, ROOT_AE3_Theme.Accent());
+			m_wTitle = ROOT_AE3_UI.Text(m_wFrame, 12, 9, m_fW - 170, 18, ROOT_AE3_Theme.Caption(m_App.GetTitle()), 14, ROOT_AE3_Theme.Accent());
+		}
+		else
+		{
+			ROOT_AE3_UI.Icon(m_wFrame, 12, 9, 18, m_App.GetIcon());
+			m_wTitle = ROOT_AE3_UI.Text(m_wFrame, 40, 9, m_fW - 200, 18, m_App.GetTitle(), 14, ROOT_AE3_Theme.Text());
+		}
 		string maxIcon = "g_max";
 		if (m_bMax)
 			maxIcon = "g_restore";
@@ -114,7 +127,7 @@ class ROOT_AE3_Window : ROOT_AE3_UiListener
 	void SetTitle(string text)
 	{
 		if (m_wTitle)
-			m_wTitle.SetText(text);
+			m_wTitle.SetText(ROOT_AE3_Theme.Caption(text));
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -181,6 +194,14 @@ class ROOT_AE3_Window : ROOT_AE3_UiListener
 
 		m_wGhost = null;
 		m_wFrame = null;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Moves a detached window to another desktop view (restored session); Relayout builds it there.
+	void Reattach(ROOT_AE3_DesktopView desktop)
+	{
+		m_Desktop = desktop;
+		m_App.m_Desktop = desktop;
 	}
 
 	//------------------------------------------------------------------------------------------------

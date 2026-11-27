@@ -1,5 +1,10 @@
 # Desktop
 
+Styles (per computer): Windows (themes Dark, Light, Olive) and Tactical (themes Green, Amber, Night; monospace text,
+outlined controls, bracketed titles, map grid background, text taskbar, program list). Set by the Game Master device
+attribute "Desktop style", the World Editor (`ROOT_AE3_ComputerComponent.m_iUiStyle`), `ROOT_AE3_API.SetUiStyle` or the
+setting `m_iDesktopStyle`. Settings app: Personalize (theme, wallpaper), Terminal (design), Style.
+
 Opened with "Use desktop" or the `desktop` command. Sign-in screen (Tab: next field), black background,
 wallpapers 1-5, an image file or a web address, themes Dark / Light / Olive, notifications. Window size Fullscreen /
 Large / Medium / Small: taskbar button "Size" or F11; per player (`$profile:ROOT_AE3/client.txt`), default setting
@@ -9,7 +14,10 @@ Large / Medium / Small: taskbar button "Size" or F11; per player (`$profile:ROOT
   double click or Enter opens, right click for the menu (files: Open, Rename, Delete). Right click on the
   background: Refresh, New folder, New text document, Files, Terminal, Personalize, System info.
 - Web access (setting `m_bDesktopWebImages`): each client downloads the address itself (RestApi), decodes
-  base64 text and stores media in `$profile:ROOT_AE3/media/`. Images: PNG, JPEG, GIF (first frame), base64
+  base64 text and stores media in `$profile:ROOT_AE3/media/`. Image addresses go through the web image proxy
+  (setting `m_sDesktopWebImageProxy`, default `https://wsrv.nl/?output=png&w=1024&encoding=base64&url=%1`), which
+  returns the image as base64 text; the image address is sent to that service. Empty = direct download, which
+  works only for addresses that return base64 text. Images: PNG, JPEG, GIF (first frame), base64
   at most 2 MB. Videos (address ending in mp4, webm, ogv, mov, m4v, avi, mkv, bk2, bik): at most 8 MB,
   played with the engine `VideoWidget`, which refuses formats it does not take. Pages: text, headings,
   lists and links; images and videos on the page are links.
@@ -24,7 +32,7 @@ Large / Medium / Small: taskbar button "Size" or F11; per player (`$profile:ROOT
 
 | App | Use |
 | --- | --- |
-| My Computer | Volumes, flash drive mount and eject |
+| My Computer | Volumes, flash drive mount and eject (a plugged drive is mounted at once) |
 | Files | Back / forward / up, address bar (click empty space to type a path), search, navigation pane, large icons or details (click a header to sort), right-click menus, new folder / text document, cut / copy / paste, rename, delete to Recycle Bin, shortcuts, properties (owner, permissions), unlock. Keys: Enter, Backspace, Delete, F2, F5, arrows, Ctrl+C / X / V |
 | Notepad | New, Open..., Save, Save as... |
 | Photos | Open... media files with caption, Web address... (image or video), Paste base64..., Save as... (media file), Set as background (images); videos: Play, Stop, Restart |
@@ -33,7 +41,7 @@ Large / Medium / Small: taskbar button "Size" or F11; per player (`$profile:ROOT
 | Email | Inbox / Sent, search, reading pane, compose (From picks an own address), reply, delete, own addresses (create, delete) |
 | Messenger | Message Center (conversations, search, new conversation with a known or typed handle), Handles (create, delete), Reading as (all or one own handle), message bubbles |
 | Calendar | Month grid (previous / next month and year, go to date, Today), day panel with events (time, title, location, details), add, delete. Left / Right: month |
-| Network | Connection status, networks in range with signal and security, connect (password asked for secured networks), disconnect |
+| Network | Connection status, networks in range with signal and security, connect (password asked for secured networks), disconnect, remote access on / off (root and sudoers) |
 | Remote Access | SSH: remote file list, view, Download... to a local folder, Upload... a local file |
 | Ping | Reachability |
 | Map | Devices up to 5 km around (same network only with `m_bDesktopMapSameNetworkOnly`); wheel or +/- zooms at the cursor, drag or arrow keys move, Center, scale bar |

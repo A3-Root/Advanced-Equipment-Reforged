@@ -54,7 +54,13 @@ class ROOT_AE3_UsbManager
 		return true;
 	}
 
+	protected static const float PROP_BODY_FRONT = 0.0225;	//!< Stick model: origin to the front of the body (plug side, +X)
+	protected static const float PROP_HALF_HEIGHT = 0.004;	//!< Stick model: origin to the plug centre (up)
+	protected static const float PORT_HALF_DEPTH = 0.001;	//!< Port box: centre to the outer face
+
 	//------------------------------------------------------------------------------------------------
+	//! Stick prop in port: ports sit on the left (-X) or right (+X) side of the model; the plug points into
+	//! the case and the body starts at the outer face of the port.
 	static IEntity SpawnProp(ROOT_AE3_ComputerComponent c, int port, ResourceName prefab)
 	{
 		if (prefab.IsEmpty())
@@ -64,10 +70,23 @@ class ROOT_AE3_UsbManager
 		if (!res || !res.IsValid())
 			return null;
 
+		vector pos = c.GetUsbPortPos(port);
+		float side = 1;
+		float yaw = 180;
+		if (pos[0] < 0)
+		{
+			side = -1;
+			yaw = 0;
+		}
+
+		vector local[4];
+		Math3D.AnglesToMatrix(Vector(yaw, 0, 0), local);
+		local[3] = Vector(pos[0] + side * (PORT_HALF_DEPTH + PROP_BODY_FRONT), pos[1] - PROP_HALF_HEIGHT, pos[2]);
+		vector world[4];
+		c.GetOwner().GetWorldTransform(world);
 		EntitySpawnParams p = new EntitySpawnParams();
 		p.TransformMode = ETransformMode.WORLD;
-		c.GetOwner().GetWorldTransform(p.Transform);
-		p.Transform[3] = c.GetOwner().CoordToParent(c.GetUsbPortPos(port));
+		Math3D.MatrixMultiply4(world, local, p.Transform);
 		IEntity prop = GetGame().SpawnEntityPrefab(res, GetGame().GetWorld(), p);
 		if (prop)
 			c.GetOwner().AddChild(prop, -1, EAddChildFlags.AUTO_TRANSFORM);

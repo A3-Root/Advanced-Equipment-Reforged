@@ -1,4 +1,4 @@
-GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
+GenericEntity {
  ID "6AF041BB11637E19"
  components {
   ParametricMaterialInstanceComponent "{6AF041BB11637F62}" {
@@ -34,6 +34,7 @@ GenericEntity : "{10C26F96EF7A8CF5}Prefabs/Props/Core/Props_Base.et" {
   }
   RigidBody "{6AF041BB11637CB5}" {
    Mass 100
+   LayerPreset "BuildingFireView"
    ResponseIndex "HugeDestructible"
    ModelGeometry 1
    Static 1

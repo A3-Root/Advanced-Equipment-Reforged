@@ -58,6 +58,18 @@ StringTable {
    Target_en_us "Laptop Sand (Advanced Equipment)"
   }
   CustomStringTableItem {
+   Id "ROOT_AE3-Editable_NetworkCable_30m_Name"
+   Target_en_us "Network Cable 30 m (Advanced Equipment)"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Editable_NetworkCable_5m_Name"
+   Target_en_us "Network Cable 5 m (Advanced Equipment)"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Editable_NetworkCable_Name"
+   Target_en_us "Network Cable 15 m (Advanced Equipment)"
+  }
+  CustomStringTableItem {
    Id "ROOT_AE3-Editable_PortableServer_Black_Name"
    Target_en_us "Portable Server Black (Advanced Equipment)"
   }
@@ -196,6 +208,18 @@ StringTable {
   CustomStringTableItem {
    Id "ROOT_AE3-Item_Laptop_Sand_Name"
    Target_en_us "Laptop Sand"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Item_NetworkCable_30m_Name"
+   Target_en_us "Network Cable 30 m"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Item_NetworkCable_5m_Name"
+   Target_en_us "Network Cable 5 m"
+  }
+  CustomStringTableItem {
+   Id "ROOT_AE3-Item_NetworkCable_Name"
+   Target_en_us "Network Cable 15 m"
   }
   CustomStringTableItem {
    Id "ROOT_AE3-Item_PortableServer_Black_Name"

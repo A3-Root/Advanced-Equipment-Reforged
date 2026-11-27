@@ -1,11 +1,13 @@
 # Builds the Advanced Equipment device models in Blender and exports one FBX per model.
-# Run inside Blender (Text Editor or blender --background --python build_models.py).
+# Run inside Blender (Text Editor or blender --background --python build_models.py [-- model ...]).
+# Model names after "--" build only those (laptop, router, usb, battery, solar, server, cable).
 # Conventions: meters, Z up in Blender (exported Y up), origin at the bottom center,
 # collision meshes prefixed UCX_ (convex), screen material AE3_Screen uses UV 0-1 for the render target.
 import bpy
 import bmesh
 import math
 import os
+import sys
 from mathutils import Vector
 
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
@@ -84,6 +86,29 @@ def cyl(name, r, depth, loc, material, col, rot=(0, 0, 0), verts=16):
     me = bpy.data.meshes.new(name)
     bm.to_mesh(me)
     bm.free()
+    ob = bpy.data.objects.new(name, me)
+    ob.location = loc
+    ob.rotation_euler = rot
+    col.objects.link(ob)
+    me.materials.append(material)
+    return ob
+
+
+def torus(name, major, minor, loc, material, col, rot=(0, 0, 0), seg=32, ring=8):
+    """Torus around the Z axis."""
+    verts, faces = [], []
+    for i in range(seg):
+        a = i * 2 * math.pi / seg
+        for j in range(ring):
+            b = j * 2 * math.pi / ring
+            r = major + minor * math.cos(b)
+            verts.append((r * math.cos(a), r * math.sin(a), minor * math.sin(b)))
+    for i in range(seg):
+        for j in range(ring):
+            i2, j2 = (i + 1) % seg, (j + 1) % ring
+            faces.append((i * ring + j, i2 * ring + j, i2 * ring + j2, i * ring + j2))
+    me = bpy.data.meshes.new(name)
+    me.from_pydata(verts, [], faces)
     ob = bpy.data.objects.new(name, me)
     ob.location = loc
     ob.rotation_euler = rot
@@ -342,18 +367,44 @@ def server(M):
     export(col, name)
 
 
-def build():
+def cable(M):
+    """Coiled network cable with a strap (accent) and an RJ45 plug on a short tail."""
+    name = "ROOT_AE3_NetworkCable"
+    col = new_coll(name)
+    r = 0.0035
+    parts = []
+    for i, (dx, dy) in enumerate([(0, 0), (0.004, 0.003), (-0.003, 0.004), (0.002, -0.004)]):
+        parts.append(torus("loop", 0.075, r, (dx, dy, r + i * 0.0055), M["plastic"], col, rot=(0, 0, i * 0.7)))
+    parts.append(box("strap", (0.03, 0.03, 0.03), (0.075, 0, 0.012), M["accent"], col, bevel=0.003))
+    parts.append(cyl("tail", r, 0.05, (0.075, -0.035, 0.004), M["plastic"], col, rot=(math.radians(90), 0, 0), verts=8))
+    parts.append(box("boot", (0.012, 0.016, 0.01), (0.075, -0.066, 0.006), M["plastic"], col))
+    parts.append(box("plug", (0.012, 0.014, 0.008), (0.075, -0.081, 0.006), M["metal"], col))
+    o = join(parts, name)
+    uv_box(o)
+    collider(name, (0.17, 0.17, 0.03), (0, 0, 0.015), col)
+    export(col, name)
+
+
+BUILDERS = {
+    "laptop": lambda M: (laptop(M, True), laptop(M, False)),
+    "router": router,
+    "usb": usb,
+    "battery": battery,
+    "solar": solar,
+    "server": server,
+    "cable": cable,
+}
+
+
+def build(only=None):
     clear()
     M = materials()
-    laptop(M, True)
-    laptop(M, False)
-    router(M)
-    usb(M)
-    battery(M)
-    solar(M)
-    server(M)
+    for key, fn in BUILDERS.items():
+        if not only or key in only:
+            fn(M)
     return [c.name for c in bpy.data.collections]
 
 
 if __name__ == "__main__":
-    build()
+    argv = sys.argv[sys.argv.index("--") + 1:] if "--" in sys.argv else []
+    build(argv)

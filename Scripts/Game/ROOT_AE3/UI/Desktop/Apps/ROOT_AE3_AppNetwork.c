@@ -1,10 +1,11 @@
 //! Wi-Fi: connection status, networks in range, connect (password asked for secured networks), disconnect.
-//! Address, SSH and router settings are set by the Game Master or the mission, not here.
+//! Remote access (SSH logins) on / off for root and sudoers. Address and router settings are set by the Game Master or the mission.
 class ROOT_AE3_AppNetwork : ROOT_AE3_App
 {
 	protected static const int ID_CONNECT = 1;
 	protected static const int ID_DISCONNECT = 2;
 	protected static const int ID_REFRESH = 3;
+	protected static const int ID_SSH = 4;
 
 	protected ROOT_AE3_ListView m_List;
 	protected ref array<string> m_aGateways = {};
@@ -62,6 +63,15 @@ class ROOT_AE3_AppNetwork : ROOT_AE3_App
 		ROOT_AE3_UI.Text(GetContent(), 88, 52, w - 220, 20, sub, 13, ROOT_AE3_Theme.Muted());
 		if (Connected())
 			Btn(w - 130, 34, 106, 30, "Disconnect", ID_DISCONNECT);
+
+		if (!m_aInfo.IsEmpty())
+		{
+			string ssh = "Remote access: off";
+			if (Arg(m_aInfo, 3) == "on")
+				ssh = "Remote access: on";
+
+			Btn(w - 290, 100, 172, 28, ssh, ID_SSH);
+		}
 
 		Label(12, 104, 300, 22, "Networks in range", 15);
 		Btn(w - 110, 100, 98, 28, "Refresh", ID_REFRESH);
@@ -183,6 +193,7 @@ class ROOT_AE3_AppNetwork : ROOT_AE3_App
 				return;
 			}
 
+			case "net_ssh":
 			case "net_connect":
 			case "net_disconnect":
 			{
@@ -295,6 +306,15 @@ class ROOT_AE3_AppNetwork : ROOT_AE3_App
 			case ID_CONNECT: ConnectSelected(); return true;
 			case ID_DISCONNECT: Request0("net_disconnect"); return true;
 			case ID_REFRESH: Request0("net_scan"); return true;
+			case ID_SSH:
+			{
+				string on = "1";
+				if (Arg(m_aInfo, 3) == "on")
+					on = "0";
+
+				Request1("net_ssh", on);
+				return true;
+			}
 		}
 
 		return false;

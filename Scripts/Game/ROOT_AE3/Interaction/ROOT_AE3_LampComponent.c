@@ -3,21 +3,27 @@ class ROOT_AE3_LampComponentClass : ScriptComponentClass
 {
 }
 
-//! Couples SCR_BaseInteractiveLightComponent to ROOT_AE3_PowerComponent. Runs on every machine
-//! (power state is replicated), so each machine lights its own light entities.
+//! Couples SCR_BaseInteractiveLightComponent to ROOT_AE3_PowerComponent. Runs on every machine with a
+//! display (power state is replicated), so each machine lights its own light entities. Dedicated servers
+//! create no lights.
 class ROOT_AE3_LampComponent : ScriptComponent
 {
+	protected ROOT_AE3_PowerComponent m_Power;
+	protected SCR_BaseInteractiveLightComponent m_Light;
+
 	//------------------------------------------------------------------------------------------------
 	override protected void OnPostInit(IEntity owner)
 	{
 		super.OnPostInit(owner);
-		if (!GetGame().InPlayMode())
+		if (!GetGame().InPlayMode() || System.IsConsoleApp())
 			return;
 
-		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(owner);
-		if (p)
-			p.GetOnStateChanged().Insert(OnPower);
+		m_Light = SCR_BaseInteractiveLightComponent.Cast(owner.FindComponent(SCR_BaseInteractiveLightComponent));
+		m_Power = ROOT_AE3_PowerComponent.Of(owner);
+		if (!m_Light || !m_Power)
+			return;
 
+		m_Power.GetOnStateChanged().Insert(OnPower);
 		GetGame().GetCallqueue().CallLater(Sync, 500, false);
 	}
 
@@ -25,22 +31,34 @@ class ROOT_AE3_LampComponent : ScriptComponent
 	override protected void OnDelete(IEntity owner)
 	{
 		GetGame().GetCallqueue().Remove(Sync);
+		if (m_Power)
+			m_Power.GetOnStateChanged().Remove(OnPower);
+
+		m_Power = null;
+		m_Light = null;
 		super.OnDelete(owner);
 	}
 
 	//------------------------------------------------------------------------------------------------
 	protected void Sync()
 	{
-		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(GetOwner());
-		if (p)
-			OnPower(p, 0, p.GetState());
+		if (m_Power)
+			Apply(m_Power.GetState());
 	}
 
 	//------------------------------------------------------------------------------------------------
 	protected void OnPower(ROOT_AE3_PowerComponent power, int oldState, int newState)
 	{
-		SCR_BaseInteractiveLightComponent light = SCR_BaseInteractiveLightComponent.Cast(GetOwner().FindComponent(SCR_BaseInteractiveLightComponent));
-		if (light)
-			light.ToggleLight(newState == ROOT_AE3_EPowerState.ON);
+		Apply(newState);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void Apply(int state)
+	{
+		IEntity owner = GetOwner();
+		if (!m_Light || !owner || owner.IsDeleted())
+			return;
+
+		m_Light.ToggleLight(state == ROOT_AE3_EPowerState.ON);
 	}
 }

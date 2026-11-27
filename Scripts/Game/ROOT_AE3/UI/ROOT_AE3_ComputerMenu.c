@@ -108,9 +108,6 @@ class ROOT_AE3_ComputerMenu : ChimeraMenuBase
 	{
 		if (m_Terminal)
 			m_Terminal.Refresh();
-
-		if (m_Desktop)
-			m_Desktop.OnTerminalChanged();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -118,9 +115,6 @@ class ROOT_AE3_ComputerMenu : ChimeraMenuBase
 	{
 		if (m_Terminal)
 			m_Terminal.RefreshPrompt();
-
-		if (m_Desktop)
-			m_Desktop.OnTerminalChanged();
 	}
 
 	//------------------------------------------------------------------------------------------------

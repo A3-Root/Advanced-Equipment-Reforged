@@ -16,6 +16,7 @@ class ROOT_AE3_GmActions
 			"access", "Interface access", "Users",
 			"global_root_password", "Default root password", "Mission settings",
 			"global_ewo_prefabs", "EWO pack prefabs", "Mission settings",
+			"global_web_proxy", "Web image proxy", "Mission settings",
 			"rename", "Rename device", "System",
 			"hostname", "Hostname", "System",
 			"interface", "Interface mode", "System",
@@ -40,10 +41,11 @@ class ROOT_AE3_GmActions
 			"fuel", "Fuel", "Power",
 			"connect_power", "Connect power (selection)", "Power",
 			"disconnect_power", "Disconnect power", "Power",
-			"router", "Router settings", "Network",
+			"router", "Router name and password", "Network",
+			"connect_wifi", "Connect to network", "Network",
 			"static_ip", "Static IP", "Network",
 			"network_speed", "Transfer speed", "Network",
-			"connect_network", "Connect network (selection)", "Network",
+			"connect_network", "Connect selection to router", "Network",
 			"disconnect_network", "Disconnect network", "Network"
 		};
 
@@ -86,108 +88,341 @@ class ROOT_AE3_GmActions
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Title, field labels and defaults of an action; false when the action needs no dialog.
-	static bool Fields(string key, out string title, notnull array<string> labels, notnull array<string> defaults)
+	//! False for actions that run without a form.
+	static bool HasFields(string key)
 	{
 		switch (key)
 		{
-			case "add_user": title = "Add user"; labels.Insert("User name"); labels.Insert("Password"); labels.Insert("Sudoer (0/1)"); defaults.Insert("user"); defaults.Insert("password"); defaults.Insert("0"); return true;
-			case "add_sudoer": title = "Add sudoer"; labels.Insert("User name"); defaults.Insert("user"); return true;
-			case "remove_sudoer": title = "Remove sudoer"; labels.Insert("User name"); defaults.Insert("user"); return true;
-			case "root_password": title = "Root password"; labels.Insert("Password (empty = setting default)"); defaults.Insert(""); return true;
-			case "root_login": title = "Root login"; labels.Insert("0 setting, 1 allow, 2 deny"); defaults.Insert("0"); return true;
-			case "global_root_password":
+			case "open_root":
+			case "crash":
+			case "power_on":
+			case "power_off":
+			case "standby":
+			case "connect_power":
+			case "connect_network":
+			case "disconnect_power":
+			case "disconnect_network":
+				return false;
+		}
+
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static ROOT_AE3_GmField F(notnull array<ref ROOT_AE3_GmField> fields, ROOT_AE3_EGmField kind, string label, string value)
+	{
+		ROOT_AE3_GmField f = ROOT_AE3_GmField.Make(kind, label, value);
+		fields.Insert(f);
+		return f;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static ROOT_AE3_GmField Toggle(notnull array<ref ROOT_AE3_GmField> fields, string label, bool value)
+	{
+		ROOT_AE3_GmField f = ROOT_AE3_GmField.Toggle(label, value);
+		fields.Insert(f);
+		return f;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Choice field; a text field when there is nothing to choose from.
+	protected static ROOT_AE3_GmField Choice(notnull array<ref ROOT_AE3_GmField> fields, string label, notnull array<string> values, notnull array<string> labels, string value)
+	{
+		ROOT_AE3_GmField f;
+		if (values.IsEmpty())
+			f = ROOT_AE3_GmField.Make(ROOT_AE3_EGmField.TEXT, label, value);
+		else
+			f = ROOT_AE3_GmField.Choice(label, values, labels, value);
+
+		fields.Insert(f);
+		return f;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! root and the users of a computer (only root for other storage).
+	protected static void Owners(ROOT_AE3_ComputerComponent c, notnull array<string> names)
+	{
+		names.Insert("root");
+		if (!c)
+			return;
+
+		array<string> users = {};
+		c.GetUsers(users);
+		foreach (string u : users)
+		{
+			if (u != "root")
+				names.Insert(u);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: title and fields of an action with the current values of the first selected device it applies
+	//! to. No fields when no device applies.
+	static void Fields(string key, notnull array<IEntity> ents, out string title, notnull array<ref ROOT_AE3_GmField> fields)
+	{
+		IEntity e;
+		foreach (IEntity cand : ents)
+		{
+			if (cand && Applies(key, cand))
 			{
-				string pw;
-				ROOT_AE3_SettingsManager.Get().GetText("root_password", pw);
-				title = "Default root password";
-				labels.Insert("Root password of computers without their own");
-				defaults.Insert(pw);
-				return true;
+				e = cand;
+				break;
+			}
+		}
+
+		if (!e || !HasFields(key))
+			return;
+
+		title = Label(key);
+		ROOT_AE3_ComputerComponent c = ROOT_AE3_ComputerComponent.Of(e);
+		ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(e);
+		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(e);
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(e);
+		array<string> users = {};
+		if (c)
+			c.GetUsers(users);
+
+		switch (key)
+		{
+			case "add_user":
+			{
+				F(fields, ROOT_AE3_EGmField.TEXT, "User name", "user");
+				F(fields, ROOT_AE3_EGmField.PASSWORD, "Password", "password");
+				Toggle(fields, "Sudoer", false);
+				return;
 			}
 
-			case "global_ewo_prefabs":
+			case "add_sudoer":
+			case "remove_sudoer":
+			case "user_speed":
 			{
-				string prefabs;
-				ROOT_AE3_SettingsManager.Get().GetText("ewo_prefabs", prefabs);
-				title = "EWO pack prefabs";
-				labels.Insert("Prefab names, comma separated");
-				defaults.Insert(prefabs);
-				return true;
+				array<string> names = {};
+				if (key == "remove_sudoer")
+					c.GetSudoers(names);
+				else
+					names.Copy(users);
+
+				string first;
+				if (!names.IsEmpty())
+					first = names[0];
+
+				Choice(fields, "User", names, names, first);
+				if (key == "user_speed")
+					F(fields, ROOT_AE3_EGmField.TEXT, "Transfer speed in KB/s (0 = default)", "0");
+
+				return;
 			}
 
-			case "rename": title = "Rename device"; labels.Insert("Name (empty = default)"); defaults.Insert(""); return true;
-			case "hostname": title = "Hostname"; labels.Insert("Hostname"); defaults.Insert(""); return true;
-			case "interface": title = "Interface"; labels.Insert("-1 setting, 0 terminal, 1 desktop, 2 both"); defaults.Insert("-1"); return true;
-			case "add_file":
+			case "root_password":
 			{
-				title = "Add file";
-				labels.Insert("Path");
-				labels.Insert("Content");
-				labels.Insert("Owner");
-				labels.Insert("Permissions (rwxr-x)");
-				labels.Insert("Encryption 0 none, 1 caesar, 2 columnar");
-				labels.Insert("Key");
-				labels.Insert("Password (empty = none)");
-				labels.Insert("Virtual size in bytes (-1 = content)");
-				defaults.Insert("/home/user/notes.txt");
-				defaults.Insert("");
-				defaults.Insert("root");
-				defaults.Insert("rw-r--");
-				defaults.Insert("0");
-				defaults.Insert("");
-				defaults.Insert("");
-				defaults.Insert("-1");
-				return true;
+				F(fields, ROOT_AE3_EGmField.PASSWORD, "Root password (empty = mission default)", c.GetRootPasswordRaw());
+				return;
 			}
 
-			case "add_dir": title = "Add directory"; labels.Insert("Path"); labels.Insert("Owner"); labels.Insert("Permissions (rwxr-x)"); defaults.Insert("/home/user/intel"); defaults.Insert("root"); defaults.Insert("rwxr-x"); return true;
-			case "add_email": title = "Add email"; labels.Insert("From"); labels.Insert("Subject"); labels.Insert("Text"); labels.Insert("To (empty = first address)"); defaults.Insert("hq@rootnet.home"); defaults.Insert(""); defaults.Insert(""); defaults.Insert(""); return true;
-			case "mail_address": title = "Mail address"; labels.Insert("Address"); defaults.Insert("user@rootnet.home"); return true;
-			case "chat_handle": title = "Chat handle"; labels.Insert("Handle"); defaults.Insert(""); return true;
-			case "add_webpage": title = "Add web page"; labels.Insert("Address"); labels.Insert("Title"); labels.Insert("Markdown content"); labels.Insert("Every computer (0/1)"); defaults.Insert("intel.local"); defaults.Insert(""); defaults.Insert("# Title"); defaults.Insert("0"); return true;
-			case "add_history": title = "Add browser history"; labels.Insert("Address"); defaults.Insert("intel.local"); return true;
-			case "add_media": title = "Add image"; labels.Insert("Path"); labels.Insert("Texture {GUID}path.edds, web address or base64"); labels.Insert("Caption"); defaults.Insert("/home/user/photo.img"); defaults.Insert(""); defaults.Insert(""); return true;
-			case "add_calendar": title = "Add calendar event"; labels.Insert("Date YYYY-MM-DD"); labels.Insert("Time HH:MM"); labels.Insert("Title"); labels.Insert("Description"); labels.Insert("Location"); defaults.Insert(ROOT_AE3_Util.Today()); defaults.Insert("12:00"); defaults.Insert(""); defaults.Insert(""); defaults.Insert(""); return true;
-			case "add_games": title = "Install games"; labels.Insert("Games separated by spaces (empty = all)"); defaults.Insert(""); return true;
-			case "static_ip": title = "Static IP"; labels.Insert("Address inside the router subnet (empty = DHCP)"); defaults.Insert(""); return true;
-			case "network_speed": title = "Transfer speed"; labels.Insert("KB/s (0 = default)"); defaults.Insert("0"); return true;
-			case "battery": title = "Battery level"; labels.Insert("Percent 0-100"); defaults.Insert("100"); return true;
-			case "fuel": title = "Fuel"; labels.Insert("Liters"); defaults.Insert("5"); return true;
-			case "router":
+			case "root_login":
 			{
-				title = "Router settings";
-				labels.Insert("SSID (empty = keep)");
-				labels.Insert("Password (* = keep, empty = open)");
-				labels.Insert("Range m (0 = keep)");
-				labels.Insert("Accept connections (0/1, * = keep)");
-				labels.Insert("External SSH (0/1, * = keep)");
-				labels.Insert("External SSH allow list, regex separated by spaces (* = keep)");
-				defaults.Insert("");
-				defaults.Insert("*");
-				defaults.Insert("0");
-				defaults.Insert("*");
-				defaults.Insert("*");
-				defaults.Insert("*");
-				return true;
+				array<string> rv = {"0", "1", "2"};
+				array<string> rl = {"Mission setting", "Allow", "Deny"};
+				Choice(fields, "Direct root login", rv, rl, c.GetRootLoginPolicy().ToString());
+				return;
 			}
 
 			case "access":
 			{
-				title = "Interface access";
-				labels.Insert("Terminal: identity IDs / faction keys / player names, comma or space separated (empty = everyone, * = keep)");
-				labels.Insert("Desktop: identity IDs / faction keys / player names, comma or space separated (empty = everyone, * = keep)");
-				defaults.Insert("*");
-				defaults.Insert("*");
-				return true;
+				array<string> cli = {};
+				array<string> gui = {};
+				c.GetAccess(0, cli);
+				c.GetAccess(1, gui);
+				F(fields, ROOT_AE3_EGmField.TEXT, "Terminal: identity IDs, faction keys or player names, comma separated (empty = everyone)", ROOT_AE3_Util.JoinFrom(cli, 0, ", "));
+				F(fields, ROOT_AE3_EGmField.TEXT, "Desktop: identity IDs, faction keys or player names, comma separated (empty = everyone)", ROOT_AE3_Util.JoinFrom(gui, 0, ", "));
+				return;
 			}
 
-			case "user_speed": title = "User transfer speed"; labels.Insert("User"); labels.Insert("KB/s (0 = default)"); defaults.Insert("user"); defaults.Insert("0"); return true;
-			case "save": title = "Save computer"; labels.Insert("Save name"); defaults.Insert("laptop1"); return true;
-			case "restore": title = "Restore computer"; labels.Insert("Save name (empty = list saves)"); defaults.Insert(""); return true;
-		}
+			case "global_root_password":
+			case "global_ewo_prefabs":
+			case "global_web_proxy":
+			{
+				string text;
+				string label = "Root password of computers without their own";
+				string setting = "root_password";
+				ROOT_AE3_EGmField kind = ROOT_AE3_EGmField.PASSWORD;
+				if (key == "global_ewo_prefabs")
+				{
+					label = "Prefab names of EWO packs, comma separated";
+					setting = "ewo_prefabs";
+					kind = ROOT_AE3_EGmField.TEXT;
+				}
+				else if (key == "global_web_proxy")
+				{
+					label = "Address that returns images as base64 text, %1 = image address (empty = direct)";
+					setting = "web_image_proxy";
+					kind = ROOT_AE3_EGmField.TEXT;
+				}
 
-		return false;
+				ROOT_AE3_SettingsManager.Get().GetText(setting, text);
+				F(fields, kind, label, text);
+				return;
+			}
+
+			case "rename": F(fields, ROOT_AE3_EGmField.TEXT, "Name (empty = default)", d.GetCustomName()); return;
+			case "hostname": F(fields, ROOT_AE3_EGmField.TEXT, "Hostname", c.GetHostname()); return;
+			case "interface":
+			{
+				array<string> iv = {"-1", "0", "1", "2"};
+				array<string> il = {"Mission setting", "Terminal", "Desktop", "Both"};
+				Choice(fields, "Interface", iv, il, c.GetInterfaceModeRaw().ToString());
+				return;
+			}
+
+			case "add_file":
+			case "add_dir":
+			{
+				array<string> owners = {};
+				Owners(c, owners);
+				string home = "/home/user";
+				if (!users.IsEmpty())
+					home = ROOT_AE3_Filesystem.HomeOf(users[0]);
+
+				if (!c)
+					home = "";
+
+				if (key == "add_dir")
+				{
+					F(fields, ROOT_AE3_EGmField.TEXT, "Path", home + "/intel");
+					Choice(fields, "Owner", owners, owners, "root");
+					F(fields, ROOT_AE3_EGmField.PERMS, "Permissions", "rwxr-x");
+					return;
+				}
+
+				F(fields, ROOT_AE3_EGmField.TEXT, "Path", home + "/notes.txt");
+				F(fields, ROOT_AE3_EGmField.MULTILINE, "Content", "");
+				Choice(fields, "Owner", owners, owners, "root");
+				F(fields, ROOT_AE3_EGmField.PERMS, "Permissions", "rw-r--");
+				array<string> ev = {"0", "1", "2"};
+				array<string> el = {"None", "Caesar", "Columnar"};
+				Choice(fields, "Encryption", ev, el, "0");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Caesar shift (number)", "3").ShowIf(4, "1");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Columnar key word", "KEY").ShowIf(4, "2");
+				F(fields, ROOT_AE3_EGmField.PASSWORD, "Password to open (empty = none)", "");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Shown size in bytes (empty = from content)", "");
+				return;
+			}
+
+			case "add_email":
+			{
+				F(fields, ROOT_AE3_EGmField.TEXT, "From", "hq@rootnet.home");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Subject", "");
+				F(fields, ROOT_AE3_EGmField.MULTILINE, "Text", "");
+				F(fields, ROOT_AE3_EGmField.TEXT, "To (empty = first address)", "");
+				return;
+			}
+
+			case "mail_address": F(fields, ROOT_AE3_EGmField.TEXT, "Address", "user@rootnet.home"); return;
+			case "chat_handle": F(fields, ROOT_AE3_EGmField.TEXT, "Handle", ""); return;
+			case "add_webpage":
+			{
+				F(fields, ROOT_AE3_EGmField.TEXT, "Address", "intel.local");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Title", "");
+				F(fields, ROOT_AE3_EGmField.MULTILINE, "Markdown content", "# Title");
+				Toggle(fields, "On every computer", false);
+				return;
+			}
+
+			case "add_history": F(fields, ROOT_AE3_EGmField.TEXT, "Address", "intel.local"); return;
+			case "add_media":
+			{
+				F(fields, ROOT_AE3_EGmField.TEXT, "Path", "/home/user/photo.img");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Texture {GUID}path.edds, web address or base64", "");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Caption", "");
+				return;
+			}
+
+			case "add_calendar":
+			{
+				F(fields, ROOT_AE3_EGmField.TEXT, "Date YYYY-MM-DD", ROOT_AE3_Util.Today());
+				F(fields, ROOT_AE3_EGmField.TEXT, "Time HH:MM", "12:00");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Title", "");
+				F(fields, ROOT_AE3_EGmField.MULTILINE, "Description", "");
+				F(fields, ROOT_AE3_EGmField.TEXT, "Location", "");
+				return;
+			}
+
+			case "add_games": F(fields, ROOT_AE3_EGmField.TEXT, "Games separated by spaces (empty = all)", ""); return;
+			case "static_ip": F(fields, ROOT_AE3_EGmField.TEXT, "Address inside the router subnet (empty = automatic)", n.GetStaticIp()); return;
+			case "network_speed":
+			{
+				float speed = n.GetDeviceSpeed();
+				if (n.IsRouter())
+					speed = n.GetRouterSpeed();
+
+				F(fields, ROOT_AE3_EGmField.TEXT, "Transfer speed in KB/s (0 = default)", Math.Round(speed).ToString());
+				return;
+			}
+
+			case "battery": F(fields, ROOT_AE3_EGmField.TEXT, "Charge in percent 0-100", Math.Round(p.GetLevel() * 100).ToString()); return;
+			case "fuel": F(fields, ROOT_AE3_EGmField.TEXT, "Fuel in liters", p.GetFuel().ToString()); return;
+			case "router":
+			{
+				F(fields, ROOT_AE3_EGmField.TEXT, "Network name (SSID)", n.GetSsid());
+				F(fields, ROOT_AE3_EGmField.PASSWORD, "Password (empty = open network)", n.GetPassword());
+				string allow;
+				if (n.GetExternalAllow())
+					allow = ROOT_AE3_Util.JoinFrom(n.GetExternalAllow(), 0, "\n");
+
+				F(fields, ROOT_AE3_EGmField.MULTILINE, "Source addresses allowed to SSH in from other networks, one regular expression per line (empty = all)", allow);
+				return;
+			}
+
+			case "connect_wifi":
+			{
+				array<string> nv = {};
+				array<string> nl = {};
+				array<ROOT_AE3_NetworkComponent> inRange = {};
+				vector pos = ROOT_AE3_Util.WorldPos(e);
+				ROOT_AE3_NetworkSystem sys = ROOT_AE3_NetworkSystem.Get();
+				sys.Scan(pos, inRange);
+				foreach (ROOT_AE3_NetworkComponent r : sys.GetRouters())
+				{
+					if (!r || r == n || r.GetGateway().IsEmpty())
+						continue;
+
+					ROOT_AE3_DeviceComponent rd = ROOT_AE3_DeviceComponent.Of(r.GetOwner());
+					if (rd && rd.IsHidden() && !inRange.Contains(r))
+						continue;
+
+					string rlabel = string.Format("%1 (%2, %3 m)", r.GetSsid(), r.GetGateway(), Math.Round(vector.Distance(pos, ROOT_AE3_Util.WorldPos(r.GetOwner()))));
+					if (!inRange.Contains(r))
+						rlabel += " out of range";
+
+					nv.Insert(r.GetGateway());
+					nl.Insert(rlabel);
+				}
+
+				string current;
+				if (n.GetParent())
+					current = n.GetParent().GetGateway();
+
+				Choice(fields, "Network", nv, nl, current);
+				array<string> mv = {"wifi", "cable"};
+				array<string> ml = {"Wireless", "Cable"};
+				Choice(fields, "Connection", mv, ml, "wifi");
+				Toggle(fields, "Ignore range", false).ShowIf(1, "wifi");
+				return;
+			}
+
+			case "save": F(fields, ROOT_AE3_EGmField.TEXT, "Save name", "laptop1"); return;
+			case "restore":
+			{
+				array<string> saves = {};
+				ROOT_AE3_SaveLoad.ListSaves(saves);
+				string firstSave;
+				if (!saves.IsEmpty())
+					firstSave = saves[0];
+
+				Choice(fields, "Save", saves, saves, firstSave);
+				return;
+			}
+		}
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -210,6 +445,7 @@ class ROOT_AE3_GmActions
 			case "rename": return "any";
 			case "global_root_password":
 			case "global_ewo_prefabs":
+			case "global_web_proxy":
 				return "module";
 
 			case "battery": return "battery";
@@ -220,6 +456,8 @@ class ROOT_AE3_GmActions
 			case "network_speed":
 			case "static_ip":
 				return "network";
+
+			case "connect_wifi": return "client";
 		}
 
 		return "computer";
@@ -252,6 +490,12 @@ class ROOT_AE3_GmActions
 			}
 
 			case "network": return ROOT_AE3_NetworkComponent.Of(e) != null;
+			case "client":
+			{
+				ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(e);
+				return n && !n.IsRouter();
+			}
+
 			case "any": return ROOT_AE3_DeviceComponent.Of(e) != null;
 			case "module": return ROOT_AE3_SystemModuleComponent.IsActiveModule(e);
 		}
@@ -295,6 +539,7 @@ class ROOT_AE3_GmActions
 			return;
 		}
 
+		s_sReason = "";
 		int done, total;
 		foreach (IEntity e : targets)
 		{
@@ -315,8 +560,21 @@ class ROOT_AE3_GmActions
 			Notify(playerId, Label(key) + ": no matching device selected.");
 		else if (done == total)
 			Notify(playerId, string.Format("%1: done (%2 devices).", Label(key), done));
+		else if (!s_sReason.IsEmpty())
+			Notify(playerId, string.Format("%1: failed on %2 of %3 devices: %4", Label(key), total - done, total, s_sReason));
 		else
 			Notify(playerId, string.Format("%1: failed on %2 of %3 devices. Check the values.", Label(key), total - done, total));
+	}
+
+	protected static string s_sReason;	//!< First failure text of the running Execute
+
+	//------------------------------------------------------------------------------------------------
+	protected static int Fail(string reason)
+	{
+		if (s_sReason.IsEmpty())
+			s_sReason = reason;
+
+		return 0;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -377,7 +635,7 @@ class ROOT_AE3_GmActions
 	}
 
 	//------------------------------------------------------------------------------------------------
-	protected static void Notify(int playerId, string text)
+	static void Notify(int playerId, string text)
 	{
 		array<string> f = {"Advanced Equipment", text};
 		ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
@@ -398,22 +656,6 @@ class ROOT_AE3_GmActions
 	{
 		ROOT_AE3_ComputerComponent c = ROOT_AE3_ComputerComponent.Of(e);
 		ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(e);
-		// Text fields take "\\n" for a line break (form fields are single-line).
-		int textField = -1;
-		if (key == "add_file")
-			textField = 1;
-		else if (key == "add_email" || key == "add_webpage")
-			textField = 2;
-		else if (key == "add_calendar")
-			textField = 3;
-
-		if (textField >= 0 && textField < v.Count())
-		{
-			string text = v[textField];
-			text.Replace("\\n", "\n");
-			v[textField] = text;
-		}
-
 		switch (key)
 		{
 			case "add_user": return R(ROOT_AE3_API.AddUser(e, V(v, 0), V(v, 1), V(v, 2) == "1"));
@@ -424,6 +666,7 @@ class ROOT_AE3_GmActions
 			case "rename": return R(ROOT_AE3_API.SetDeviceName(e, V(v, 0)));
 			case "global_root_password": return R(ROOT_AE3_API.SetGlobalText("root_password", V(v, 0)));
 			case "global_ewo_prefabs": return R(ROOT_AE3_API.SetGlobalText("ewo_prefabs", V(v, 0)));
+			case "global_web_proxy": return R(ROOT_AE3_API.SetGlobalText("web_image_proxy", V(v, 0)));
 			case "hostname": return R(ROOT_AE3_API.SetHostname(e, V(v, 0)));
 			case "interface":
 			{
@@ -436,17 +679,31 @@ class ROOT_AE3_GmActions
 
 			case "access":
 			{
-				if (V(v, 0) != "*")
-					c.SetAccess(0, ROOT_AE3_Util.List(V(v, 0)));
-
-				if (V(v, 1) != "*")
-					c.SetAccess(1, ROOT_AE3_Util.List(V(v, 1)));
-
+				c.SetAccess(0, ROOT_AE3_Util.List(V(v, 0)));
+				c.SetAccess(1, ROOT_AE3_Util.List(V(v, 1)));
 				return 1;
 			}
 
 			case "user_speed": c.SetPref(V(v, 0), "speed", V(v, 1)); return 1;
-			case "add_file": return R(ROOT_AE3_API.AddFile(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3), V(v, 4).ToInt(), V(v, 5), V(v, 6), V(v, 7).ToInt()));
+			case "add_file":
+			{
+				int enc = V(v, 4).ToInt();
+				string fileKey;
+				if (enc == 1)
+					fileKey = V(v, 5);
+				else if (enc == 2)
+					fileKey = V(v, 6);
+
+				int size = -1;
+				if (!V(v, 8).Trim().IsEmpty())
+					size = V(v, 8).ToInt();
+
+				if (!ROOT_AE3_API.AddFile(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3), enc, fileKey, V(v, 7), size))
+					return Fail(ROOT_AE3_API.GetLastError());
+
+				return 1;
+			}
+
 			case "add_dir": return R(ROOT_AE3_API.AddDirectory(e, V(v, 0), V(v, 1), V(v, 2)));
 			case "add_email": return R(ROOT_AE3_API.AddEmail(e, V(v, 0), V(v, 1), V(v, 2), V(v, 3)));
 			case "mail_address": return R(ROOT_AE3_API.AddMailAddress(e, V(v, 0)));
@@ -475,25 +732,37 @@ class ROOT_AE3_GmActions
 			case "disconnect_network": return R(ROOT_AE3_API.DisconnectNetwork(e));
 			case "router":
 			{
-				float range = V(v, 2).ToFloat();
-				string pw = V(v, 1);
-				if (pw == "*")
-					pw = n.GetPassword();
-
-				bool accept = V(v, 3) == "1";
-				if (V(v, 3) == "*")
-					accept = n.AcceptsConnections();
-
-				bool ssh = V(v, 4) == "1";
-				if (V(v, 4) == "*")
-					ssh = n.AllowsExternalSsh();
-
-				n.ConfigureRouter(V(v, 0), pw, range, -1, accept, ssh, -1);
-				if (V(v, 5) != "*")
+				n.ConfigureRouter(V(v, 0).Trim(), V(v, 1), 0, -1, n.AcceptsConnections(), n.AllowsExternalSsh(), -1);
+				array<string> lines = {};
+				V(v, 2).Split("\n", lines, true);
+				array<string> allow = {};
+				foreach (string line : lines)
 				{
-					array<string> allow = ROOT_AE3_Util.Words(V(v, 5));
-					n.SetExternalAllow(allow);
+					line.TrimInPlace();
+					if (!line.IsEmpty())
+						allow.Insert(line);
 				}
+
+				n.SetExternalAllow(allow);
+				return 1;
+			}
+
+			case "connect_wifi":
+			{
+				ROOT_AE3_NetworkSystem sys = ROOT_AE3_NetworkSystem.Get();
+				ROOT_AE3_NetworkComponent r = sys.FindRouterBySubnet(ROOT_AE3_Util.Subnet(V(v, 0)));
+				if (!r)
+					return Fail("Network not found.");
+
+				string reason;
+				bool ok;
+				if (V(v, 1) == "cable")
+					ok = ROOT_AE3_ConnectionComponent.ConnectNetwork(e, r.GetOwner(), reason);
+				else
+					ok = sys.Connect(n, r, r.GetPassword(), reason, V(v, 2) == "1");
+
+				if (!ok)
+					return Fail(reason);
 
 				return 1;
 			}

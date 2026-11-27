@@ -21,6 +21,57 @@ modded class SCR_PlayerController
 		Rpc(RpcAsk_ROOT_AE3_Gm, key, targets, values);
 	}
 
+	//------------------------------------------------------------------------------------------------
+	//! Local Game Master: asks the server for the form fields of an action (ROOT_AE3_GmDialog.OnFields).
+	void ROOT_AE3_GmQuery(string key, notnull array<RplId> targets)
+	{
+		if (Replication.IsServer())
+		{
+			RpcAsk_ROOT_AE3_GmQuery(key, targets);
+			return;
+		}
+
+		Rpc(RpcAsk_ROOT_AE3_GmQuery, key, targets);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	[RplRpc(RplChannel.Reliable, RplRcver.Server)]
+	protected void RpcAsk_ROOT_AE3_GmQuery(string key, array<RplId> targets)
+	{
+		if (!ROOT_AE3_GmActions.IsGameMaster(GetPlayerId()) || !targets || targets.Count() > 64 || key.Length() > 32)
+			return;
+
+		array<IEntity> ents = {};
+		foreach (RplId id : targets)
+		{
+			ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.FromRplId(id);
+			if (d)
+				ents.Insert(d.GetOwner());
+		}
+
+		string title = ROOT_AE3_GmActions.Label(key);
+		array<ref ROOT_AE3_GmField> fields = {};
+		ROOT_AE3_GmActions.Fields(key, ents, title, fields);
+		string packed = ROOT_AE3_GmField.Pack(fields);
+		if (packed.Length() > 60000)
+			packed = "";
+
+		if (fields.IsEmpty())
+			ROOT_AE3_GmActions.Notify(GetPlayerId(), ROOT_AE3_GmActions.Label(key) + ": no matching device selected.");
+
+		if (GetGame().GetPlayerController() == this)
+			RpcDo_ROOT_AE3_GmFields(key, title, packed);
+		else
+			Rpc(RpcDo_ROOT_AE3_GmFields, key, title, packed);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	[RplRpc(RplChannel.Reliable, RplRcver.Owner)]
+	protected void RpcDo_ROOT_AE3_GmFields(string key, string title, string packed)
+	{
+		ROOT_AE3_GmDialog.OnFields(key, title, packed);
+	}
+
 	protected string m_sROOT_AE3_GmBuffer;
 	protected bool m_bROOT_AE3_GmDropped;
 

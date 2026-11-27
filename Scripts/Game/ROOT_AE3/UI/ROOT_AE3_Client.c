@@ -7,6 +7,7 @@ class ROOT_AE3_Client
 	string m_sHostname;
 	int m_iMode;
 	int m_iDesign;
+	int m_iStyle;		//!< Desktop style 0 Windows, 1 Tactical (ROOT_AE3_Theme.s_iStyle)
 	int m_iInterface;
 	string m_sUser;
 	string m_sTheme = "0";
@@ -21,6 +22,7 @@ class ROOT_AE3_Client
 	protected ref map<int, ROOT_AE3_GuiReplyHandler> m_mPending = new map<int, ROOT_AE3_GuiReplyHandler>();
 	ROOT_AE3_ComputerMenu m_Menu;
 	bool m_bMenuOpening;
+	protected int m_iMenuOpeningAt;		//!< System.GetTickCount() of the last open attempt
 	protected bool m_bSettingsRequested;
 	protected int m_iDesktopSize = -1;	//!< Client window size 0-3, -1 = setting default
 	protected bool m_bPrefsLoaded;
@@ -100,7 +102,8 @@ class ROOT_AE3_Client
 		if (!d)
 			return;
 
-		ROOT_AE3_Net.SendToServer(d.GetRplId(), ROOT_AE3_EMsg.OPEN_CARRIED, mode.ToString());
+		m_DeviceId = d.GetRplId();
+		ROOT_AE3_Net.SendToServer(m_DeviceId, ROOT_AE3_EMsg.OPEN_CARRIED, mode.ToString());
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -154,6 +157,59 @@ class ROOT_AE3_Client
 		}
 
 		Send(ROOT_AE3_EMsg.GUI, ROOT_AE3_Codec.Join(f));
+	}
+
+	protected ref array<ref ROOT_AE3_Window> m_aParked = {};
+	protected RplId m_ParkedDevice = RplId.Invalid();
+	protected string m_sParkedUser;
+
+	//------------------------------------------------------------------------------------------------
+	//! Keeps detached desktop windows of a computer and user until the next session (ROOT_AE3_DesktopView.Destroy).
+	void Park(RplId device, string user, notnull array<ref ROOT_AE3_Window> windows)
+	{
+		DropParked();
+		m_ParkedDevice = device;
+		m_sParkedUser = user;
+		foreach (ROOT_AE3_Window w : windows)
+		{
+			m_aParked.Insert(w);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Parked windows of that computer and user (moved to outWindows); other parked windows are closed.
+	bool TakeParked(RplId device, string user, notnull array<ref ROOT_AE3_Window> outWindows)
+	{
+		if (m_aParked.IsEmpty())
+			return false;
+
+		if (device != m_ParkedDevice || user != m_sParkedUser || user.IsEmpty())
+		{
+			DropParked();
+			return false;
+		}
+
+		foreach (ROOT_AE3_Window w : m_aParked)
+		{
+			outWindows.Insert(w);
+		}
+
+		m_aParked.Clear();
+		m_ParkedDevice = RplId.Invalid();
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	void DropParked()
+	{
+		foreach (ROOT_AE3_Window w : m_aParked)
+		{
+			if (w && w.m_App)
+				w.m_App.OnClose();
+		}
+
+		m_aParked.Clear();
+		m_ParkedDevice = RplId.Invalid();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -308,17 +364,45 @@ class ROOT_AE3_Client
 		if (f.Count() > 12 && f[12].ToInt() >= 0)
 			m_DeviceId = f[12].ToInt();
 
+		if (f.Count() > 13)
+			m_iStyle = f[13].ToInt();
+
 		m_bBusy = false;
 		if (m_Menu)
 		{
 			m_Menu.Rebuild();
+			return;
 		}
-		else if (!m_bMenuOpening)
+
+		// An open attempt older than 2 s did not reach OnMenuOpen.
+		if (m_bMenuOpening && System.GetTickCount() - m_iMenuOpeningAt < 2000)
+			return;
+
+		m_bMenuOpening = true;
+		m_iMenuOpeningAt = System.GetTickCount();
+		GetGame().GetCallqueue().Remove(OpenMenu);
+		GetGame().GetCallqueue().CallLater(OpenMenu, 0, false, 0);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Next frame after SESSION, so a closing inventory or dialog menu does not block it; retried while
+	//! another menu still closes.
+	protected void OpenMenu(int tries)
+	{
+		if (m_Menu || !m_bMenuOpening || m_DeviceId == RplId.Invalid())
+			return;
+
+		if (GetGame().GetMenuManager().OpenMenu(ChimeraMenuPreset.ROOT_AE3_ComputerMenu))
+			return;
+
+		if (tries >= 10)
 		{
-			m_bMenuOpening = true;
-			if (!GetGame().GetMenuManager().OpenMenu(ChimeraMenuPreset.ROOT_AE3_ComputerMenu))
-				m_bMenuOpening = false;
+			m_bMenuOpening = false;
+			return;
 		}
+
+		m_iMenuOpeningAt = System.GetTickCount();
+		GetGame().GetCallqueue().CallLater(OpenMenu, 200, false, tries + 1);
 	}
 
 	//------------------------------------------------------------------------------------------------

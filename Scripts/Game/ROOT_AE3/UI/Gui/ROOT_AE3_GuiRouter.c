@@ -175,6 +175,12 @@ class ROOT_AE3_GuiRouter
 			case "fs_list":
 			{
 				ROOT_AE3_FsNode dir = fs.Resolve(p1, fsUser, err);
+				if (dir && !fs.GetLastUnmounted().IsEmpty())
+				{
+					Msg(s, rid, false, cmd, ROOT_AE3_Filesystem.NoDrive(fs.GetLastUnmounted()) + ".");
+					return;
+				}
+
 				if (!dir || !dir.m_bDir || !dir.HasPermission(fsUser, 0))
 				{
 					if (err.IsEmpty())
@@ -531,7 +537,7 @@ class ROOT_AE3_GuiRouter
 			case "vol_list":
 			{
 				array<string> res = {};
-				array<string> root = {"root", "/", c.GetHostname(), "mounted", ROOT_AE3_Util.FormatSize(fs.m_Root.GetSize())};
+				array<string> root = {"root", "/", c.GetHostname(), "mounted", ROOT_AE3_Util.FormatSize(fs.m_Root.GetSize()), fs.m_Root.GetSize().ToString(), "0"};
 				res.Insert(ROOT_AE3_Codec.JoinSub(root));
 				for (int i = 0; i < c.GetUsbPortCount(); i++)
 				{
@@ -540,16 +546,20 @@ class ROOT_AE3_GuiRouter
 					string dev = "empty";
 					string state = "-";
 					string used = "-";
+					int bytes;
+					int capacityMb;
 					if (slot)
 					{
 						dev = slot.GetLabel();
-						used = ROOT_AE3_Util.FormatSize(slot.GetFilesystem().m_Root.GetSize());
+						bytes = slot.GetFilesystem().m_Root.GetSize();
+						capacityMb = slot.m_iCapacity;
+						used = ROOT_AE3_Util.FormatSize(bytes);
 						state = "not mounted";
 						if (c.IsMounted(i))
 							state = "mounted";
 					}
 
-					array<string> row = {id, "/mnt/" + id, dev, state, used};
+					array<string> row = {id, "/mnt/" + id, dev, state, used, bytes.ToString(), capacityMb.ToString()};
 					res.Insert(ROOT_AE3_Codec.JoinSub(row));
 				}
 

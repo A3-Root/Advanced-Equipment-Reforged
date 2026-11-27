@@ -33,6 +33,7 @@ GenericEntity : "{7F671B405CDBF0A2}Prefabs/Props/Airport/GeneratorAirfield_US_01
   SCR_EditableEntityComponent "{6AF041BB11635C86}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11635C99}" {
     Name "#ROOT_AE3-Editable_Generator_Airfield_US_Name"
+    m_Image "{1B255BA92F6E420D}UI/Textures/EditorPreviews/ROOT_AE3/E_ROOT_AE3_Generator_Airfield_US.edds"
     m_aAuthoredLabels {
      ENTITYTYPE_OBJECT FACTION_NONE SIZE_M THEME_MILITARY
     }

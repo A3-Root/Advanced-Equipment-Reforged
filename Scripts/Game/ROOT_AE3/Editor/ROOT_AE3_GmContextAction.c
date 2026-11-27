@@ -60,12 +60,9 @@ class ROOT_AE3_GmContextAction : SCR_BaseContextAction
 			ids.Insert(ROOT_AE3_DeviceComponent.Of(e).GetRplId());
 		}
 
-		string title;
-		array<string> labels = {};
-		array<string> defaults = {};
-		if (ROOT_AE3_GmActions.Fields(m_sAction, title, labels, defaults))
+		if (ROOT_AE3_GmActions.HasFields(m_sAction))
 		{
-			ROOT_AE3_GmDialog.Request(m_sAction, title, labels, defaults, ids);
+			ROOT_AE3_GmDialog.OpenAction(m_sAction, ids);
 			return;
 		}
 

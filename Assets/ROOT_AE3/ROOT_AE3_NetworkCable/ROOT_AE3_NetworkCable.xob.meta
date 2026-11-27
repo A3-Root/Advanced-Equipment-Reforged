@@ -1,0 +1,59 @@
+MetaFileClass {
+ Name "{043FF542270ABA41}Assets/ROOT_AE3/ROOT_AE3_NetworkCable/ROOT_AE3_NetworkCable.xob"
+ Configurations {
+  FBXResourceClass PC {
+   MaterialAssigns {
+    MaterialAssignClass "{6AF569021751D63C}" {
+     SourceMaterial "AE3_Plastic_Dark"
+     AssignedMaterial "{F55DEA08348E222F}Assets/ROOT_AE3/ROOT_AE3_NetworkCable/Data/AE3_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF569021751D60C}" {
+     SourceMaterial "AE3_Accent"
+     AssignedMaterial "{EDFAC1BFB346A648}Assets/ROOT_AE3/ROOT_AE3_NetworkCable/Data/AE3_Accent.emat"
+    }
+    MaterialAssignClass "{6AF569021751D60A}" {
+     SourceMaterial "AE3_Metal"
+     AssignedMaterial "{E5054F07F4159761}Assets/ROOT_AE3/ROOT_AE3_NetworkCable/Data/AE3_Metal.emat"
+    }
+   }
+   MeshParams {
+    MeshParam ROOT_AE3_NetworkCable {
+    }
+   }
+   GeometryParams {
+    GeometryParam UCX_ROOT_AE3_NetworkCable {
+     SurfaceProperties {
+      "{536BF67B2052B869}material/metal.gamemat"
+     }
+     Mass 0
+     Margin 0
+    }
+   }
+   Common TXOCommonClass "{6AF5690216AF0654}" : "{0877E7C4BB2B2C9A}Configs/System/ResourceTypes/PC/MeshObjectCommon.conf" {
+   }
+   ApplicationVendor "Blender Foundation"
+   ApplicationName "Blender (stable FBX IO)"
+   ApplicationVersion "5.2.2 LTS"
+  }
+  FBXResourceClass XBOX_ONE : PC {
+   Common TXOCommonClass "{6AF5690216AF0182}" : "{9D5B6207F7628CE2}Configs/System/ResourceTypes/XBOX_ONE/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass XBOX_SERIES : PC {
+   Common TXOCommonClass "{6AF5690216AF0032}" : "{DD9F02115C764647}Configs/System/ResourceTypes/XBOX_SERIES/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass PS4 : PC {
+   Common TXOCommonClass "{6AF5690216AF033C}" : "{53EC476BC921D99A}Configs/System/ResourceTypes/PS4/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass PS5 : PC {
+   Common TXOCommonClass "{6AF5690216AF03F6}" : "{F62AA8E7B8EA9D26}Configs/System/ResourceTypes/PS5/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass HEADLESS : PC {
+   Common TXOCommonClass "{6AF5690216AF03B4}" : "{3A5B3356978039E8}Configs/System/ResourceTypes/HEADLESS/MeshObjectCommon.conf" {
+   }
+  }
+ }
+}

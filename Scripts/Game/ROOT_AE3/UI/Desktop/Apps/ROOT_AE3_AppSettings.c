@@ -1,6 +1,17 @@
-//! Theme, wallpaper (black, built in, image file, web address) and terminal design.
+//! Settings with a navigation pane: Personalize (theme, wallpaper), Terminal (design), Style (desktop style of
+//! this computer, set by the Game Master, World Editor or game setting). Stored per user on this computer.
 class ROOT_AE3_AppSettings : ROOT_AE3_App
 {
+	protected static const int ID_NAV = 1;
+	protected static const int ID_THEME = 10;
+	protected static const int ID_WALL = 20;
+	protected static const int ID_PICTURE = 26;
+	protected static const int ID_WEB = 27;
+	protected static const int ID_DESIGN = 30;
+	protected static const float NAV_W = 170;
+
+	protected int m_iPage;
+
 	//------------------------------------------------------------------------------------------------
 	override string GetTitle()
 	{
@@ -16,64 +27,144 @@ class ROOT_AE3_AppSettings : ROOT_AE3_App
 	//------------------------------------------------------------------------------------------------
 	override vector GetSize()
 	{
-		return Vector(560, 400, 0);
+		return Vector(720, 460, 0);
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override void Build()
 	{
+		float w = Width();
+		float h = Height();
+		ROOT_AE3_UI.Rect(GetContent(), 0, 0, NAV_W, h, ROOT_AE3_Theme.Sidebar());
+		ROOT_AE3_UI.Rect(GetContent(), NAV_W, 0, 1, h, ROOT_AE3_Theme.Border());
+		ROOT_AE3_UI.Rect(GetContent(), NAV_W + 1, 0, w - NAV_W - 1, h, ROOT_AE3_Theme.Panel());
+		array<string> pages = {"Personalize", "Terminal", "Style"};
+		array<string> icons = {"photos", "terminal", "settings"};
+		foreach (int i, string p : pages)
+		{
+			Color bg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
+			if (i == m_iPage)
+				bg = ROOT_AE3_Theme.Select();
+
+			ROOT_AE3_UI.ItemButton(GetContent(), 6, 10 + i * 38, NAV_W - 12, 34, icons[i], p, ID_NAV + i, this, 14, null, bg);
+		}
+
+		float x = NAV_W + 20;
+		float cw = w - x - 20;
+		switch (m_iPage)
+		{
+			case 0: BuildPersonalize(x, cw); break;
+			case 1: BuildTerminal(x, cw); break;
+			case 2: BuildStyle(x, cw); break;
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void BuildPersonalize(float x, float cw)
+	{
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
-		Label(10, 10, 200, 22, "Theme");
+		int theme = c.m_sTheme.ToInt();
+		float y = Heading(x, 14, cw, "Theme");
+		float tw = Math.Min(150, (cw - 16) / 3);
 		for (int i = 0; i < 3; i++)
 		{
-			Btn(10 + i * 110, 36, 100, 28, ROOT_AE3_Theme.Name(i), 10 + i);
+			Color bg = ROOT_AE3_Theme.Button();
+			Color fg = ROOT_AE3_Theme.Text();
+			if (i == theme)
+			{
+				bg = ROOT_AE3_Theme.Accent();
+				fg = ROOT_AE3_Theme.OnAccent();
+			}
+
+			ROOT_AE3_UI.Button(GetContent(), x + i * (tw + 8), y, tw, 32, ROOT_AE3_Theme.Name(i), ID_THEME + i, this, bg, fg, 14);
 		}
 
-		Label(10, 80, 200, 22, "Wallpaper");
+		y = Heading(x, y + 50, cw, "Wallpaper");
+		float pw = Math.Min(96, (cw - 40) / 6);
+		float ph = pw * 0.6;
+		string wall = c.m_sWallpaper;
 		for (int i = 0; i <= 5; i++)
 		{
-			string l = "Black";
-			if (i > 0)
-				l = i.ToString();
+			float px = x + i * (pw + 8);
+			Color edge = ROOT_AE3_Theme.Border();
+			if (wall == i.ToString() || (i == 0 && wall.IsEmpty()))
+				edge = ROOT_AE3_Theme.Accent();
 
-			Btn(10 + i * 76, 106, 70, 28, l, 20 + i);
+			ROOT_AE3_UI.Rect(GetContent(), px - 2, y - 2, pw + 4, ph + 4, edge);
+			ROOT_AE3_UI.Rect(GetContent(), px, y, pw, ph, ROOT_AE3_UI.Rgb(0, 0, 0));
+			ResourceName res = ROOT_AE3_AppRegistry.Wallpaper(i);
+			if (!res.IsEmpty())
+				ROOT_AE3_UI.Picture(GetContent(), px, y, pw, ph, res);
+			else
+				ROOT_AE3_UI.Text(GetContent(), px, y + ph * 0.5 - 9, pw, 18, "Black", 12, ROOT_AE3_UI.Rgb(0.8, 0.8, 0.8), false, false, 1);
+
+			ROOT_AE3_UI.Hit(GetContent(), px, y, pw, ph, ID_WALL + i, this, ROOT_AE3_UI.Rgb(0, 0, 0, 0));
 		}
 
-		bool files = ROOT_AE3_SettingsManager.Get().m_bDesktopEnableFileBrowsing;
-		if (files)
-			Btn(10, 142, 150, 28, "Picture...", 26);
+		y += ph + 14;
+		float bx = x;
+		if (ROOT_AE3_SettingsManager.Get().m_bDesktopEnableFileBrowsing)
+		{
+			Btn(bx, y, 150, 30, "Picture...", ID_PICTURE);
+			bx += 158;
+		}
 
 		if (ROOT_AE3_SettingsManager.Get().m_bDesktopWebImages)
-			Btn(168, 142, 150, 28, "Web address...", 27);
+			Btn(bx, y, 150, 30, "Web address...", ID_WEB);
 
-		Label(10, 190, 400, 22, "Terminal design: " + ROOT_AE3_TerminalDesigns.Name(c.m_iDesign));
-		Btn(10, 216, 120, 28, "Next design", 30);
-		string wall = c.m_sWallpaper;
+		string shown = wall;
 		if (wall == "0" || wall.IsEmpty())
-			wall = "black";
+			shown = "black";
 
-		Label(10, 262, Width() - 20, 80, string.Format("Theme %1, wallpaper %2. Picture uses an image file (Photos can save web and base64 images as files). Settings are stored per user on this computer.", ROOT_AE3_Theme.Name(c.m_sTheme.ToInt()), wall), 13, false, true);
+		ROOT_AE3_UI.Text(GetContent(), x, y + 44, cw, 40, "Current: " + shown + ". Picture uses an image file (Photos saves web and base64 images as files).", 13, ROOT_AE3_Theme.Muted(), false, true);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void BuildTerminal(float x, float cw)
+	{
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		float y = Heading(x, 14, cw, "Terminal design");
+		y = KeyValue(x, y, cw, "Current", ROOT_AE3_TerminalDesigns.Name(c.m_iDesign), 100);
+		MainBtn(x, y + 8, 160, 30, "Next design", ID_DESIGN);
+		ROOT_AE3_UI.Text(GetContent(), x, y + 52, cw, 40, "Colours and font of the terminal of this computer. The terminal also changes it with its Design button.", 13, ROOT_AE3_Theme.Muted(), false, true);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void BuildStyle(float x, float cw)
+	{
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		float y = Heading(x, 14, cw, "Desktop style");
+		y = KeyValue(x, y, cw, "Style", ROOT_AE3_Theme.StyleName(c.m_iStyle), 100);
+		y = KeyValue(x, y, cw, "Theme", ROOT_AE3_Theme.Name(c.m_sTheme.ToInt()), 100);
+		ROOT_AE3_UI.Text(GetContent(), x, y + 8, cw, 60, "Windows: icons, rounded tool bars, start menu grid. Tactical: monospace green, amber or night display, outlined controls, program list. The Game Master, World Editor or game setting choose the style of this computer.", 13, ROOT_AE3_Theme.Muted(), false, true);
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override bool OnUiClick(Widget w, int id, int button)
 	{
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
-		if (id >= 10 && id <= 12)
+		if (id >= ID_NAV && id < ID_NAV + 3)
 		{
-			Request2("sys_set", "theme", (id - 10).ToString());
-			m_Desktop.ApplyPrefs((id - 10).ToString(), c.m_sWallpaper);
+			m_iPage = id - ID_NAV;
+			Redraw();
 			return true;
 		}
 
-		if (id >= 20 && id <= 25)
+		if (id >= ID_THEME && id <= ID_THEME + 2)
 		{
-			Request2("sys_set", "wallpaper", (id - 20).ToString());
-			m_Desktop.ApplyPrefs(c.m_sTheme, (id - 20).ToString());
+			Request2("sys_set", "theme", (id - ID_THEME).ToString());
+			m_Desktop.ApplyPrefs((id - ID_THEME).ToString(), c.m_sWallpaper);
 			return true;
 		}
 
-		if (id == 26)
+		if (id >= ID_WALL && id <= ID_WALL + 5)
+		{
+			Request2("sys_set", "wallpaper", (id - ID_WALL).ToString());
+			m_Desktop.ApplyPrefs(c.m_sTheme, (id - ID_WALL).ToString());
+			return true;
+		}
+
+		if (id == ID_PICTURE)
 		{
 			string folder = ROOT_AE3_Filesystem.HomeOf(c.m_sUser);
 			if (c.m_sWallpaper.StartsWith("/"))
@@ -83,7 +174,7 @@ class ROOT_AE3_AppSettings : ROOT_AE3_App
 			return true;
 		}
 
-		if (id == 27)
+		if (id == ID_WEB)
 		{
 			string cur = "https://";
 			if (ROOT_AE3_WebMedia.KindOf(c.m_sWallpaper) == "url")
@@ -93,7 +184,7 @@ class ROOT_AE3_AppSettings : ROOT_AE3_App
 			return true;
 		}
 
-		if (id == 30)
+		if (id == ID_DESIGN)
 		{
 			c.m_iDesign = (c.m_iDesign + 1) % ROOT_AE3_TerminalDesigns.COUNT;
 			Request2("sys_set", "design", c.m_iDesign.ToString());

@@ -87,6 +87,9 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	protected bool m_bHasProvider;
 
 	protected ROOT_AE3_PowerComponent m_Provider;
+
+	[RplProp()]
+	protected RplId m_ProviderId = RplId.Invalid();		//!< Device of m_Provider, for the cable view
 	protected ref array<ROOT_AE3_PowerComponent> m_aConsumers = {};
 	protected float m_fExtraDrawW;
 	protected float m_fExternalLoadW;
@@ -95,6 +98,7 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	protected float m_fSyncedFuel = -1;
 	protected bool m_bRestored;
 	protected int m_iRestoredState = -1;
+	[RplProp()]
 	protected float m_fLinkLength;	//!< Cable length when plugged in
 	protected float m_fChargeFactor = 1;	//!< Share of the recharge rate the provider can deliver
 	protected RplComponent m_RplComponent;
@@ -308,6 +312,18 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	ROOT_AE3_PowerComponent GetProvider()
 	{
 		return m_Provider;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	RplId GetProviderId()
+	{
+		return m_ProviderId;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	float GetLinkLength()
+	{
+		return m_fLinkLength;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -644,6 +660,10 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 		m_fLinkLength = vector.Distance(GetOwner().GetOrigin(), provider.GetOwner().GetOrigin());
 		provider.m_aConsumers.Insert(this);
 		m_bHasProvider = true;
+		ROOT_AE3_DeviceComponent pd = ROOT_AE3_DeviceComponent.Of(provider.GetOwner());
+		if (pd)
+			m_ProviderId = pd.GetRplId();
+
 		Replication.BumpMe();
 		ROOT_AE3_PowerSystem.Get().RefreshExternal(this);
 		return true;
@@ -660,6 +680,7 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 		if (m_bHasProvider)
 		{
 			m_bHasProvider = false;
+			m_ProviderId = RplId.Invalid();
 			Replication.BumpMe();
 		}
 

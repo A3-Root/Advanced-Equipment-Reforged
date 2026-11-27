@@ -31,7 +31,7 @@ class ROOT_AE3_CommandRegistry
 			new ROOT_AE3_Cmd_Chown(), new ROOT_AE3_Cmd_Unlock(), new ROOT_AE3_Cmd_Sudo(), new ROOT_AE3_Cmd_Su(),
 			new ROOT_AE3_Cmd_Desktop(), new ROOT_AE3_Cmd_Ping(), new ROOT_AE3_Cmd_Ip("ip"), new ROOT_AE3_Cmd_Ip("ifconfig"), new ROOT_AE3_Cmd_Wifi(),
 			new ROOT_AE3_Cmd_Ssh(), new ROOT_AE3_Cmd_Msg(), new ROOT_AE3_Cmd_Exit(), new ROOT_AE3_Cmd_Shutdown(),
-			new ROOT_AE3_Cmd_Standby()
+			new ROOT_AE3_Cmd_Standby(), new ROOT_AE3_Cmd_Sshd()
 		};
 
 		foreach (ROOT_AE3_Command c : defaults)

@@ -8,16 +8,18 @@ Equipment (Arma 3) 2.1.0.8. No dependencies besides Arma Reforger.
 | Prefab | Role |
 | --- | --- |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_Laptop.et` | Computer, inventory item (2x2, 2.2 kg), 2 USB ports, screen on the model, lid, internal battery (0.1 kWh, 10 W on, 0.1 W standby) |
-| `Prefabs/ROOT_AE3/Devices/ROOT_AE3_PortableServer.et` | Headless computer on mains (150 W), SSH enabled, inventory item (3x2, 25 kg) |
+| `Prefabs/ROOT_AE3/Devices/ROOT_AE3_PortableServer.et` | Headless computer on mains (150 W), remote access (SSH) on, inventory item (3x2, 25 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_Router.et` | Router, inventory item (2x1, 0.8 kg), 100 m wireless range, internal battery |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_UsbStick.et` | Flash drive with its own filesystem, inventory item (1x1, 0.02 kg) |
+| `Prefabs/ROOT_AE3/Devices/ROOT_AE3_NetworkCable.et` | Network cable 15 m, inventory item (1x1, 0.5 kg); variants 5 m (0.2 kg) and 30 m (0.9 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_BatteryPack.et` | Battery 0.6 kWh, recharges at 300 W, inventory item (2x2, 12 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_SolarPanel.et` | 150 W peak, output by sun elevation and panel tilt, 0.4 kWh buffer |
 | `Prefabs/ROOT_AE3/Power/ROOT_AE3_Generator_*.et` | Generators on vanilla models: portable 5 kW / 5 L / 1.5 L/h, military and airfield 100-400 kW |
 | `Prefabs/ROOT_AE3/Power/ROOT_AE3_Floodlight.et` | Lamp, 150 W, lit while powered |
 
 Solar panels switch on and off like generators. Flash drives take files from the World Editor
-(`ROOT_AE3_UsbDriveComponent` files), the Game Master (add file / directory / image) and the script API.
+(`ROOT_AE3_UsbDriveComponent` files), the Game Master (add file / directory / image) and the script API. A drive
+plugged into a port is mounted at `/mnt/usbN`; an empty `/mnt/usbN` takes no files ("No drive in usbN").
 Laptop, router, battery pack, solar panel and portable server are placed and issued as Black (orange accents), Olive
 (coyote accents) and Sand (ranger green accents) variants (`Prefabs/ROOT_AE3/Devices/Variants/`): body colour plus accent
 side bands, lid plate, bumpers, router and battery bands, solar panel frame and rim, server top plate. The base prefabs
@@ -30,20 +32,23 @@ The 3x2 inventory slot is added by `Scripts/Game/ROOT_AE3/Inventory/ROOT_AE3_Slo
 ## Player actions
 
 Use terminal, Use desktop (place a laptop to use it), Power on / Shut down, Standby / Wake up, Open / Close lid, Plug into power source
-(6 m), Plug network cable into router (10 m), Insert (first drive in the inventory) / Eject (highest occupied port; the desktop Volumes app ejects any port) flash drive, Refuel (drains a carried fuel container,
+(6 m), Plug network cable... (needs a network cable item: form with the routers within the longest carried cable and the
+cable length; the cable item is used up) / Unplug network cable (the cable item goes back to the inventory), Insert (first drive in the inventory) / Eject (highest occupied port; the desktop Volumes app ejects any port) flash drive, Refuel (drains a carried fuel container,
 such as a jerry can),
 Check status, Rename. The server checks that the player is alive and within 5 m for actions; sessions start within 4 m.
 Laptop, router, battery and flash drive are picked up and placed like other items. Picking up a laptop keeps its
 flash drives plugged in (shown again when it is placed), unplugs power, ends other players' sessions and puts it
 into standby. Inventory "Use" (mouse, keyboard, gamepad) on a laptop in the own inventory (uniform, vest, backpack; on
-foot or in a vehicle) shows its name field with Open and Rename. Open wakes or boots it and opens the desktop (terminal
-for terminal-only computers); the session lasts while the laptop stays in that inventory and does not mirror its
+foot or in a vehicle) wakes or boots it and opens the desktop (terminal for terminal-only computers); the session lasts while the laptop stays in that inventory and does not mirror its
 screen to other players. When the session ends, a carried laptop goes to standby. Carried laptops use wireless
 networks in range of the carrier.
 The inventory shows a device's name ("<name> (Laptop Black)"), hostname, battery, state and plugged-in flash drives.
-Rename (placed devices: action; carried laptops: inventory Use) sets the name (printable ASCII, 32 characters, empty =
+Rename (placed devices: action) sets the name (printable ASCII, 32 characters, empty =
 default); the Game Master action "Rename device" and `ROOT_AE3_API.SetDeviceName` do the same. Names are saved by
 persistence.
+A plugged flash drive sits in its port on the model. Plugged network cables and power links are drawn as cables between
+the ports on every client (sagging with the slack, resting on the ground). A cable pulled beyond its length unplugs and
+drops the cable item at the device; Game Master, World Editor and script links need no item (length: distance + 2 m).
 
 ## armaOS terminal
 
@@ -51,7 +56,7 @@ Login (`LOGIN>` / `PASSWORD>`), prompt `user@host:/path/>`, quotes, `>` / `>>` r
 history (Up / Down arrows), Ctrl+C button, 20 terminal designs, font size, mouse wheel scrolling.
 
 Programs: `man help ls cd cat date history clear rm mv cp whoami mkdir touch echo find grep mount umount lsusb
-chown unlock sudo su desktop ping ip ifconfig wifi ssh msg exit shutdown standby`, optional `crypto crack`
+chown unlock sudo su desktop ping ip ifconfig wifi ssh sshd msg exit shutdown standby`, optional `crypto crack`
 (component attribute or `InstallCommand`), `snake` and the network games
 `chess checkers uno ludo snakesladders blackjack rps battleship`. Programs are files (`#!ae3 <name>`) in
 `/bin`, `/sbin`, `/usr/bin`, `/games`; a program runs only when its root-owned file exists and it was installed on that
@@ -64,11 +69,19 @@ Root login is off by default; users in `/etc/sudoers` use `sudo` / `su`. While `
 
 ## Desktop
 
-Sign-in screen, plain black background, wallpapers 1-5, an image file or a web address, themes (Dark, Light, Olive), windows (drag, snap to the top or a side edge, resize
+Two styles per computer: Windows (icons, tool bars, start menu grid; themes Dark, Light, Olive) and Tactical (monospace,
+outlined controls, bracketed titles, map grid background, text taskbar and program list; themes Green, Amber, Night).
+The style comes from the Game Master device attribute "Desktop style", `ROOT_AE3_ComputerComponent.m_iUiStyle`,
+`ROOT_AE3_API.SetUiStyle` or the setting `m_iDesktopStyle`; open sessions switch at once.
+Sign-in screen, plain black background, wallpapers 1-5, an image file or a web address, themes, windows (drag, snap to the top or a side edge, resize
 from the corner), taskbar with pinned apps, start menu with search, right-click menus, dialogs, Open / Save file
 dialog, notifications. Window size Fullscreen / Large / Medium / Small: taskbar button "Size" or F11 cycles it;
 the choice is stored per player in `$profile:ROOT_AE3/client.txt` (setting `m_iDesktopSize` is the default, Large).
-Open windows keep their content and are fitted into the new size.
+Open windows keep their content and are fitted into the new size. When a session ends (closed, standby, out of
+range), the client keeps its open windows and unsaved text; they return when the same player opens the same
+computer as the same user. The Terminal icon switches the session to the terminal without opening a window.
+Remote Access: connect card (user@host, password, recent hosts), then a remote file browser with back, forward, up,
+refresh, address bar, icons, preview, download and upload. Game boards scale with the window at any resolution.
 Apps: My Computer, Files, Notepad, Photos, Terminal, Browser, Email, Messenger, Calendar, Network,
 Remote Access, Ping, Map, CCTV, Games, Snake, Calculator, Recycle Bin, Settings, System Info, About. Other mods add apps
 with `ROOT_AE3_API.RegisterExtApp`; their server requests are handled through
@@ -81,7 +94,9 @@ Generators and computers play their running sound while on. Internal batteries a
 overloaded generator or battery switches off; unsupplied devices run on their internal battery and switch off
 when it is empty. Routers get `192.168.N.1/24`, hand out addresses (DHCP or static IP inside the subnet),
 cascade by cable, accept wireless clients in range with an optional password and filter external SSH by
-regular expressions. Each computer gets the mail address `<hostname>@lan` and the chat handle `@<hostname>` when it
+regular expressions. Laptops and the portable server accept SSH logins (remote access) by default; root and
+sudoers switch it in the desktop Network app or with `sshd on|off`. `ssh` and Remote Access take an IP address or
+a hostname. Each computer gets the mail address `<hostname>@lan` and the chat handle `@<hostname>` when it
 has none; users add and delete further mail addresses (16 per computer) and chat handles (8 per computer) in Email and Messenger. `ping`, `ssh`, `msg`, mail and chat need a powered path between both devices. Mail and chat belong
 to the computer: every logged-in user reads its mail folders and chat logs. A network cable needs physical access and skips
 the router password; it needs a router that accepts connections.
@@ -90,20 +105,22 @@ the router password; it needs a router that accepts connections.
 
 Context action "Advanced Equipment..." on hovered or selected devices opens a panel of the actions that apply,
 grouped Users, System, Files and intel, Power, Network: add user / sudoer, remove sudoer, root password, root
-login, hostname, interface mode, add file (permissions, Caesar / columnar encryption, password, virtual size),
+login, hostname, interface mode, add file (permissions, Caesar / columnar encryption, password, shown size),
 add directory, add email, mail address, chat handle, add web page, browser history, image, calendar event,
-install games, static IP, interface access (identity IDs / factions / names), user transfer speed, transfer speed, battery level, fuel, router settings, power on / off, standby, crash, connect
-power / network (select the source or router with the devices), disconnect, open interface as root, save /
-restore computer (empty name lists the saves). Text values are entered in a form; `
-` in file, mail, web page and calendar text is a line break.
-Each action shows a notification with the number of devices it changed. "Open interface as root"
+install games, static IP, interface access (identity IDs / factions / names), user transfer speed, transfer speed, battery level, fuel, router
+name and password (SSID, password, SSH allow list), connect to network (router list with distance, wireless or
+cable, ignore range), power on / off, standby, crash, connect power / selection to router (select the source or
+router with the devices), disconnect, open interface as root, save / restore computer (list of saves). The form
+shows the current values of the first selected device (from the server) with text, multiline, password, on / off,
+choice and permission (owner / everyone r w x) fields.
+Each action shows a notification with the number of devices it changed and the first error. "Open interface as root"
 opens the desktop as root for the Game Master without range or access checks (filesystem browser); the previous
 login is restored when the Game Master closes it.
 
 Device attributes (category "Advanced Equipment"): powered on, battery level, fuel, root login, interface mode,
-SSH server, router range, accept connections, external SSH. Game settings (category "Advanced Equipment"):
+SSH server, router range, transfer speed, accept connections, external SSH, desktop style. Game settings (category "Advanced Equipment"):
 boot and shutdown time, root login at terminal, sudoers act as root, any login, log out on session end,
-default interface, desktop theme, window size, file browsing, screen on models, router range and multiplier,
+default interface, desktop theme, desktop style, window size, file browsing, screen on models, router range and multiplier,
 network transfer speed, games, EWO mode / energy / range / drain / charge / recharge / source range. The same
 attributes are on the AE3 System module. Game setting changes are sent to all players.
 Attributes: `Configs/Editor/AttributeLists/Edit.conf`, `Scripts/Game/ROOT_AE3/Editor/ROOT_AE3_EditorAttributes.c`.
@@ -138,7 +155,7 @@ first panel request. Pack state stays while EWO mode is off and is not saved by 
 mission header and `Configs/ROOT_AE3/Settings.conf` for the mission; empty = the settings at placement. Devices
 follow them where their own value is "Setting default"; values set on a device in the World Editor or by the Game
 Master take priority. Game Master: the module's attributes window lists the game settings (see Game Master, plus
-EWO), its action panel sets the default root password and the EWO pack prefabs. The first module placed is active;
+EWO), its action panel sets the default root password, the EWO pack prefabs and the web image proxy. The first module placed is active;
 further modules are inactive and cannot be edited. Deleting the active module activates the next one, else the
 mission header or defaults apply. Its settings, including Game Master changes, are saved by persistence. Script API: `ROOT_AE3_API.SetGlobalNumber(key, value)`, `SetGlobalText(key, value)`.
 
@@ -150,7 +167,7 @@ mission header or defaults apply. Its settings, including Game Master changes, a
 | `ROOT_AE3_SetupComponent` | files and directories, mail addresses, mails, chat handle, web pages, browser history, calendar (with location), wallpaper (0 black, 1-5) |
 | `ROOT_AE3_PowerComponent` | role, draw on / standby, output, capacity, recharge, fuel tank, burn rate, mains, external only, on at start, start level, start fuel, buffer output, solar panel tilt |
 | `ROOT_AE3_NetworkComponent` | router: SSID, gateway, range, multiplier, accept clients, password, external SSH, allow list, speed; client: static IP, speed, SSH |
-| `ROOT_AE3_ConnectionComponent` | power source and router by entity name (cable links) |
+| `ROOT_AE3_ConnectionComponent` | power source and router by entity name (cable links), network and power port position and direction |
 | `ROOT_AE3_DeviceComponent` | type, name, hidden (not on the Map app, no player rename) |
 | `ROOT_AE3_SystemModuleComponent` | mission settings (AE3 System module) |
 
@@ -161,7 +178,8 @@ Defaults in `Configs/ROOT_AE3/Settings.conf`. A mission overrides them with `m_R
 Groups: Main (debug log, network debug log, any-login test mode, device names), armaOS (root login, sudoers, root password, error sound, transfer speeds
 and cap, terminal design, scroll, font size, screen mirror range / interval / viewers / lines / keystroke sync
 / change detection, header texts, boot and shutdown time), Desktop (default interface, file
-browsing, theme, map same network, window size, web access), Network (range, multiplier), Power (sync threshold, sync, interval), Games
+browsing, theme, style, map same network (default on: the computer, its router, routers linked to it and devices
+connected to it), window size, web access, web image proxy), Network (range, multiplier), Power (sync threshold, sync, interval), Games
 (enabled, hosting, same network, max tables, turn and abandon timeout, power draw, idle draw,
 practice seats, bots), EWO (mode, pack prefabs, energy, range, source range, drain, charge and recharge rate).
 
@@ -172,7 +190,7 @@ practice seats, bots), EWO (mode, pack prefabs, energy, range, source range, dra
 `InstallCommand`, `AddMailAddress`, `AddEmail`, `SetChatHandle`, `RegisterWebpage`, `RegisterSite`,
 `AddBrowserHistory`, `AddCalendarEvent`, `RemoveCalendarEvent`, `RegisterCamera`, `AddGames`, `HostGameWithBots`, `ConnectPower`,
 `DisconnectPower`, `ConnectNetwork`, `DisconnectNetwork`, `SetPowerState`, `CrashDevice`, `SetBatteryLevel`,
-`SetFuel`, `SetTransferSpeed`, `GetAddress`, `SaveComputer`, `RestoreComputer`, `RegisterGuiCommand`, `SetInterfaceMode`, `SetInterfaceAccess`, `SetStaticIp`, `SetMainsPowered`,
+`SetFuel`, `SetTransferSpeed`, `GetAddress`, `SaveComputer`, `RestoreComputer`, `RegisterGuiCommand`, `SetInterfaceMode`, `SetUiStyle`, `SetInterfaceAccess`, `SetStaticIp`, `SetMainsPowered`,
 `GetPowerState`, `GetBatteryLevel`, `GetFuel`, `AddAccessCondition` / `RemoveAccessCondition` (`ROOT_AE3_AccessCondition`),
 `AddConnectCondition` / `RemoveConnectCondition`
 (`ROOT_AE3_ConnectCondition`), `AddRangeModifier` / `RemoveRangeModifier` (`ROOT_AE3_RangeModifier`); client:
@@ -220,9 +238,9 @@ most 65,536 characters per second plus the message that crosses it; later messag
 dropped. On a router without password only sudoers change its settings. `/.trash` is root-only; trash entries are
 restored or deleted by their owner or root through the Files app. Mail folders keep 100 mails, a computer
 sends at most one mail every 2 s; a filesystem holds at most 5,000 files, folders and links. Scripts run at
-most 50 lines. Failed player actions show the reason as a hint. Destroyed devices switch off and offer no actions. Static IP,
-SSH access and router settings are set by the Game Master, World Editor or script API only; the desktop Network app joins
-and leaves networks. Dropped terminal output is resent as the last 100 lines.
+most 50 lines. Failed player actions show the reason as a hint. Destroyed devices switch off and offer no actions. Static IP
+and router settings are set by the Game Master, World Editor or script API only; the desktop Network app joins
+and leaves networks and switches remote access. Dropped terminal output is resent as the last 100 lines.
 
 ## Not ported
 

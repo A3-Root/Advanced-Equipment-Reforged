@@ -30,6 +30,7 @@ enum ROOT_AE3_EMsg
 	OPEN_CARRIED,	//!< data: requested mode (-1 auto, 0 terminal, 1 desktop); device in the player's inventory
 	RENAME,			//!< data: new device name
 	EWO,			//!< data: EWO request (ROOT_AE3_EwoSystem.OnRequest)
+	PLUG_NET,		//!< data: router RplId, cable length; device = the device to plug
 	// server -> client
 	EWO_STATE		//!< data: EWO pack state (ROOT_AE3_EwoPanel)
 }

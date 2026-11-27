@@ -219,7 +219,8 @@ class ROOT_AE3_AppSnake : ROOT_AE3_App
 		float s = m_fCell - inset * 2;
 		PolygonDrawCommand p = new PolygonDrawCommand();
 		p.m_iColor = color;
-		p.m_Vertices = {x, y, x + s, y, x + s, y + s, x, y + s};
+		array<float> v = {x, y, x + s, y, x + s, y + s, x, y + s};
+		p.m_Vertices = ROOT_AE3_UI.ToPixels(v);
 		m_aCommands.Insert(p);
 	}
 
@@ -234,7 +235,8 @@ class ROOT_AE3_AppSnake : ROOT_AE3_App
 		float h = m_fCell * m_iRows;
 		PolygonDrawCommand bg = new PolygonDrawCommand();
 		bg.m_iColor = 0xFF14201A;
-		bg.m_Vertices = {0, 0, w, 0, w, h, 0, h};
+		array<float> v = {0, 0, w, 0, w, h, 0, h};
+		bg.m_Vertices = ROOT_AE3_UI.ToPixels(v);
 		m_aCommands.Insert(bg);
 		if (m_iFood >= 0)
 			Cell(m_iFood, 0xFFFF5050, m_fCell * 0.15);

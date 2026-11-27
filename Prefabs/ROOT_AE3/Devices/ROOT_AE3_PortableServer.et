@@ -43,6 +43,8 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    m_iInterfaceMode "Terminal only"
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB11621D17}" {
+   m_vNetPort 0.1 0.12 -0.245
+   m_vPowerPort -0.15 0.12 -0.245
   }
   ROOT_AE3_DeviceComponent "{6AF041BB11621D46}" {
    m_eType SERVER

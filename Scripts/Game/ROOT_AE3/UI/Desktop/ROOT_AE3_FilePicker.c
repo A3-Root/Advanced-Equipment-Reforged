@@ -126,7 +126,7 @@ class ROOT_AE3_FilePicker : ROOT_AE3_GuiReplyHandler
 		if (m_wName)
 			m_wName.SetColor(ROOT_AE3_Theme.Text());
 
-		ROOT_AE3_UI.Button(m_wRoot, x + W - 244, by + 2, 110, 30, m_sOk, ID_OK, this, ROOT_AE3_Theme.Accent(), ROOT_AE3_UI.Rgb(1, 1, 1), 14);
+		ROOT_AE3_UI.Button(m_wRoot, x + W - 244, by + 2, 110, 30, m_sOk, ID_OK, this, ROOT_AE3_Theme.Accent(), ROOT_AE3_Theme.OnAccent(), 14);
 		ROOT_AE3_UI.Rect(m_wRoot, x + W - 126, by + 2, 112, 30, ROOT_AE3_Theme.Border());
 		ROOT_AE3_UI.Button(m_wRoot, x + W - 125, by + 3, 110, 28, "Cancel", ID_CANCEL, this, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 14);
 	}

@@ -1,5 +1,6 @@
 //! Shapes on one CanvasWidget (PolygonDrawCommand, LineDrawCommand). Colors are ARGB integers.
-//! Polygons must be convex. Commit sends the commands to the canvas.
+//! Polygons must be convex. Coordinates are reference units (like widgets), converted to canvas pixels.
+//! Commit sends the commands to the canvas.
 class ROOT_AE3_GamePaint
 {
 	protected CanvasWidget m_wCanvas;
@@ -25,7 +26,7 @@ class ROOT_AE3_GamePaint
 	{
 		PolygonDrawCommand p = new PolygonDrawCommand();
 		p.m_iColor = color;
-		p.m_Vertices = v;
+		p.m_Vertices = ROOT_AE3_UI.ToPixels(v);
 		m_aCmds.Insert(p);
 	}
 
@@ -34,8 +35,8 @@ class ROOT_AE3_GamePaint
 	{
 		LineDrawCommand l = new LineDrawCommand();
 		l.m_iColor = color;
-		l.m_Vertices = v;
-		l.m_fWidth = width;
+		l.m_Vertices = ROOT_AE3_UI.ToPixels(v);
+		l.m_fWidth = ROOT_AE3_UI.ToPixel(width);
 		l.m_bShouldEnclose = close;
 		m_aCmds.Insert(l);
 	}

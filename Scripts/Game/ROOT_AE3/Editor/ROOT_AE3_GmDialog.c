@@ -1,20 +1,21 @@
 //! Game Master dialog: action panel for the selected devices, then the field form of the chosen action.
+//! The fields of an action, with the current values of the first selected device, come from the server
+//! (SCR_PlayerController.ROOT_AE3_GmQuery, answered by OnFields).
 //! Also the player rename form (key RENAME_KEY, sent as ROOT_AE3_EMsg.RENAME instead of a Game Master request)
-//! and the inventory form of a carried computer (key DEVICE_KEY: Open, or Rename as RENAME_KEY).
+//! and the network cable form of a device (key CABLE_KEY: router and cable, sent as ROOT_AE3_EMsg.PLUG_NET).
 class ROOT_AE3_GmDialog : ChimeraMenuBase
 {
 	protected static string s_sKey;
 	protected static string s_sTitle;
-	protected static ref array<string> s_aLabels = {};
-	protected static ref array<string> s_aDefaults = {};
+	protected static ref array<ref ROOT_AE3_GmField> s_aFields = {};
 	protected static ref array<RplId> s_aTargets = {};
 	protected static ref array<string> s_aKeys = {};		//!< Panel: actions that apply to the selection
 	protected static string s_sDevices;
-
-	protected static IEntity s_Device;	//!< DEVICE_KEY: the carried computer
+	protected static bool s_bWaiting;						//!< Fields requested from the server
+	protected static ROOT_AE3_GmDialog s_Open;
 
 	static const string RENAME_KEY = "_rename";
-	static const string DEVICE_KEY = "_device";
+	static const string CABLE_KEY = "_cable";
 
 	protected ref ROOT_AE3_GmDialogForm m_Form;
 	protected ref ROOT_AE3_GmPanel m_Panel;
@@ -26,6 +27,7 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 		s_aTargets.Clear();
 		s_aKeys.Clear();
 		s_sKey = "";
+		s_bWaiting = false;
 		foreach (IEntity e : devices)
 		{
 			ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(e);
@@ -56,14 +58,37 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Opens the field form of one action directly.
-	static void Request(string key, string title, notnull array<string> labels, notnull array<string> defaults, notnull array<RplId> targets)
+	//! Opens the form of one action directly (fields are requested from the server).
+	static void OpenAction(string key, notnull array<RplId> targets)
+	{
+		s_sKey = key;
+		s_sTitle = ROOT_AE3_GmActions.Label(key);
+		s_aFields.Clear();
+		s_aTargets.Copy(targets);
+		s_bWaiting = true;
+		if (!GetGame().GetMenuManager().OpenDialog(ChimeraMenuPreset.ROOT_AE3_GmDialog))
+		{
+			Print("[AE3] Game Master dialog did not open", LogLevel.WARNING);
+			return;
+		}
+
+		Query();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Opens a form with fields built locally (player forms).
+	protected static void OpenLocal(string key, string title, notnull array<ref ROOT_AE3_GmField> fields, notnull array<RplId> targets)
 	{
 		s_sKey = key;
 		s_sTitle = title;
-		s_aLabels.Copy(labels);
-		s_aDefaults.Copy(defaults);
+		s_aFields.Clear();
+		foreach (ROOT_AE3_GmField f : fields)
+		{
+			s_aFields.Insert(f);
+		}
+
 		s_aTargets.Copy(targets);
+		s_bWaiting = false;
 		if (!GetGame().GetMenuManager().OpenDialog(ChimeraMenuPreset.ROOT_AE3_GmDialog))
 			Print("[AE3] Game Master dialog did not open", LogLevel.WARNING);
 	}
@@ -76,37 +101,54 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 		if (!d)
 			return;
 
-		array<string> labels = {"Name (empty = default)"};
-		array<string> defaults = {d.GetCustomName()};
+		array<ref ROOT_AE3_GmField> fields = {ROOT_AE3_GmField.Make(ROOT_AE3_EGmField.TEXT, "Name (empty = default)", d.GetCustomName())};
 		array<RplId> targets = {d.GetRplId()};
-		Request(RENAME_KEY, "Rename " + d.GetDeviceName(), labels, defaults, targets);
+		OpenLocal(RENAME_KEY, "Rename " + d.GetDeviceName(), fields, targets);
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Player: form of a computer in the own inventory: Open, or Rename with the name field.
-	static void OpenDevice(IEntity device)
+	//! Player: network cable form of a placed device (fields: router, cable length).
+	static void OpenCable(IEntity device, notnull array<ref ROOT_AE3_GmField> fields)
 	{
 		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
 		if (!d)
 			return;
 
-		s_Device = device;
-		array<string> labels = {"Name (empty = default)"};
-		array<string> defaults = {d.GetCustomName()};
 		array<RplId> targets = {d.GetRplId()};
-		Request(DEVICE_KEY, d.GetDeviceName(), labels, defaults, targets);
+		OpenLocal(CABLE_KEY, "Plug network cable: " + d.GetDeviceName(), fields, targets);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static void Query()
+	{
+		SCR_PlayerController pc = SCR_PlayerController.Cast(GetGame().GetPlayerController());
+		if (pc)
+			pc.ROOT_AE3_GmQuery(s_sKey, s_aTargets);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server answer to ROOT_AE3_GmQuery: title and packed fields; empty fields = no device applies.
+	static void OnFields(string key, string title, string packed)
+	{
+		if (!s_bWaiting || key != s_sKey)
+			return;
+
+		s_bWaiting = false;
+		s_sTitle = title;
+		ROOT_AE3_GmField.Unpack(packed, s_aFields);
+		if (s_Open)
+			s_Open.ShowForm();
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override void OnMenuOpen()
 	{
 		super.OnMenuOpen();
+		s_Open = this;
 		if (s_sKey.IsEmpty())
 			m_Panel = new ROOT_AE3_GmPanel(this, GetRootWidget(), s_sDevices, s_aKeys);
-		else if (s_sKey == DEVICE_KEY)
-			m_Form = new ROOT_AE3_GmDialogForm(this, GetRootWidget(), s_sTitle, s_aLabels, s_aDefaults, "Rename", "Open");
 		else
-			m_Form = new ROOT_AE3_GmDialogForm(this, GetRootWidget(), s_sTitle, s_aLabels, s_aDefaults);
+			ShowForm();
 
 		GetGame().GetInputManager().AddActionListener("MenuBack", EActionTrigger.DOWN, OnBack);
 	}
@@ -114,10 +156,13 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	//------------------------------------------------------------------------------------------------
 	override void OnMenuClose()
 	{
+		if (s_Open == this)
+			s_Open = null;
+
+		s_bWaiting = false;
 		GetGame().GetInputManager().RemoveActionListener("MenuBack", EActionTrigger.DOWN, OnBack);
 		super.OnMenuClose();
 	}
-
 
 	//------------------------------------------------------------------------------------------------
 	protected void OnBack(float value = 0, EActionTrigger reason = 0)
@@ -126,26 +171,58 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Panel choice: shows the form, or sends actions without fields at once.
-	void Choose(string key)
+	//! Form of s_sKey, or a waiting note while the server builds the fields.
+	protected void ShowForm()
 	{
-		s_sKey = key;
-		s_aLabels.Clear();
-		s_aDefaults.Clear();
-		if (!ROOT_AE3_GmActions.Fields(key, s_sTitle, s_aLabels, s_aDefaults))
-		{
-			Send("");
-			Close();
-			return;
-		}
-
 		Widget root = GetRootWidget();
 		ROOT_AE3_UI.Clear(root);
 		if (m_Panel)
 			m_Panel.ReleaseHandlers();
 
 		m_Panel = null;
-		m_Form = new ROOT_AE3_GmDialogForm(this, root, s_sTitle, s_aLabels, s_aDefaults);
+		if (m_Form)
+			m_Form.ReleaseHandlers();
+
+		m_Form = null;
+		if (s_bWaiting)
+		{
+			float sw, sh;
+			ROOT_AE3_UI.ScreenSize(sw, sh);
+			ROOT_AE3_UI.Rect(root, 0, 0, sw, sh, ROOT_AE3_UI.Rgb(0, 0, 0, 0.4));
+			ROOT_AE3_UI.Rect(root, (sw - 320) * 0.5, (sh - 60) * 0.5, 320, 60, ROOT_AE3_UI.Rgb(0.12, 0.13, 0.15, 0.97));
+			ROOT_AE3_UI.Text(root, (sw - 300) * 0.5, (sh - 24) * 0.5, 300, 24, s_sTitle + "...", 16, null, false, false, 1);
+			return;
+		}
+
+		if (s_aFields.IsEmpty())
+		{
+			Close();
+			return;
+		}
+
+		if (s_sKey == CABLE_KEY)
+			m_Form = new ROOT_AE3_GmDialogForm(this, root, s_sTitle, s_aFields, "Plug in");
+		else
+			m_Form = new ROOT_AE3_GmDialogForm(this, root, s_sTitle, s_aFields);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Panel choice: requests the form, or sends actions without fields at once.
+	void Choose(string key)
+	{
+		s_sKey = key;
+		s_aFields.Clear();
+		if (!ROOT_AE3_GmActions.HasFields(key))
+		{
+			Send("");
+			Close();
+			return;
+		}
+
+		s_sTitle = ROOT_AE3_GmActions.Label(key);
+		s_bWaiting = true;
+		ShowForm();
+		Query();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -157,19 +234,20 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Third form button. DEVICE_KEY: opens the carried computer.
-	void Extra()
-	{
-		IEntity device = s_Device;
-		Close();
-		if (s_sKey == DEVICE_KEY && device)
-			ROOT_AE3_Client.Get().OpenCarried(device);
-	}
-
-	//------------------------------------------------------------------------------------------------
 	void Submit(notnull array<string> values)
 	{
-		if (s_sKey == RENAME_KEY || s_sKey == DEVICE_KEY)
+		if (s_sKey == CABLE_KEY)
+		{
+			foreach (RplId id : s_aTargets)
+			{
+				ROOT_AE3_Net.SendToServer(id, ROOT_AE3_EMsg.PLUG_NET, ROOT_AE3_Codec.Join(values));
+			}
+
+			Close();
+			return;
+		}
+
+		if (s_sKey == RENAME_KEY)
 		{
 			string name;
 			if (!values.IsEmpty())

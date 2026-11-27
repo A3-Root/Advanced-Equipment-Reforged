@@ -22,7 +22,7 @@ class ROOT_AE3_Cmd_Ssh : ROOT_AE3_Command
 	//------------------------------------------------------------------------------------------------
 	override string GetManual()
 	{
-		return "Usage ssh: 'ssh USER@IP PASSWORD' connects to the remote computer. Entered commands run on the remote machine; 'exit' ends the session. Interactive programs are blocked.";
+		return "Usage ssh: 'ssh USER@HOST PASSWORD' connects to the remote computer (HOST: IP address or hostname). Entered commands run on the remote machine; 'exit' ends the session. Interactive programs are blocked.";
 	}
 
 	//------------------------------------------------------------------------------------------------

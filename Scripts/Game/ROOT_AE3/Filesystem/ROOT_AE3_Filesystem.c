@@ -15,6 +15,7 @@ class ROOT_AE3_Filesystem : Managed
 	ROOT_AE3_ComputerComponent m_Computer;	//!< Owner computer for the file change event (null for flash drives)
 	float m_fCapacityMB;				//!< Virtual size limit in MB; 0 = none
 	protected ROOT_AE3_Filesystem m_LastFs;	//!< Filesystem holding the node of the last Resolve (mounts)
+	protected string m_sLastUnmounted;		//!< Empty mount point passed by the last Resolve
 	static const int MAX_CONTENT = 500000;	//!< Stored characters per filesystem
 	static const int MAX_LOG = 16000;		//!< Characters kept per log file (AppendLog)
 	static const int MAX_FILE = 65536;		//!< Characters per file
@@ -71,6 +72,20 @@ class ROOT_AE3_Filesystem : Managed
 	ROOT_AE3_Filesystem GetMount(string id)
 	{
 		return m_mMounts.Get(id);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Mount point id of an empty mount point the last Resolve passed through (no drive mounted), else "".
+	string GetLastUnmounted()
+	{
+		return m_sLastUnmounted;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Error text for writes into an empty mount point.
+	static string NoDrive(string id)
+	{
+		return "No drive in " + id;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -181,6 +196,9 @@ class ROOT_AE3_Filesystem : Managed
 		ROOT_AE3_FsNode cur = m_Root;
 		ROOT_AE3_Filesystem curFs = this;
 		string walked;
+		if (depth == 0)
+			m_sLastUnmounted = "";
+
 		for (int i = 0; i < parts.Count(); i++)
 		{
 			if (!cur.m_bDir)
@@ -223,6 +241,10 @@ class ROOT_AE3_Filesystem : Managed
 				{
 					curFs = mounted;
 					next = mounted.m_Root;
+				}
+				else
+				{
+					m_sLastUnmounted = next.m_sMountId;
 				}
 			}
 
@@ -301,6 +323,12 @@ class ROOT_AE3_Filesystem : Managed
 		ROOT_AE3_FsNode dir = Resolve(Parent(abs), user, err);
 		if (!dir)
 			return null;
+
+		if (!m_sLastUnmounted.IsEmpty())
+		{
+			err = NoDrive(m_sLastUnmounted);
+			return null;
+		}
 
 		if (!dir.m_bDir)
 		{
@@ -526,7 +554,7 @@ class ROOT_AE3_Filesystem : Managed
 		if (!node)
 			return false;
 
-		if (!node.m_sMountId.IsEmpty() && m_mMounts.Contains(node.m_sMountId))
+		if (!node.m_sMountId.IsEmpty())
 		{
 			err = "Device or resource busy";
 			return false;
@@ -631,7 +659,7 @@ class ROOT_AE3_Filesystem : Managed
 
 		if (move)
 		{
-			if (!node.m_sMountId.IsEmpty() && m_mMounts.Contains(node.m_sMountId))
+			if (!node.m_sMountId.IsEmpty())
 			{
 				err = "Device or resource busy";
 				return false;

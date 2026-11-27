@@ -124,7 +124,7 @@ class ROOT_AE3_AppMessenger : ROOT_AE3_App
 		}
 
 		ROOT_AE3_UI.Box(GetContent(), x + LIST_W - 42, 8, 34, 30, ROOT_AE3_Theme.Accent());
-		ROOT_AE3_UI.IconButton(GetContent(), x + LIST_W - 42, 8, 34, 30, "g_plus", ID_NEW, this, 14, ROOT_AE3_UI.Rgb(1, 1, 1), ROOT_AE3_Theme.Accent(), ROOT_AE3_Theme.Hover());
+		ROOT_AE3_UI.IconButton(GetContent(), x + LIST_W - 42, 8, 34, 30, "g_plus", ID_NEW, this, 14, ROOT_AE3_Theme.OnAccent(), ROOT_AE3_Theme.Accent(), ROOT_AE3_Theme.Hover());
 		m_fListH = h - 48;
 		m_wThreads = ROOT_AE3_UI.Frame(GetContent(), x, 46, LIST_W, m_fListH);
 		RenderThreads();
@@ -292,7 +292,7 @@ class ROOT_AE3_AppMessenger : ROOT_AE3_App
 			{
 				bx = m_fMsgW - bw - 12;
 				bg = ROOT_AE3_Theme.Accent();
-				fg = ROOT_AE3_UI.Rgb(1, 1, 1);
+				fg = ROOT_AE3_Theme.OnAccent();
 			}
 
 			ROOT_AE3_UI.Rect(m_wMsgs, bx, y, bw, bh, bg);

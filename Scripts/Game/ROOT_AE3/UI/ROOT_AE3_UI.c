@@ -65,12 +65,20 @@ class ROOT_AE3_UI
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! align: 0 left, 1 center, 2 right.
+	//! align: 0 left, 1 center, 2 right. Tactical style: monospace, 2 sizes smaller.
 	static TextWidget Text(Widget parent, float x, float y, float width, float height, string text, int size = 16, Color color = null, bool mono = false, bool wrap = false, int align = 0)
 	{
 		ref Color col = color;
 		if (!col)
 			col = Color.FromInt(Color.WHITE);
+
+		if (ROOT_AE3_Theme.IsTactical())
+		{
+			if (!mono)
+				size = Math.Max(10, size - 2);
+
+			mono = true;
+		}
 
 		TextWidget t = TextWidget.Cast(Ws().CreateWidget(WidgetType.TextWidgetTypeID, WidgetFlags.VISIBLE | WidgetFlags.IGNORE_CURSOR | WidgetFlags.BLEND, col, 0, parent));
 		Place(t, x, y, width, height);
@@ -160,14 +168,27 @@ class ROOT_AE3_UI
 
 	//------------------------------------------------------------------------------------------------
 	//! Clickable button: background rectangle plus centered label; highlights on hover and press.
+	//! Tactical style: 1 px outline, upper case label.
 	static ImageWidget Button(Widget parent, float x, float y, float width, float height, string label, int id, ROOT_AE3_UiListener listener, Color bg = null, Color fg = null, int size = 15, Color hover = null)
 	{
-		ImageWidget b = Hit(parent, x, y, width, height, id, listener, bg, hover);
+		string text = label;
+		ImageWidget b;
+		if (ROOT_AE3_Theme.IsTactical())
+		{
+			text.ToUpper();
+			Rect(parent, x, y, width, height, ROOT_AE3_Theme.Border());
+			b = Hit(parent, x + 1, y + 1, width - 2, height - 2, id, listener, bg, hover);
+		}
+		else
+		{
+			b = Hit(parent, x, y, width, height, id, listener, bg, hover);
+		}
+
 		ref Color col = fg;
 		if (!col)
 			col = ROOT_AE3_Theme.Text();
 
-		TextWidget t = Text(parent, x + 4, y, width - 8, height, label, size, col, false, false, 1);
+		TextWidget t = Text(parent, x + 4, y, width - 8, height, text, size, col, false, false, 1);
 		t.SetTextOffset(0, (height - size) * 0.5 - 2);
 		return b;
 	}
@@ -235,6 +256,9 @@ class ROOT_AE3_UI
 	//! Soft drop shadow around a rectangle; draw before it.
 	static void Shadow(Widget parent, float x, float y, float width, float height, float spread = 8)
 	{
+		if (ROOT_AE3_Theme.IsTactical())
+			return;
+
 		for (int i = 1; i <= 4; i++)
 		{
 			float d = spread * i / 4;
@@ -289,7 +313,7 @@ class ROOT_AE3_UI
 	static EditBoxWidget Edit(Widget parent, float x, float y, float width, float height, string text, int id, ROOT_AE3_UiListener listener, bool password = false, bool mono = false)
 	{
 		ResourceName layout = LAYOUT_EDIT;
-		if (mono)
+		if (mono || ROOT_AE3_Theme.IsTactical())
 			layout = LAYOUT_EDIT_MONO;
 
 		Widget root = Ws().CreateWidgets(layout, parent);
@@ -369,6 +393,27 @@ class ROOT_AE3_UI
 			c.RemoveFromHierarchy();
 			c = next;
 		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! CanvasWidget vertices are physical pixels; widget positions are reference units.
+	//! Returns a copy of v (reference units) in pixels.
+	static array<float> ToPixels(notnull array<float> v)
+	{
+		float k = GetGame().GetWorkspace().DPIScale(1000) / 1000;
+		array<float> res = {};
+		foreach (float f : v)
+		{
+			res.Insert(f * k);
+		}
+
+		return res;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	static float ToPixel(float value)
+	{
+		return GetGame().GetWorkspace().DPIScale(value);
 	}
 
 	//------------------------------------------------------------------------------------------------

@@ -164,7 +164,7 @@ class ROOT_AE3_AppCalendar : ROOT_AE3_App
 			if (iso == today)
 			{
 				bg = ROOT_AE3_Theme.Accent();
-				fg = ROOT_AE3_UI.Rgb(1, 1, 1);
+				fg = ROOT_AE3_Theme.OnAccent();
 			}
 
 			if (iso == m_sSel)

@@ -215,7 +215,8 @@ class ROOT_AE3_Session : Managed
 			ROOT_AE3_Codec.JoinSub(m_Computer.GetHistory(user)),
 			m_Computer.GetPref(user, "theme", s.m_iDesktopDefaultTheme.ToString()),
 			m_Computer.GetPref(user, "wallpaper", m_Computer.GetPref("", "wallpaper", "0")),
-			DeviceIdString()
+			DeviceIdString(),
+			m_Computer.GetUiStyle().ToString()
 		};
 		ROOT_AE3_Net.SendToPlayer(m_iPlayerId, ROOT_AE3_EMsg.SESSION, ROOT_AE3_Codec.Join(f));
 	}

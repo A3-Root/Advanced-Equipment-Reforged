@@ -27,6 +27,8 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    }
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB116267E1}" {
+   m_vPowerPort 0.13 0.19 -0.06
+   m_vPowerPortDir 0 1 0
   }
   ROOT_AE3_DeviceComponent "{6AF041BB1162672F}" {
    m_eType BATTERY

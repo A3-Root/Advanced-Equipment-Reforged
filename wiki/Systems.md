@@ -15,8 +15,10 @@ picked up or moved more than 2 m beyond the plugged length.
 ## Network
 
 Routers take `192.168.N.1/24`, hand out addresses from `.10` (or a static IP inside the subnet), cascade by
-cable and accept wireless clients within their range. Static IP, SSH access and router settings come from the
-Game Master, World Editor or script API. `wifi scan`, `wifi connect`, the desktop Network app and
+cable and accept wireless clients within their range. Static IP and router settings come from the
+Game Master, World Editor or script API. Remote access (SSH logins, `m_bSshEnabled`, on for laptops and the
+portable server): Game Master attribute "SSH server", desktop Network app, `sshd on|off`, `ROOT_AE3_API.SetSshEnabled`.
+SSH to a computer in standby fails with "Host is in standby." `wifi scan`, `wifi connect`, the desktop Network app and
 the "Plug network cable" action (10 m) join a router. Wireless clients drop out of range or when the router
 loses power; cables follow the same stretch rule as power cables. A router without password changes settings
 only for sudoers.
@@ -26,7 +28,8 @@ only for sudoers.
 One player uses a computer at a time. Sessions start within 4 m, or from the own inventory (inventory "Use",
 on foot or in a vehicle), and end when the player moves away (more than 5 m), dies, loses the character, the lid is
 closed or the computer is picked up by another player. A laptop dropped from the operator's inventory keeps the session
-while the operator stays within 5 m and the lid is open. A carried computer goes to standby when its session ends. Closing a session ends `su`, SSH and running programs but keeps the
+while the operator stays within 5 m and the lid is open. A carried computer goes to standby when its session ends. The client keeps the open desktop windows of the last
+session and restores them for the same computer and user. Closing a session ends `su`, SSH and running programs but keeps the
 logged-in account for the next player; log out with `exit` or Sign out. Terminal and desktop requests need the open interface and the
 access lists. Passwords: 1 s delay per failed attempt, up to 5 s, per player identity.
 
@@ -58,3 +61,11 @@ password, gateway `77.95.N.1` with the lowest free N 1-254, external SSH only fr
 in the carrier's inventory and recharges from a running generator, battery or solar panel within
 `m_fEwoSourceRange`; the source carries the load from what its consumers leave. Server tick 3 s. Panel: inventory
 "Use" on the pack (own inventory or vicinity), updated every tick.
+
+## Cables
+
+Network cable items: 5 m, 15 m, 30 m (`ROOT_AE3_CableComponent.m_fLength`). "Plug network cable..." on a placed device
+lists the routers within the longest carried cable; the server checks reach, length and accept, uses up the item and
+stores length and prefab with the link (saved by persistence). Unplug gives the item back; a link pulled beyond its
+length unplugs and drops the item at the device. Clients draw network cables to the router and power links to the
+source between the ports of `ROOT_AE3_ConnectionComponent` (procedural tube, sag from the slack, not below the ground).

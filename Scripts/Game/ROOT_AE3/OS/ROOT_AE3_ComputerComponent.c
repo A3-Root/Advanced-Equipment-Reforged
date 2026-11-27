@@ -79,6 +79,9 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	[RplProp(onRplName: "OnScreenRpl")]
 	protected int m_iDesign = -1;
 
+	[Attribute("-1", uiwidget: UIWidgets.ComboBox, desc: "Desktop style", enums: { ParamEnum("Setting", "-1"), ParamEnum("Windows", "0"), ParamEnum("Tactical", "1") }, category: "armaOS")]
+	protected int m_iUiStyle;
+
 	protected ref ROOT_AE3_Filesystem m_Fs;
 	protected ref map<string, string> m_mUsers = new map<string, string>();
 	protected ref map<string, ref array<string>> m_mHistory = new map<string, ref array<string>>();
@@ -214,6 +217,8 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 			m_Fs.CreateDir("/mnt/usb" + i.ToString(), "root", "root", 63, e);
 		}
 
+		RemountUsb();
+
 		if (m_bInstallCommands)
 			ROOT_AE3_CommandRegistry.Get().InstallDefaults(this);
 
@@ -288,6 +293,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 		m_Fs.m_Computer = this;
 		m_bRestored = true;
 		RemountUsb();
+		Print(string.Format("[AE3] Filesystem of %1 replaced (restore).", m_sHostname), LogLevel.NORMAL);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -629,6 +635,37 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Desktop style 0 Windows, 1 Tactical: Game Master / API choice (stored as computer pref "ui_style"),
+	//! else the World Editor attribute, else the setting m_iDesktopStyle.
+	int GetUiStyle()
+	{
+		int raw = GetUiStyleRaw();
+		if (raw < 0)
+			return ROOT_AE3_SettingsManager.Get().m_iDesktopStyle;
+
+		return raw;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! -1 = setting default.
+	int GetUiStyleRaw()
+	{
+		string pref = GetPref("", "ui_style");
+		if (!pref.IsEmpty())
+			return pref.ToInt();
+
+		return m_iUiStyle;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority. -1 = setting default; open sessions switch at once.
+	void SetUiStyle(int style)
+	{
+		SetPref("", "ui_style", Math.ClampInt(style, -1, 1).ToString());
+		ROOT_AE3_Manager.Get().ResendSessionsOf(this);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! -1 = setting default.
 	int GetDesignRaw()
 	{
@@ -926,7 +963,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Authority: occupies or frees a port. Unmounts on free.
+	//! Authority: occupies or frees a port. Mounts the drive at /mnt/usbN; unmounts on free.
 	void SetUsbDrive(int port, ROOT_AE3_UsbSlot drive)
 	{
 		if (port < 0 || port >= m_iUsbPorts)
@@ -943,6 +980,12 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 			m_iUsbMask |= 1 << port;
 		else
 			m_iUsbMask &= ~(1 << port);
+
+		if (drive && m_Fs && !IsMounted(port))
+		{
+			string reason;
+			Mount(port, reason);
+		}
 
 		Replication.BumpMe();
 	}
@@ -997,23 +1040,27 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 			return false;
 
 		m_Fs.Mount(id, null);
-		string e;
-		ROOT_AE3_FsNode node = m_Fs.Resolve("/mnt/" + id, "root", e, false);
-		if (node)
-			node.m_sMountId = "";
-
 		return true;
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Marks /mnt/usbN as mount points (writes fail while no drive is mounted) and mounts the drives in the ports.
 	protected void RemountUsb()
 	{
 		for (int i = 0; i < m_iUsbPorts; i++)
 		{
+			string id = "usb" + i.ToString();
 			string e;
-			ROOT_AE3_FsNode node = m_Fs.Resolve("/mnt/usb" + i.ToString(), "root", e, false);
+			if (!m_Fs.Exists("/mnt/" + id))
+				m_Fs.CreateDir("/mnt/" + id, "root", "root", 63, e, true);
+
+			ROOT_AE3_FsNode node = m_Fs.Resolve("/mnt/" + id, "root", e, false);
 			if (node)
-				node.m_sMountId = "";
+				node.m_sMountId = id;
+
+			m_Fs.Mount(id, null);
+			if (GetUsbDrive(i))
+				Mount(i, e);
 		}
 	}
 
