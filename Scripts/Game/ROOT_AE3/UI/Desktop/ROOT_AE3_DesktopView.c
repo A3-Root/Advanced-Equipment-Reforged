@@ -73,6 +73,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected TextWidget m_wDate;
 	protected EditBoxWidget m_wUser;
 	protected EditBoxWidget m_wPass;
+	protected EditBoxWidget m_wFocusNext;	//!< Field activated next frame (FocusField)
 	protected EditBoxWidget m_wSearch;
 	protected EditBoxWidget m_wDlgEdit;
 	protected TextWidget m_wLoginMsg;
@@ -201,6 +202,9 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//! Open windows of a logged in user are kept by ROOT_AE3_Client (Park) for the next session on this computer.
 	void Destroy()
 	{
+		if (GetGame())
+			GetGame().GetCallqueue().Remove(ApplyFocus);
+
 		ClosePicker();
 		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
 		if (LoggedIn() && m_DeviceId != RplId.Invalid() && !m_aWindows.IsEmpty())
@@ -489,10 +493,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		m_wLoginMsg.SetShadow(4, 0xFF000000, 0.6, 0, 1);
 		ROOT_AE3_UI.Text(m_wRoot, 0, m_fH - 34, m_fW - 24, 20, "Tab: next field   Enter: sign in", 13, ROOT_AE3_UI.Rgb(1, 1, 1, 0.7), false, false, 2);
 		if (m_wUser)
-		{
-			GetGame().GetWorkspace().SetFocusedWidget(m_wUser);
-			m_wUser.ActivateWriteMode();
-		}
+			FocusField(m_wUser);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -533,10 +534,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		m_wLoginMsg = ROOT_AE3_UI.Text(m_wRoot, x, y + h + 10, w, 40, "", 14, ROOT_AE3_Theme.Danger(), false, true, 1);
 		ROOT_AE3_UI.Text(m_wRoot, 0, m_fH - 30, m_fW - 24, 18, "TAB NEXT FIELD   ENTER AUTHENTICATE", 12, ROOT_AE3_Theme.Muted(), false, false, 2);
 		if (m_wUser)
-		{
-			GetGame().GetWorkspace().SetFocusedWidget(m_wUser);
-			m_wUser.ActivateWriteMode();
-		}
+			FocusField(m_wUser);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -2272,8 +2270,30 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (m_wUser.IsInWriteMode() || GetGame().GetWorkspace().GetFocusedWidget() == m_wUser)
 			next = m_wPass;
 
-		GetGame().GetWorkspace().SetFocusedWidget(next);
-		next.ActivateWriteMode();
+		FocusField(next);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Ends write mode of every field, then activates edit next frame: activating it inside the change event of
+	//! another edit box leaves both in write mode.
+	protected void FocusField(EditBoxWidget edit)
+	{
+		m_wFocusNext = edit;
+		GetGame().GetWorkspace().SetFocusedWidget(null);
+		GetGame().GetCallqueue().Remove(ApplyFocus);
+		GetGame().GetCallqueue().CallLater(ApplyFocus, 0, false);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void ApplyFocus()
+	{
+		EditBoxWidget e = m_wFocusNext;
+		m_wFocusNext = null;
+		if (!e || (e != m_wUser && e != m_wPass && e != m_wDlgEdit))
+			return;
+
+		GetGame().GetWorkspace().SetFocusedWidget(e);
+		e.ActivateWriteMode();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -2438,8 +2458,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 				if (m_wPass)
 				{
 					ROOT_AE3_UI.SetEdit(m_wPass, "");
-					GetGame().GetWorkspace().SetFocusedWidget(m_wPass);
-					m_wPass.ActivateWriteMode();
+					FocusField(m_wPass);
 				}
 			}
 
@@ -2573,12 +2592,18 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (!finished)
 			return false;
 
+		// Write mode also ends on a click elsewhere or Tab: only Enter moves on or signs in.
+		bool enter = Debug.KeyState(KeyCode.KC_RETURN) != 0 || Debug.KeyState(KeyCode.KC_NUMPADENTER) != 0;
 		if (id == ID_USER && m_wPass)
 		{
-			GetGame().GetWorkspace().SetFocusedWidget(m_wPass);
-			m_wPass.ActivateWriteMode();
+			if (enter)
+				FocusField(m_wPass);
+
 			return true;
 		}
+
+		if (id == ID_PASS && !enter)
+			return true;
 
 		if (id == ID_PASS)
 		{

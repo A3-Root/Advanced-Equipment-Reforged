@@ -203,6 +203,7 @@ class ROOT_AE3_Shell
 		t.m_aSuUsers.Clear();
 		t.m_aSuCwds.Clear();
 		t.m_eInput = ROOT_AE3_ETermInput.SHELL;
+		computer.EnsureHome(user);
 		string home = ROOT_AE3_Filesystem.HomeOf(user);
 		if (computer.GetFilesystem().Exists(home))
 			t.m_sCwd = home;

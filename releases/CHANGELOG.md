@@ -176,6 +176,9 @@
 - Cable lines use up to 320 segments so long cables keep their thickness.
 - Laptop, router, battery pack and portable server actions moved to the "Pick up" action point.
 - Device actions that cannot run are hidden (insert flash drive, power, wake, refuel, use, power and network cable).
+- Buttons tint only their own widget: dragging a desktop icon no longer turns the background grey or see-through.
+- Desktop sign-in: after a failed attempt only the password field is active; clicking a field selects it; only Enter moves to the password or signs in.
+- Home folders get Desktop, Documents and Downloads when missing (account creation, sign-in, desktop requests), also for root.
 
 ### Removed
 - Power plug into the nearest source within 6 m (replaced by the power cable taken from the source).

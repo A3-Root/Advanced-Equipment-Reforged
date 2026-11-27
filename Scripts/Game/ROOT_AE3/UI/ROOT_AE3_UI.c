@@ -388,6 +388,7 @@ class ROOT_AE3_UI
 		w.SetUserID(id);
 		ROOT_AE3_WidgetHandler h = new ROOT_AE3_WidgetHandler();
 		h.m_Listener = listener;
+		h.m_wSelf = w;
 		w.AddHandler(h);
 		listener.KeepHandler(h);
 		return h;

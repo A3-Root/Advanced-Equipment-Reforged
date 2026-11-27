@@ -110,6 +110,10 @@ class ROOT_AE3_GuiRouter
 			}
 		}
 
+		// Desktop folder of the signed-in user, created when missing (accounts made before it existed, root).
+		if (p1 == cwd + "/Desktop" || p1.StartsWith(cwd + "/Desktop/"))
+			c.EnsureHome(user);
+
 		switch (cmd)
 		{
 			case "signout":

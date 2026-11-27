@@ -13,6 +13,7 @@ class ROOT_AE3_WidgetHandler : ScriptedWidgetEventHandler
 	protected static ROOT_AE3_UiListener s_LastClickListener;
 
 	ROOT_AE3_UiListener m_Listener;
+	Widget m_wSelf;		//!< Widget the handler is attached to; only this one is tinted
 	protected bool m_bPressed;
 	protected bool m_bButton;
 	protected ref Color m_Base;
@@ -31,7 +32,8 @@ class ROOT_AE3_WidgetHandler : ScriptedWidgetEventHandler
 	//------------------------------------------------------------------------------------------------
 	protected void Tint(Widget w, float add)
 	{
-		if (!m_bButton || !w)
+		// While a button is held the engine also reports other widgets under the cursor to this handler.
+		if (!m_bButton || !w || w != m_wSelf)
 			return;
 
 		if (add == 0)
@@ -127,9 +129,9 @@ class ROOT_AE3_WidgetHandler : ScriptedWidgetEventHandler
 			return false;
 
 		bool handled = m_Listener.OnUiMouseUp(w, w.GetUserID(), button);
-		if (!pressed || !UnderCursor(w))
+		if (!pressed || w != m_wSelf || !UnderCursor(w))
 		{
-			Tint(w, 0);
+			Tint(m_wSelf, 0);
 			return handled;
 		}
 

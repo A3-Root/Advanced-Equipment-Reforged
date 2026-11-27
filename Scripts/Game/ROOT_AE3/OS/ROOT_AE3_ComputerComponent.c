@@ -569,14 +569,26 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 			return;
 
 		m_mUsers.Set(name, ROOT_AE3_Codec.Clean(password));
+		EnsureHome(name);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority: home folder with Desktop, Documents and Downloads, each created when missing.
+	void EnsureHome(string name)
+	{
+		if (!m_Fs || !ROOT_AE3_Filesystem.ValidName(name))
+			return;
+
 		string e;
-		string home = "/home/" + name;
+		string home = ROOT_AE3_Filesystem.HomeOf(name);
 		if (!m_Fs.Exists(home))
+			m_Fs.CreateDir(home, "root", name, 7, e, true);
+
+		array<string> subs = {"/Desktop", "/Documents", "/Downloads"};
+		foreach (string sub : subs)
 		{
-			m_Fs.CreateDir(home, "root", name, 7, e);
-			m_Fs.CreateDir(home + "/Desktop", name, name, 7, e);
-			m_Fs.CreateDir(home + "/Documents", name, name, 7, e);
-			m_Fs.CreateDir(home + "/Downloads", name, name, 7, e);
+			if (!m_Fs.Exists(home + sub))
+				m_Fs.CreateDir(home + sub, "root", name, 7, e);
 		}
 	}
 
