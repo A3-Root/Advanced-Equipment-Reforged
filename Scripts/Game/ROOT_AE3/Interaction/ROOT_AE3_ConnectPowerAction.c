@@ -35,7 +35,10 @@ class ROOT_AE3_ConnectPowerAction : ROOT_AE3_UserActionBase
 		if (p.IsProvider() && Holding(GetOwner()))
 			return false;
 
-		return p.GetRole() == ROOT_AE3_EPowerRole.CONSUMER || p.GetRole() == ROOT_AE3_EPowerRole.BATTERY;
+		if (p.GetRole() != ROOT_AE3_EPowerRole.CONSUMER && p.GetRole() != ROOT_AE3_EPowerRole.BATTERY)
+			return false;
+
+		return Finishing(GetOwner()) || p.HasProvider();
 	}
 
 	//------------------------------------------------------------------------------------------------

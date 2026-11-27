@@ -2,7 +2,9 @@
 
 ## Actions on devices
 
-Look at a device and open its action menu. The server checks that the player is alive and within 5 m.
+Look at a device and open its action menu. Actions that cannot run are hidden (for example "Insert flash drive"
+without a drive, "Power on" with the lid closed); "Starting", "In use" and a cable that is too short show greyed out.
+Device actions and "Pick up" share one action point. The server checks that the player is alive and within 5 m.
 
 | Action | Devices | Effect |
 | --- | --- | --- |
@@ -50,8 +52,10 @@ farther apart than the cable unplugs it.
 
 ## Flash drives
 
-"Insert flash drive" plugs the first drive from the inventory into a free port; the drive shows in the port and is
-mounted at `/mnt/usb0` or `/mnt/usb1`. Eject it with the action, the My Computer app or `umount` and the action.
+"Insert flash drive" plugs a drive from the inventory into a free port (with several drives a form asks which one);
+the drive shows in the port and is mounted at `/mnt/usb0` or `/mnt/usb1`. Eject it with the action, the My Computer
+app or `umount` and the action. My Computer (or "Flash drives" in the quick panel) also inserts drives from the
+inventory, for a laptop used from the inventory too.
 Files on a drive travel with it.
 
 ## Terminal

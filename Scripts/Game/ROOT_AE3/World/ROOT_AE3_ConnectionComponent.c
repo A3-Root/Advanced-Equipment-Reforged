@@ -18,7 +18,7 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 	[Attribute("0 0.05 0", desc: "Model-relative position of the network port", category: "Cable ports")]
 	protected vector m_vNetPort;
 
-	[Attribute("0 0 -1", desc: "Model-relative direction out of the network port", category: "Cable ports")]
+	[Attribute("0 0 1", desc: "Model-relative direction out of the network port", category: "Cable ports")]
 	protected vector m_vNetPortDir;
 
 	[Attribute("0 0 0", desc: "Offset between network ports (routers: cables of other devices use ports 1-3)", category: "Cable ports")]
@@ -27,7 +27,7 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 	[Attribute("0 0.05 0", desc: "Model-relative position of the power port", category: "Cable ports")]
 	protected vector m_vPowerPort;
 
-	[Attribute("0 0 -1", desc: "Model-relative direction out of the power port", category: "Cable ports")]
+	[Attribute("0 0 1", desc: "Model-relative direction out of the power port", category: "Cable ports")]
 	protected vector m_vPowerPortDir;
 
 	static const ResourceName NET_MATERIAL = "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat";
@@ -249,18 +249,23 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 	//! World position and direction of the network port; index > 0 adds index * m_vNetPortStep.
 	void NetPort(int index, out vector pos, out vector dir)
 	{
-		IEntity owner = GetOwner();
 		float k = index;
-		pos = owner.CoordToParent(m_vNetPort + m_vNetPortStep * k);
-		dir = owner.VectorToParent(m_vNetPortDir).Normalized();
+		ToWorld(m_vNetPort + m_vNetPortStep * k, m_vNetPortDir, pos, dir);
 	}
 
 	//------------------------------------------------------------------------------------------------
 	void PowerPort(out vector pos, out vector dir)
 	{
-		IEntity owner = GetOwner();
-		pos = owner.CoordToParent(m_vPowerPort);
-		dir = owner.VectorToParent(m_vPowerPortDir).Normalized();
+		ToWorld(m_vPowerPort, m_vPowerPortDir, pos, dir);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void ToWorld(vector local, vector localDir, out vector pos, out vector dir)
+	{
+		vector mat[4];
+		GetOwner().GetWorldTransform(mat);
+		pos = local.Multiply4(mat);
+		dir = (mat[0] * localDir[0] + mat[1] * localDir[1] + mat[2] * localDir[2]).Normalized();
 	}
 
 	//------------------------------------------------------------------------------------------------

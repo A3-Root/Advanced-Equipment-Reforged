@@ -1,5 +1,6 @@
 //! Inventory "Use" on Advanced Equipment items: computers in the own inventory open (wake or boot first),
-//! EWO packs in the own inventory or the vicinity open the EWO panel.
+//! EWO packs in the own inventory or the vicinity open the EWO panel, other devices in the own inventory (flash
+//! drive, router, battery pack) open the name form.
 class ROOT_AE3_InventoryUse
 {
 	//------------------------------------------------------------------------------------------------
@@ -8,7 +9,7 @@ class ROOT_AE3_InventoryUse
 		if (!item)
 			return false;
 
-		if (ROOT_AE3_ComputerComponent.Of(item))
+		if (ROOT_AE3_ComputerComponent.Of(item) || ROOT_AE3_DeviceComponent.Of(item))
 			return true;
 
 		return ROOT_AE3_EwoSystem.IsEwoPack(item);
@@ -28,7 +29,13 @@ class ROOT_AE3_InventoryUse
 		}
 
 		if (ROOT_AE3_EwoSystem.IsEwoPack(item))
+		{
 			ROOT_AE3_EwoPanel.Open(item);
+			return;
+		}
+
+		if (ROOT_AE3_DeviceComponent.Of(item))
+			ROOT_AE3_GmDialog.OpenRename(item);
 	}
 }
 

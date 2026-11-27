@@ -26,7 +26,22 @@ class ROOT_AE3_UsbAction : ROOT_AE3_UserActionBase
 		if (!c || c.GetUsbPortCount() == 0 || !IsPlaced(GetOwner()))
 			return false;
 
-		return !m_bEject || c.HasUsbDrive();
+		if (m_bEject)
+			return c.HasUsbDrive();
+
+		return FreePort(c) && CanBePerformedScript(user);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected bool FreePort(ROOT_AE3_ComputerComponent c)
+	{
+		for (int i = 0; i < c.GetUsbPortCount(); i++)
+		{
+			if (!c.GetUsbDrive(i))
+				return true;
+		}
+
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -46,8 +61,18 @@ class ROOT_AE3_UsbAction : ROOT_AE3_UserActionBase
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Several carried drives: the local player chooses one (ROOT_AE3_GmDialog.OpenUsb), the server waits for
+	//! ROOT_AE3_EMsg.USB_INSERT.
 	override void PerformAction(IEntity pOwnerEntity, IEntity pUserEntity)
 	{
+		if (!m_bEject && pUserEntity == SCR_PlayerController.GetLocalControlledEntity())
+		{
+			array<IEntity> carried = {};
+			ROOT_AE3_UsbManager.Drives(pUserEntity, carried);
+			if (carried.Count() > 1)
+				ROOT_AE3_GmDialog.OpenUsb(pOwnerEntity, carried);
+		}
+
 		if (!IsAuthority(pOwnerEntity) || !InReach(pOwnerEntity, pUserEntity))
 			return;
 
@@ -61,6 +86,11 @@ class ROOT_AE3_UsbAction : ROOT_AE3_UserActionBase
 
 			return;
 		}
+
+		array<IEntity> drives = {};
+		ROOT_AE3_UsbManager.Drives(pUserEntity, drives);
+		if (drives.Count() > 1)
+			return;
 
 		if (!ROOT_AE3_UsbManager.Insert(c, pUserEntity, reason))
 			Report(pUserEntity, reason);

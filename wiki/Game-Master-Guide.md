@@ -29,7 +29,7 @@ selected device. Each action reports how many devices it changed and the first e
 | Folder | Shown for "Other folder"; created when missing |
 | File name, Text in the file | Name with extension (`orders.txt`) and content |
 | Who can open it | Everyone, only its owner (and root), or only root |
-| Owner | User account that owns the file |
+| Owner | User account that owns the file: root, an account of the computer, or "New account" (name and password; the account is created when missing) |
 | Protection | None, a password (players run `unlock FILE PASSWORD`), a cipher, or both |
 | Cipher | One of 15 ciphers; the next field asks for its key in plain words (shift, key word, variant, rails, alphabet, number base) |
 | Shown file size | Size `ls -l` and Files show instead of the real size |

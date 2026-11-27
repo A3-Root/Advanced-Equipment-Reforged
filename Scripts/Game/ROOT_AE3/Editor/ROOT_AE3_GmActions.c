@@ -161,7 +161,7 @@ class ROOT_AE3_GmActions
 	//------------------------------------------------------------------------------------------------
 	//! Fields of "Add file": where (desktop or home of a user, top folder, other folder), file name, content,
 	//! who can open it, owner, protection (password, cipher or both), one key field per cipher, shown size.
-	//! Field order is read by Apply ("add_file") and AddFilePath.
+	//! Field order is read by Apply ("add_file") and AddFilePath; owner "_new" creates the account (fields 6, 7).
 	protected static void AddFileFields(ROOT_AE3_ComputerComponent c, notnull array<string> users, notnull array<string> owners, notnull array<ref ROOT_AE3_GmField> fields)
 	{
 		array<string> wv = {};
@@ -177,23 +177,31 @@ class ROOT_AE3_GmActions
 		wv.Insert("/");
 		wl.Insert("Top folder (/)");
 		wv.Insert("custom");
-		wl.Insert("Other folder (type it below)");
+		wl.Insert("Other folder");
 		string where = "/";
 		if (!users.IsEmpty())
 			where = "d:" + users[0];
 
 		Choice(fields, "Where to put the file", wv, wl, where);
-		F(fields, ROOT_AE3_EGmField.TEXT, "Folder (created when missing, e.g. /home/user/intel)", "/intel").ShowIf(0, "custom");
+		F(fields, ROOT_AE3_EGmField.TEXT, "Folder (e.g. /home/user/intel)", "/intel").ShowIf(0, "custom");
 		F(fields, ROOT_AE3_EGmField.TEXT, "File name (e.g. orders.txt)", "notes.txt");
 		F(fields, ROOT_AE3_EGmField.MULTILINE, "Text in the file", "");
 		array<string> av = {"all", "owner", "root"};
-		array<string> al = {"Everyone can open it", "Only its owner (and root)", "Only root (administrator)"};
+		array<string> al = {"Everyone", "Owner and root", "Root only"};
 		Choice(fields, "Who can open it", av, al, "all");
-		Choice(fields, "Owner (user account)", owners, owners, "root").ShowIf(4, "all owner");
+		array<string> ov = {};
+		array<string> ol = {};
+		ov.Copy(owners);
+		ol.Copy(owners);
+		ov.Insert("_new");
+		ol.Insert("New account");
+		Choice(fields, "Owner (user account)", ov, ol, "root").ShowIf(4, "all owner");
+		F(fields, ROOT_AE3_EGmField.TEXT, "New account name", "").ShowIf(5, "_new");
+		F(fields, ROOT_AE3_EGmField.PASSWORD, "New account password", "").ShowIf(5, "_new");
 		array<string> pv = {"none", "password", "cipher", "both"};
-		array<string> pl = {"None", "Password (unlock FILE PASSWORD)", "Encrypted text (cipher)", "Password and cipher"};
+		array<string> pl = {"None", "Password", "Cipher", "Password + cipher"};
 		Choice(fields, "Protection", pv, pl, "none");
-		F(fields, ROOT_AE3_EGmField.PASSWORD, "Password", "").ShowIf(6, "password both");
+		F(fields, ROOT_AE3_EGmField.PASSWORD, "Password", "").ShowIf(8, "password both");
 		array<string> cv = {};
 		array<string> cl = {};
 		for (int i = 1; i < ROOT_AE3_Encryption.COUNT; i++)
@@ -202,23 +210,23 @@ class ROOT_AE3_GmActions
 			cl.Insert(ROOT_AE3_Encryption.Label(i));
 		}
 
-		Choice(fields, "Cipher (players decrypt with crypto / crack)", cv, cl, "1").ShowIf(6, "cipher both");
-		F(fields, ROOT_AE3_EGmField.TEXT, "Caesar shift, a whole number", "3").ShowIf(8, ROOT_AE3_Encryption.CAESAR.ToString());
-		F(fields, ROOT_AE3_EGmField.TEXT, "Key word, 2 letters or more", "KEY").ShowIf(8, ROOT_AE3_Encryption.COLUMNAR.ToString());
-		F(fields, ROOT_AE3_EGmField.TEXT, "Key word", "LEMON").ShowIf(8, ROOT_AE3_Encryption.VIGENERE.ToString());
+		Choice(fields, "Cipher", cv, cl, "1").ShowIf(8, "cipher both");
+		F(fields, ROOT_AE3_EGmField.TEXT, "Caesar shift, a whole number", "3").ShowIf(10, ROOT_AE3_Encryption.CAESAR.ToString());
+		F(fields, ROOT_AE3_EGmField.TEXT, "Key word, 2 letters or more", "KEY").ShowIf(10, ROOT_AE3_Encryption.COLUMNAR.ToString());
+		F(fields, ROOT_AE3_EGmField.TEXT, "Key word", "LEMON").ShowIf(10, ROOT_AE3_Encryption.VIGENERE.ToString());
 		array<string> rv = {"rot13", "rot5", "rot18", "rot47"};
-		array<string> rl = {"ROT13 (letters)", "ROT5 (digits)", "ROT18 (letters and digits)", "ROT47 (all printable characters)"};
-		Choice(fields, "ROT variant", rv, rl, "rot13").ShowIf(8, ROOT_AE3_Encryption.ROT.ToString());
-		F(fields, ROOT_AE3_EGmField.TEXT, "Key a,b (a: 1 3 5 7 9 11 15 17 19 21 23 25; b: 0-25)", "5,8").ShowIf(8, ROOT_AE3_Encryption.AFFINE.ToString());
-		F(fields, ROOT_AE3_EGmField.TEXT, "Number of rails, 2 or more", "3").ShowIf(8, ROOT_AE3_Encryption.RAILFENCE.ToString());
+		array<string> rl = {"ROT13 letters", "ROT5 digits", "ROT18 both", "ROT47 all"};
+		Choice(fields, "ROT variant", rv, rl, "rot13").ShowIf(10, ROOT_AE3_Encryption.ROT.ToString());
+		F(fields, ROOT_AE3_EGmField.TEXT, "Key a,b (a odd, not 13; b 0-25)", "5,8").ShowIf(10, ROOT_AE3_Encryption.AFFINE.ToString());
+		F(fields, ROOT_AE3_EGmField.TEXT, "Number of rails, 2 or more", "3").ShowIf(10, ROOT_AE3_Encryption.RAILFENCE.ToString());
 		array<string> bv = {"", "extended"};
-		array<string> bl = {"24 letters (I = J, U = V)", "26 letters"};
-		Choice(fields, "Bacon alphabet", bv, bl, "").ShowIf(8, ROOT_AE3_Encryption.BACON.ToString());
-		F(fields, ROOT_AE3_EGmField.TEXT, "Substitution alphabet, 26 letters", ROOT_AE3_Encryption.DefaultKey(ROOT_AE3_Encryption.SUBSTITUTION)).ShowIf(8, ROOT_AE3_Encryption.SUBSTITUTION.ToString());
+		array<string> bl = {"24 letters", "26 letters"};
+		Choice(fields, "Bacon alphabet", bv, bl, "").ShowIf(10, ROOT_AE3_Encryption.BACON.ToString());
+		F(fields, ROOT_AE3_EGmField.TEXT, "Substitution alphabet, 26 letters", ROOT_AE3_Encryption.DefaultKey(ROOT_AE3_Encryption.SUBSTITUTION)).ShowIf(10, ROOT_AE3_Encryption.SUBSTITUTION.ToString());
 		array<string> xv = {"16", "2", "8", "10"};
-		array<string> xl = {"Hexadecimal (16)", "Binary (2)", "Octal (8)", "Decimal (10)"};
-		Choice(fields, "Number base", xv, xl, "16").ShowIf(8, ROOT_AE3_Encryption.INTEGER.ToString());
-		F(fields, ROOT_AE3_EGmField.TEXT, "Shown file size in bytes (empty = real size)", "");
+		array<string> xl = {"Hex", "Binary", "Octal", "Decimal"};
+		Choice(fields, "Number base", xv, xl, "16").ShowIf(10, ROOT_AE3_Encryption.INTEGER.ToString());
+		F(fields, ROOT_AE3_EGmField.TEXT, "Shown size in bytes (empty = real)", "");
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -832,22 +840,22 @@ class ROOT_AE3_GmActions
 				if (V(v, 2).Trim().IsEmpty())
 					return Fail("Enter a file name.");
 
-				string protection = V(v, 6);
+				string protection = V(v, 8);
 				int enc;
 				string fileKey;
 				if (protection == "cipher" || protection == "both")
 				{
-					enc = V(v, 8).ToInt();
+					enc = V(v, 10).ToInt();
 					map<int, int> keyField = new map<int, int>();
-					keyField.Set(ROOT_AE3_Encryption.CAESAR, 9);
-					keyField.Set(ROOT_AE3_Encryption.COLUMNAR, 10);
-					keyField.Set(ROOT_AE3_Encryption.VIGENERE, 11);
-					keyField.Set(ROOT_AE3_Encryption.ROT, 12);
-					keyField.Set(ROOT_AE3_Encryption.AFFINE, 13);
-					keyField.Set(ROOT_AE3_Encryption.RAILFENCE, 14);
-					keyField.Set(ROOT_AE3_Encryption.BACON, 15);
-					keyField.Set(ROOT_AE3_Encryption.SUBSTITUTION, 16);
-					keyField.Set(ROOT_AE3_Encryption.INTEGER, 17);
+					keyField.Set(ROOT_AE3_Encryption.CAESAR, 11);
+					keyField.Set(ROOT_AE3_Encryption.COLUMNAR, 12);
+					keyField.Set(ROOT_AE3_Encryption.VIGENERE, 13);
+					keyField.Set(ROOT_AE3_Encryption.ROT, 14);
+					keyField.Set(ROOT_AE3_Encryption.AFFINE, 15);
+					keyField.Set(ROOT_AE3_Encryption.RAILFENCE, 16);
+					keyField.Set(ROOT_AE3_Encryption.BACON, 17);
+					keyField.Set(ROOT_AE3_Encryption.SUBSTITUTION, 18);
+					keyField.Set(ROOT_AE3_Encryption.INTEGER, 19);
 					if (keyField.Contains(enc))
 						fileKey = V(v, keyField.Get(enc)).Trim();
 				}
@@ -855,12 +863,23 @@ class ROOT_AE3_GmActions
 				string password;
 				if (protection == "password" || protection == "both")
 				{
-					password = V(v, 7);
+					password = V(v, 9);
 					if (password.IsEmpty())
 						return Fail("Enter a password or choose another protection.");
 				}
 
 				string owner = V(v, 5);
+				if (owner == "_new" && V(v, 4) != "root")
+				{
+					owner = V(v, 6).Trim();
+					if (!ROOT_AE3_Filesystem.ValidName(owner) || owner == "root")
+						return Fail("Enter a valid new account name (letters, digits, - and _).");
+
+					array<string> existing = {};
+					c.GetUsers(existing);
+					if (!existing.Contains(owner) && !ROOT_AE3_API.AddUser(e, owner, V(v, 7)))
+						return Fail("The account could not be created.");
+				}
 				string perms = "rw-r--";
 				if (V(v, 4) == "owner")
 				{
@@ -873,8 +892,8 @@ class ROOT_AE3_GmActions
 				}
 
 				int size = -1;
-				if (!V(v, 18).Trim().IsEmpty())
-					size = V(v, 18).ToInt();
+				if (!V(v, 20).Trim().IsEmpty())
+					size = V(v, 20).ToInt();
 
 				if (!ROOT_AE3_API.AddFile(e, AddFilePath(v), V(v, 3), owner, perms, enc, fileKey, password, size))
 					return Fail(ROOT_AE3_API.GetLastError());

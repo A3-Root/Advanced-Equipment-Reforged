@@ -45,6 +45,14 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected static const int MI_FILE_OPEN = 14;
 	protected static const int MI_FILE_RENAME = 15;
 	protected static const int MI_FILE_DELETE = 16;
+	protected static const int MI_SORT = 17;
+	protected static const int MI_GROUP = 18;
+	protected static const int MI_GRID = 19;
+	protected static const int MI_SORT_NAME = 20;
+	protected static const int MI_SORT_TYPE = 21;
+	protected static const int MI_SORT_SIZE = 22;
+	protected static const int MI_GROUP_NONE = 23;
+	protected static const int MI_GROUP_TYPE = 24;
 	protected static const int ID_FILE = 2000;
 	protected static const int ID_SFILE = 3000;
 	protected static const float BAR_H = 48;
@@ -80,6 +88,14 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected int m_iZ = 10;
 	protected int m_iSelIcon = -1;
 	protected int m_iSelFile = -1;
+	protected static ref map<string, ref ROOT_AE3_DeskLayout> s_mLayouts = new map<string, ref ROOT_AE3_DeskLayout>();	//!< Computer|user
+	protected ref map<string, vector> m_mIconPos = new map<string, vector>();	//!< Icon key -> position drawn
+	protected int m_iDragId = -1;	//!< Icon pressed for dragging
+	protected bool m_bIconDrag;
+	protected float m_fPressX, m_fPressY;
+	protected float m_fGrabX, m_fGrabY;	//!< Mouse offset inside the dragged icon
+	protected float m_fMenuX, m_fMenuY;	//!< Where the background menu was opened
+	protected Widget m_wDragGhost;
 	protected ref array<ref array<string>> m_aDeskFiles = {};	//!< ~/Desktop entries (fs_list fields)
 	protected ref array<ref array<string>> m_aFound = {};		//!< Start menu file results (fs_find, fs_list fields)
 	protected string m_sFindQuery;
@@ -528,51 +544,435 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	{
 		ROOT_AE3_UI.Clear(m_wIcons);
 		m_IconListener = new ROOT_AE3_ForwardListener(this);
-		int col, row;
-		int perCol = Math.Max(1, Math.Floor((m_fH - BAR_H - 16) / CELL_H));
+		ROOT_AE3_DeskLayout layout = Layout();
+		int perCol = IconsPerColumn();
+		PlacePending(layout, perCol);
+		m_mIconPos.Clear();
+
+		// Icons in automatic order: sort key, then the index into ids.
+		array<int> ids = {};
+		array<string> order = {};
 		foreach (int i, typename t : m_aApps)
 		{
 			ROOT_AE3_App app = ROOT_AE3_App.Cast(t.Spawn());
 			if (!AppAllowed(app) || !app.IsOnDesktop())
 				continue;
 
-			float x = 8 + col * CELL_W;
-			float y = 8 + row * CELL_H;
-			Color bg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
-			if (i == m_iSelIcon)
-				bg = ROOT_AE3_Theme.Select();
-
-			ROOT_AE3_UI.Hit(m_wIcons, x, y, CELL_W - 4, CELL_H - 4, ID_ICON + i, m_IconListener, bg, ROOT_AE3_UI.Rgb(1, 1, 1, 0.16));
-			ROOT_AE3_UI.Icon(m_wIcons, x + (CELL_W - 4 - 48) * 0.5, y + 6, 48, app.GetIcon());
-			TextWidget label = ROOT_AE3_UI.Text(m_wIcons, x + 2, y + 58, CELL_W - 8, 34, IconLabel(app.GetTitle()), 13, IconText(), false, true, 1);
-			label.SetShadow(3, 0xFF000000, 0.9, 0, 1);
-			row++;
-			if (row >= perCol)
-			{
-				row = 0;
-				col++;
-			}
+			order.Insert(SortKey(layout, 0, app.GetTitle(), "", 0) + "|" + ids.Count().ToString(6));
+			ids.Insert(ID_ICON + i);
 		}
 
 		foreach (int fi, array<string> e : m_aDeskFiles)
 		{
-			float fx = 8 + col * CELL_W;
-			float fy = 8 + row * CELL_H;
-			Color fbg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
-			if (fi == m_iSelFile)
-				fbg = ROOT_AE3_Theme.Select();
+			int rank = 2;
+			if (e[1] == "dir")
+				rank = 1;
 
-			ROOT_AE3_UI.Hit(m_wIcons, fx, fy, CELL_W - 4, CELL_H - 4, ID_FILE + fi, m_IconListener, fbg, ROOT_AE3_UI.Rgb(1, 1, 1, 0.16));
-			ROOT_AE3_UI.Icon(m_wIcons, fx + (CELL_W - 4 - 48) * 0.5, fy + 6, 48, ROOT_AE3_Icons.ForFile(e[1], e[5] == "1", e[6] == "1", e[7] == "1", ROOT_AE3_Filesystem.BaseName(e[0])));
-			TextWidget flabel = ROOT_AE3_UI.Text(m_wIcons, fx + 2, fy + 58, CELL_W - 8, 34, ROOT_AE3_Filesystem.BaseName(e[0]), 13, IconText(), false, true, 1);
-			flabel.SetShadow(3, 0xFF000000, 0.9, 0, 1);
-			row++;
-			if (row >= perCol)
+			string name = ROOT_AE3_Filesystem.BaseName(e[0]);
+			int bytes;
+			if (e.Count() > 8)
+				bytes = e[8].ToInt();
+
+			order.Insert(SortKey(layout, rank, name, Extension(name), bytes) + "|" + ids.Count().ToString(6));
+			ids.Insert(ID_FILE + fi);
+		}
+
+		order.Sort();
+
+		// Icons placed by the user keep their position; the others fill free grid cells in order. With grouping each
+		// group starts a new column.
+		set<int> used = new set<int>();
+		foreach (int id : ids)
+		{
+			string key = IconKey(id);
+			if (layout.m_mPos.Contains(key))
+				used.Insert(CellAt(layout.m_mPos.Get(key), perCol));
+		}
+
+		int next;
+		string group;
+		foreach (string o : order)
+		{
+			int id = ids[o.Substring(o.Length() - 6, 6).ToInt()];
+			string key = IconKey(id);
+			vector pos;
+			if (layout.m_mPos.Contains(key))
 			{
-				row = 0;
-				col++;
+				pos = layout.m_mPos.Get(key);
+			}
+			else
+			{
+				string g = o.Substring(0, 1);
+				if (layout.m_iGroup == 1 && !group.IsEmpty() && g != group && next % perCol != 0)
+					next = (next / perCol + 1) * perCol;
+
+				group = g;
+				while (used.Contains(next))
+				{
+					next++;
+				}
+
+				used.Insert(next);
+				pos = CellPos(next, perCol);
+			}
+
+			m_mIconPos.Set(key, pos);
+			BuildIcon(id, pos[0], pos[1]);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Files created from the background menu go where the menu was opened when no icon is there (the shown icons
+	//! then keep their places); otherwise they take the first free cell.
+	protected void PlacePending(ROOT_AE3_DeskLayout layout, int perCol)
+	{
+		if (layout.m_mPending.IsEmpty())
+			return;
+
+		array<string> done = {};
+		foreach (string key, vector want : layout.m_mPending)
+		{
+			bool listed;
+			foreach (array<string> e : m_aDeskFiles)
+			{
+				if ("f:" + e[0] == key)
+					listed = true;
+			}
+
+			if (!listed)
+				continue;
+
+			done.Insert(key);
+			vector pos = want;
+			if (layout.m_bGrid)
+				pos = CellPos(CellAt(pos, perCol), perCol);
+
+			bool free = true;
+			foreach (string k, vector p : m_mIconPos)
+			{
+				if (k == key)
+					continue;
+
+				if (layout.m_bGrid && CellAt(p, perCol) == CellAt(pos, perCol))
+					free = false;
+				else if (!layout.m_bGrid && Math.AbsFloat(p[0] - pos[0]) < CELL_W && Math.AbsFloat(p[1] - pos[1]) < CELL_H)
+					free = false;
+			}
+
+			if (!free)
+				continue;
+
+			foreach (string sk, vector sp : m_mIconPos)
+			{
+				if (!layout.m_mPos.Contains(sk))
+					layout.m_mPos.Set(sk, sp);
+			}
+
+			layout.m_mPos.Set(key, pos);
+		}
+
+		foreach (string d : done)
+		{
+			layout.m_mPending.Remove(d);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Icon position under the point where the background menu was opened.
+	protected void PendingAt(string path)
+	{
+		float x = Math.Clamp(m_fMenuX - (CELL_W - 4) * 0.5, 0, m_fW - CELL_W);
+		float y = Math.Clamp(m_fMenuY - (CELL_H - 4) * 0.5, 0, m_fH - BAR_H - CELL_H);
+		Layout().m_mPending.Set("f:" + path, Vector(x, y, 0));
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sort key: with grouping or type sort the rank first (0 apps, 1 folders, 2 files).
+	protected static string SortKey(ROOT_AE3_DeskLayout layout, int rank, string name, string ext, int bytes)
+	{
+		string lower = name;
+		lower.ToLower();
+		string head = "0";
+		if (layout.m_iGroup == 1 || layout.m_iSort == 1)
+			head = rank.ToString();
+
+		switch (layout.m_iSort)
+		{
+			case 1: return head + ext + "/" + lower;
+			case 2: return head + bytes.ToString(12) + "/" + lower;
+		}
+
+		return head + lower;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static string Extension(string name)
+	{
+		int dot = name.LastIndexOf(".");
+		if (dot <= 0)
+			return "";
+
+		string ext = name.Substring(dot + 1, name.Length() - dot - 1);
+		ext.ToLower();
+		return ext;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static vector CellPos(int cell, int perCol)
+	{
+		int col = cell / perCol;
+		int row = cell % perCol;
+		return Vector(8 + col * CELL_W, 8 + row * CELL_H, 0);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Grid cell nearest to an icon position.
+	protected static int CellAt(vector pos, int perCol)
+	{
+		int col = Math.Max(0, Math.Round((pos[0] - 8) / CELL_W));
+		int row = Math.Clamp(Math.Round((pos[1] - 8) / CELL_H), 0, perCol - 1);
+		return col * perCol + row;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void BuildIcon(int id, float x, float y)
+	{
+		string icon, label;
+		bool selected;
+		if (id >= ID_FILE)
+		{
+			array<string> e = m_aDeskFiles[id - ID_FILE];
+			label = ROOT_AE3_Filesystem.BaseName(e[0]);
+			icon = ROOT_AE3_Icons.ForFile(e[1], e[5] == "1", e[6] == "1", e[7] == "1", label);
+			selected = id - ID_FILE == m_iSelFile;
+		}
+		else
+		{
+			ROOT_AE3_App app = ROOT_AE3_App.Cast(m_aApps[id - ID_ICON].Spawn());
+			label = IconLabel(app.GetTitle());
+			icon = app.GetIcon();
+			selected = id - ID_ICON == m_iSelIcon;
+		}
+
+		Color bg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
+		if (selected)
+			bg = ROOT_AE3_Theme.Select();
+
+		ROOT_AE3_UI.Hit(m_wIcons, x, y, CELL_W - 4, CELL_H - 4, id, m_IconListener, bg, ROOT_AE3_UI.Rgb(1, 1, 1, 0.16));
+		ROOT_AE3_UI.Icon(m_wIcons, x + (CELL_W - 4 - 48) * 0.5, y + 6, 48, icon);
+		TextWidget t = ROOT_AE3_UI.Text(m_wIcons, x + 2, y + 58, CELL_W - 8, 34, label, 13, IconText(), false, true, 1);
+		t.SetShadow(3, 0xFF000000, 0.9, 0, 1);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected int IconsPerColumn()
+	{
+		return Math.Max(1, Math.Floor((m_fH - BAR_H - 16) / CELL_H));
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Layout key of a desktop icon: app class or file path.
+	protected string IconKey(int id)
+	{
+		if (id >= ID_FILE && m_aDeskFiles.IsIndexValid(id - ID_FILE))
+			return "f:" + m_aDeskFiles[id - ID_FILE][0];
+
+		if (id >= ID_ICON && id < ID_ICON + m_aApps.Count())
+			return "a:" + m_aApps[id - ID_ICON].ToString();
+
+		return "";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Icon positions, sort, grouping and grid of this computer and user, kept for the game session of this client.
+	protected ROOT_AE3_DeskLayout Layout()
+	{
+		string owner = m_DeviceId.ToString() + "|" + ROOT_AE3_Client.Get().m_sUser;
+		ROOT_AE3_DeskLayout layout = s_mLayouts.Get(owner);
+		if (!layout)
+		{
+			layout = new ROOT_AE3_DeskLayout();
+			s_mLayouts.Set(owner, layout);
+		}
+
+		return layout;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Icon image of the dragged icon.
+	protected string DragIcon()
+	{
+		if (m_iDragId >= ID_FILE && m_aDeskFiles.IsIndexValid(m_iDragId - ID_FILE))
+		{
+			array<string> e = m_aDeskFiles[m_iDragId - ID_FILE];
+			return ROOT_AE3_Icons.ForFile(e[1], e[5] == "1", e[6] == "1", e[7] == "1", ROOT_AE3_Filesystem.BaseName(e[0]));
+		}
+
+		if (m_iDragId >= ID_ICON && m_iDragId < ID_ICON + m_aApps.Count())
+			return ROOT_AE3_App.Cast(m_aApps[m_iDragId - ID_ICON].Spawn()).GetIcon();
+
+		return "file";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Left button pressed on an icon: dragging starts once the mouse moves.
+	protected void PressIcon(int id)
+	{
+		m_iDragId = id;
+		m_bIconDrag = false;
+		MouseLocal(m_fPressX, m_fPressY);
+		vector pos = m_mIconPos.Get(IconKey(id));
+		m_fGrabX = m_fPressX - pos[0];
+		m_fGrabY = m_fPressY - pos[1];
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void UpdateIconDrag()
+	{
+		if (m_iDragId < 0)
+			return;
+
+		float mx, my;
+		MouseLocal(mx, my);
+		if (GetGame().GetInputManager().GetActionValue("MouseLeft") <= 0)
+		{
+			if (m_bIconDrag)
+				DropIcon(mx, my);
+
+			EndIconDrag();
+			return;
+		}
+
+		if (!m_bIconDrag)
+		{
+			if (Math.AbsFloat(mx - m_fPressX) + Math.AbsFloat(my - m_fPressY) < 8)
+				return;
+
+			m_bIconDrag = true;
+			m_wDragGhost = ROOT_AE3_UI.Frame(m_wRoot, 0, 0, CELL_W, CELL_H, false);
+			m_wDragGhost.SetZOrder(99999);
+			m_wDragGhost.SetOpacity(0.7);
+			ROOT_AE3_UI.Rect(m_wDragGhost, 0, 0, CELL_W - 4, CELL_H - 4, ROOT_AE3_Theme.Select());
+			ROOT_AE3_UI.Icon(m_wDragGhost, (CELL_W - 4 - 48) * 0.5, 6, 48, DragIcon());
+		}
+
+		FrameSlot.SetPos(m_wDragGhost, mx - m_fGrabX, my - m_fGrabY);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Puts the dragged icon where it was dropped (snapped to the grid when aligned; an icon already in that cell
+	//! takes the old place). Every other icon keeps its position from then on.
+	protected void DropIcon(float mx, float my)
+	{
+		string key = IconKey(m_iDragId);
+		if (key.IsEmpty() || !m_mIconPos.Contains(key))
+			return;
+
+		ROOT_AE3_DeskLayout layout = Layout();
+		int perCol = IconsPerColumn();
+		float x = Math.Clamp(mx - m_fGrabX, 0, m_fW - CELL_W);
+		float y = Math.Clamp(my - m_fGrabY, 0, m_fH - BAR_H - CELL_H);
+		vector pos = Vector(x, y, 0);
+		vector old = m_mIconPos.Get(key);
+		foreach (string k, vector p : m_mIconPos)
+		{
+			layout.m_mPos.Set(k, p);
+		}
+
+		if (layout.m_bGrid)
+		{
+			int cell = CellAt(pos, perCol);
+			pos = CellPos(cell, perCol);
+			foreach (string other, vector op : m_mIconPos)
+			{
+				if (other != key && CellAt(op, perCol) == cell)
+					layout.m_mPos.Set(other, old);
 			}
 		}
+
+		layout.m_mPos.Set(key, pos);
+		BuildIcons();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void EndIconDrag()
+	{
+		m_iDragId = -1;
+		m_bIconDrag = false;
+		if (m_wDragGhost)
+			m_wDragGhost.RemoveFromHierarchy();
+
+		m_wDragGhost = null;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sort: automatic order, user positions dropped.
+	protected void SortIcons(int sort)
+	{
+		ROOT_AE3_DeskLayout layout = Layout();
+		layout.m_iSort = sort;
+		layout.m_mPos.Clear();
+		BuildIcons();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void GroupIcons(int group)
+	{
+		ROOT_AE3_DeskLayout layout = Layout();
+		layout.m_iGroup = group;
+		layout.m_mPos.Clear();
+		BuildIcons();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Align to grid on: every placed icon moves to the nearest free cell.
+	protected void ToggleGrid()
+	{
+		ROOT_AE3_DeskLayout layout = Layout();
+		layout.m_bGrid = !layout.m_bGrid;
+		if (layout.m_bGrid)
+		{
+			int perCol = IconsPerColumn();
+			set<int> used = new set<int>();
+			map<string, vector> snapped = new map<string, vector>();
+			foreach (string k, vector p : layout.m_mPos)
+			{
+				int cell = CellAt(p, perCol);
+				while (used.Contains(cell))
+				{
+					cell++;
+				}
+
+				used.Insert(cell);
+				snapped.Set(k, CellPos(cell, perCol));
+			}
+
+			layout.m_mPos.Clear();
+			foreach (string sk, vector sp : snapped)
+			{
+				layout.m_mPos.Set(sk, sp);
+			}
+		}
+
+		BuildIcons();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void SortMenu()
+	{
+		array<string> labels = {"Name", "Type", "Size"};
+		labels[Layout().m_iSort] = labels[Layout().m_iSort] + "  (current)";
+		array<int> ids = {MI_SORT_NAME, MI_SORT_TYPE, MI_SORT_SIZE};
+		ShowMenu(this, labels, ids);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void GroupMenu()
+	{
+		array<string> labels = {"None", "Type (apps, folders, files)"};
+		labels[Layout().m_iGroup] = labels[Layout().m_iGroup] + "  (current)";
+		array<int> ids = {MI_GROUP_NONE, MI_GROUP_TYPE};
+		ShowMenu(this, labels, ids);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -703,6 +1103,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		{
 			case "desk_newfolder":
 			{
+				PendingAt(path);
 				array<string> a = {path};
 				c.Request("fs_mkdir", a, this);
 				return;
@@ -710,6 +1111,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 			case "desk_newfile":
 			{
+				PendingAt(path);
 				array<string> b = {path, ""};
 				c.Request("fs_save", b, this);
 				return;
@@ -719,6 +1121,13 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			{
 				if (!m_aDeskFiles.IsIndexValid(m_iSelFile))
 					return;
+
+				ROOT_AE3_DeskLayout renamed = Layout();
+				string oldKey = "f:" + m_aDeskFiles[m_iSelFile][0];
+				if (renamed.m_mPos.Contains(oldKey))
+					renamed.m_mPos.Set("f:" + path, renamed.m_mPos.Get(oldKey));
+				else if (m_mIconPos.Contains(oldKey))
+					renamed.m_mPending.Set("f:" + path, m_mIconPos.Get(oldKey));
 
 				array<string> m = {m_aDeskFiles[m_iSelFile][0], path};
 				c.Request("fs_move", m, this);
@@ -1218,6 +1627,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		ry += 44;
 		QuickRow(x + 16, ry, w - 32, "drive", "Storage", usb);
+		ROOT_AE3_UI.Button(m_wQuick, x + w - 112, ry + 4, 96, 28, "Flash drives", ID_QUICK + 13, m_QuickListener, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 12, ROOT_AE3_Theme.Hover());
 		ry += 44;
 
 		array<string> labels = {"Network", "My Computer", "Terminal", "Theme: " + ROOT_AE3_Theme.Name(c.m_sTheme.ToInt()), "Window size", "Settings"};
@@ -1290,6 +1700,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			case 10: c.Request("standby", none, this); return;
 			case 11: c.Request("shutdown", none, this); return;
 			case 12: c.Request("signout", none, this); return;
+			case 13: OpenApp(ROOT_AE3_AppMyComputer); return;
 		}
 	}
 
@@ -1791,6 +2202,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	{
 		ROOT_AE3_UI.UpdatePlaceholders();
 		UpdateKeys();
+		UpdateIconDrag();
 		foreach (ROOT_AE3_Window w : m_aWindows)
 		{
 			w.Update(dt);
@@ -2178,6 +2590,18 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	}
 
 	//------------------------------------------------------------------------------------------------
+	override bool OnUiMouseDown(Widget w, int id, int button)
+	{
+		if (button == 0 && ((id >= ID_ICON && id < ID_ICON + m_aApps.Count()) || (id >= ID_FILE && id < ID_FILE + m_aDeskFiles.Count())))
+		{
+			PressIcon(id);
+			return true;
+		}
+
+		return false;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	override bool OnUiMouseUp(Widget w, int id, int button)
 	{
 		foreach (ROOT_AE3_Window win : m_aWindows)
@@ -2209,20 +2633,25 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	//------------------------------------------------------------------------------------------------
 	protected void BackgroundMenu()
 	{
-		array<string> labels = {"Refresh", "-", "Open Files", "Open Terminal", "-", "Personalize", "System info"};
-		array<int> ids = {MI_REFRESH, 0, MI_FILES, MI_TERMINAL, 0, MI_PERSONALIZE, MI_SYSINFO};
-		array<string> icons = {"g_refresh", "", "folder", "terminal", "", "settings", "info"};
+		MouseLocal(m_fMenuX, m_fMenuY);
+		string grid = "Align icons to grid: Off";
+		if (Layout().m_bGrid)
+			grid = "Align icons to grid: On";
+
+		array<string> labels = {"Sort by...", "Group by...", grid, "Refresh", "-", "Open Files", "Open Terminal", "-", "Personalize", "System info"};
+		array<int> ids = {MI_SORT, MI_GROUP, MI_GRID, MI_REFRESH, 0, MI_FILES, MI_TERMINAL, 0, MI_PERSONALIZE, MI_SYSINFO};
+		array<string> icons = {"g_chevron_down", "g_list", "g_grid", "g_refresh", "", "folder", "terminal", "", "settings", "info"};
 		if (DesktopFiles())
 		{
-			labels.InsertAt("-", 1);
-			ids.InsertAt(0, 1);
-			icons.InsertAt("", 1);
-			labels.InsertAt("New text document", 1);
-			ids.InsertAt(MI_NEW_FILE, 1);
-			icons.InsertAt("g_newfile", 1);
-			labels.InsertAt("New folder", 1);
-			ids.InsertAt(MI_NEW_FOLDER, 1);
-			icons.InsertAt("g_newfolder", 1);
+			labels.InsertAt("-", 4);
+			ids.InsertAt(0, 4);
+			icons.InsertAt("", 4);
+			labels.InsertAt("New text document", 4);
+			ids.InsertAt(MI_NEW_FILE, 4);
+			icons.InsertAt("g_newfile", 4);
+			labels.InsertAt("New folder", 4);
+			ids.InsertAt(MI_NEW_FOLDER, 4);
+			icons.InsertAt("g_newfolder", 4);
 		}
 
 		ShowMenu(this, labels, ids, icons);
@@ -2284,6 +2713,14 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 				return;
 			}
+			case MI_SORT: SortMenu(); return;
+			case MI_GROUP: GroupMenu(); return;
+			case MI_GRID: ToggleGrid(); return;
+			case MI_SORT_NAME: SortIcons(0); return;
+			case MI_SORT_TYPE: SortIcons(1); return;
+			case MI_SORT_SIZE: SortIcons(2); return;
+			case MI_GROUP_NONE: GroupIcons(0); return;
+			case MI_GROUP_TYPE: GroupIcons(1); return;
 			case MI_PERSONALIZE: OpenApp(ROOT_AE3_AppSettings); return;
 			case MI_SYSINFO: OpenApp(ROOT_AE3_AppSysInfo); return;
 			case MI_TERMINAL: OpenApp(ROOT_AE3_AppTerminal); return;
@@ -2362,7 +2799,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return true;
 		}
 
-		if (id >= ID_QUICK && id <= ID_QUICK + 12)
+		if (id >= ID_QUICK && id <= ID_QUICK + 13)
 		{
 			OnQuick(id - ID_QUICK);
 			return true;
@@ -2489,4 +2926,14 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		return false;
 	}
+}
+
+//! Desktop icon layout of one computer and user (client).
+class ROOT_AE3_DeskLayout
+{
+	ref map<string, vector> m_mPos = new map<string, vector>();	//!< Icon key -> position placed by the user
+	ref map<string, vector> m_mPending = new map<string, vector>();	//!< New or renamed file -> wanted position
+	int m_iSort;			//!< 0 name, 1 type, 2 size
+	int m_iGroup;			//!< 0 none, 1 type
+	bool m_bGrid = true;	//!< Align icons to grid
 }

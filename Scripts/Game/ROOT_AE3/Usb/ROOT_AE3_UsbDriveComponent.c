@@ -73,6 +73,16 @@ class ROOT_AE3_UsbDriveComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Authority: label after a rename; empty name = "Flash Drive".
+	void OnRenamed(string name)
+	{
+		if (name.IsEmpty())
+			SetLabel("Flash Drive");
+		else
+			SetLabel(name);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	int GetCapacity()
 	{
 		return m_iCapacity;
@@ -102,8 +112,12 @@ class ROOT_AE3_UsbDriveComponent : ScriptComponent
 	//------------------------------------------------------------------------------------------------
 	void FromSlot(ROOT_AE3_UsbSlot slot)
 	{
+		string prefabLabel = m_sLabel;
 		m_Fs = slot.m_Fs;
 		m_sLabel = slot.m_sLabel;
 		m_iCapacity = slot.m_iCapacity;
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(GetOwner());
+		if (d && m_sLabel != prefabLabel)
+			d.SetDeviceName(m_sLabel);
 	}
 }

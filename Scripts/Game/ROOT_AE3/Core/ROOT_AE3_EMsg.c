@@ -31,6 +31,7 @@ enum ROOT_AE3_EMsg
 	RENAME,			//!< data: new device name
 	EWO,			//!< data: EWO request (ROOT_AE3_EwoSystem.OnRequest)
 	CABLE_TAKE,		//!< data: cable length; device = the device the network cable is plugged into first
+	USB_INSERT,		//!< data: ROOT_AE3_UsbManager.DriveId of a carried flash drive; device = the computer
 	// server -> client
 	EWO_STATE,		//!< data: EWO pack state (ROOT_AE3_EwoPanel)
 	CABLE_HAND		//!< data: kind (0 none, 1 network, 2 power), first device RplId, cable length (ROOT_AE3_CableHand)

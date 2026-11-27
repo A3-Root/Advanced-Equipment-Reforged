@@ -67,9 +67,8 @@ class ROOT_AE3_Encryption
 	//! Display name (Game Master, World Editor).
 	static string Label(int algo)
 	{
-		array<string> labels = {"None", "Caesar (shift)", "Columnar transposition (keyword)", "Vigenere (keyword)", "ROT (rot5 / rot13 / rot18 / rot47)",
-			"Affine (a,b)", "Rail fence (rails)", "Morse code", "Spelling alphabet (NATO)", "Bacon", "Alphabet substitution", "Base32", "Base64",
-			"Ascii85", "Unicode notation (U+0041)", "Integer (radix)"};
+		array<string> labels = {"None", "Caesar", "Columnar", "Vigenere", "ROT", "Affine", "Rail fence", "Morse code", "NATO spelling", "Bacon",
+			"Substitution", "Base32", "Base64", "Ascii85", "Unicode", "Integer"};
 		if (algo < 0 || algo >= labels.Count())
 			return "None";
 

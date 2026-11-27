@@ -25,9 +25,85 @@ class ROOT_AE3_UsbManager
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static bool Insert(ROOT_AE3_ComputerComponent c, IEntity character, out string reason)
+	//! Flash drives in the inventory of the character.
+	static void Drives(IEntity character, notnull array<IEntity> found)
 	{
-		IEntity item = FindDrive(character);
+		found.Clear();
+		if (!character)
+			return;
+
+		SCR_InventoryStorageManagerComponent inv = SCR_InventoryStorageManagerComponent.Cast(character.FindComponent(SCR_InventoryStorageManagerComponent));
+		if (!inv)
+			return;
+
+		array<IEntity> items = {};
+		inv.GetItems(items);
+		foreach (IEntity item : items)
+		{
+			if (ROOT_AE3_UsbDriveComponent.Of(item))
+				found.Insert(item);
+		}
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Replication id of a drive item as a number, -1 without one.
+	static int DriveId(IEntity item)
+	{
+		if (!item)
+			return -1;
+
+		RplComponent rpl = RplComponent.Cast(item.FindComponent(RplComponent));
+		if (!rpl)
+			return -1;
+
+		int id = rpl.Id();
+		return id;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Carried drive with that DriveId, null when the character does not carry it.
+	static IEntity FindDriveById(IEntity character, int id)
+	{
+		array<IEntity> drives = {};
+		Drives(character, drives);
+		foreach (IEntity d : drives)
+		{
+			if (DriveId(d) == id)
+				return d;
+		}
+
+		return null;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Label and size shown when a drive is chosen.
+	static string DriveName(IEntity item)
+	{
+		ROOT_AE3_UsbDriveComponent d = ROOT_AE3_UsbDriveComponent.Of(item);
+		if (!d)
+			return "Flash drive";
+
+		int mb = d.GetCapacity();
+		string size = mb.ToString() + " MB";
+		if (mb >= 1024)
+			size = ROOT_AE3_Util.FormatFloat(mb / 1024.0, 1) + " GB";
+
+		string name = d.GetLabel();
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.Of(item);
+		if (dev && !dev.GetCustomName().IsEmpty())
+			name = dev.GetCustomName();
+
+		return name + " (" + size + ")";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Plugs drive (or the first carried drive when null) of the character into the first free port.
+	static bool Insert(ROOT_AE3_ComputerComponent c, IEntity character, out string reason, IEntity drive = null)
+	{
+		IEntity item = drive;
+		if (!item)
+			item = FindDrive(character);
+
 		if (!item)
 		{
 			reason = "No flash drive in the inventory.";
@@ -41,10 +117,10 @@ class ROOT_AE3_UsbManager
 			return false;
 		}
 
-		ROOT_AE3_UsbDriveComponent drive = ROOT_AE3_UsbDriveComponent.Of(item);
-		ROOT_AE3_UsbSlot slot = drive.ToSlot();
+		ROOT_AE3_UsbDriveComponent comp = ROOT_AE3_UsbDriveComponent.Of(item);
+		ROOT_AE3_UsbSlot slot = comp.ToSlot();
 		c.SetUsbDrive(port, slot);
-		slot.m_sPropPrefab = drive.GetPortProp();
+		slot.m_sPropPrefab = comp.GetPortProp();
 		slot.m_Prop = SpawnProp(c, port, slot.m_sPropPrefab);
 		SCR_InventoryStorageManagerComponent inv = SCR_InventoryStorageManagerComponent.Cast(character.FindComponent(SCR_InventoryStorageManagerComponent));
 		if (!inv || !inv.TryDeleteItem(item))

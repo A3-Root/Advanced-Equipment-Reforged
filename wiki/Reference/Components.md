@@ -32,4 +32,6 @@ World Editor attributes of the AE3 components.
 | `ROOT_AE3_ConnectNetworkAction` | Network cable steps |
 | `ROOT_AE3_UsbAction`, `ROOT_AE3_RefuelAction`, `ROOT_AE3_StatusAction`, `ROOT_AE3_RenameAction` | Flash drives, refuel, status, rename |
 
-Actions use the context `ae3` in the prefabs.
+Laptop, router, battery pack and portable server actions use the inherited `default` context (with "Pick up");
+solar panel, floodlight and generators use the context `ae3`. Port positions and directions are model-relative
+(+Z = back of the AE3 models).

@@ -27,7 +27,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    }
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB116267E1}" {
-   m_vPowerPort 0.13 0.19 -0.06
+   m_vPowerPort 0.13 0.19 0.06
    m_vPowerPortDir 0 1 0
   }
   ROOT_AE3_DeviceComponent "{6AF041BB1162672F}" {
@@ -91,19 +91,10 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    }
   }
   ActionsManagerComponent "{508AB5952B584B2E}" {
-   ActionContexts {
-    UserActionContext "{6AF041BB11626640}" {
-     ContextName "ae3"
-     Position PointInfo "{6AF041BB1162662C}" {
-      Offset 0 0.25 0
-     }
-     Radius 0.6
-    }
-   }
    additionalActions {
     ROOT_AE3_ConnectPowerAction "{6AF635AC11883886}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF635AC11883895}" {
       Name "ROOT_AE3_TakePowerCable"
@@ -112,7 +103,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_PowerAction "{6AF0880E11EACD0A}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF0880E11EACD1E}" {
       Name "ROOT_AE3_PowerAction"
@@ -120,7 +111,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_ConnectPowerAction "{6AF041BB1162660E}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11626605}" {
       Name "ROOT_AE3_ConnectPowerAction"
@@ -128,7 +119,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_StatusAction "{6AF041BB11626616}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11626611}" {
       Name "ROOT_AE3_StatusAction"
@@ -136,7 +127,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_RenameAction "{6AF4C42611154A14}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF4C42611154AEF}" {
       Name "ROOT_AE3_RenameAction"

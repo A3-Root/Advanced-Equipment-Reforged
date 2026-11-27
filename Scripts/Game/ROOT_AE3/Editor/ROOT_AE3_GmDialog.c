@@ -16,6 +16,7 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 
 	static const string RENAME_KEY = "_rename";
 	static const string CABLE_KEY = "_cable";
+	static const string USB_KEY = "_usb";
 
 	protected ref ROOT_AE3_GmDialogForm m_Form;
 	protected ref ROOT_AE3_GmPanel m_Panel;
@@ -125,6 +126,27 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 		array<ref ROOT_AE3_GmField> fields = {ROOT_AE3_GmField.Choice("Cable", values, labels, values[values.Count() - 1])};
 		array<RplId> targets = {d.GetRplId()};
 		OpenLocal(CABLE_KEY, "Plug in network cable: " + d.GetDeviceName(), fields, targets);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Player: which carried flash drive goes into the computer (sent as ROOT_AE3_EMsg.USB_INSERT).
+	static void OpenUsb(IEntity device, notnull array<IEntity> drives)
+	{
+		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
+		if (!d || drives.IsEmpty())
+			return;
+
+		array<string> values = {};
+		array<string> labels = {};
+		foreach (int i, IEntity item : drives)
+		{
+			values.Insert(ROOT_AE3_UsbManager.DriveId(item).ToString());
+			labels.Insert((i + 1).ToString() + ". " + ROOT_AE3_UsbManager.DriveName(item));
+		}
+
+		array<ref ROOT_AE3_GmField> fields = {ROOT_AE3_GmField.Choice("Flash drive", values, labels, values[0])};
+		array<RplId> targets = {d.GetRplId()};
+		OpenLocal(USB_KEY, "Insert flash drive: " + d.GetDeviceName(), fields, targets);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -249,6 +271,20 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 				foreach (RplId id : s_aTargets)
 				{
 					ROOT_AE3_Net.SendToServer(id, ROOT_AE3_EMsg.CABLE_TAKE, values[0]);
+				}
+			}
+
+			Close();
+			return;
+		}
+
+		if (s_sKey == USB_KEY)
+		{
+			if (!values.IsEmpty())
+			{
+				foreach (RplId usbTarget : s_aTargets)
+				{
+					ROOT_AE3_Net.SendToServer(usbTarget, ROOT_AE3_EMsg.USB_INSERT, values[0]);
 				}
 			}
 

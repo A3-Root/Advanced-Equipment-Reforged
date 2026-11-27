@@ -15,7 +15,9 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 	protected static const float ROW = 30;
 	protected static const float ROW_MULTI = 96;
 	protected static const float GAP = 8;
-	protected static const int MAX_SEGMENTS = 4;
+	protected static const float FIELD = WIDTH - LABEL - 40;
+	protected static const int MAX_COLUMNS = 4;
+	protected static const int MAX_GRID = 20;	//!< More choices: arrows
 
 	protected ROOT_AE3_GmDialog m_Dialog;
 	protected Widget m_wRoot;
@@ -56,7 +58,36 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 		if (f.m_eKind == ROOT_AE3_EGmField.MULTILINE)
 			return ROW_MULTI;
 
-		return ROW;
+		int cols = Columns(f);
+		if (cols <= 0)
+			return ROW;
+
+		int rows = (f.m_aValues.Count() + cols - 1) / cols;
+		return rows * ROW + (rows - 1) * 4;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Button columns of a choice field so the longest label fits; 0 = not a grid (arrows or no choice).
+	protected static int Columns(ROOT_AE3_GmField f)
+	{
+		int n = f.m_aValues.Count();
+		if (f.m_eKind != ROOT_AE3_EGmField.CHOICE || n == 0 || n > MAX_GRID)
+			return 0;
+
+		int longest = 0;
+		foreach (string l : f.m_aLabels)
+		{
+			longest = Math.Max(longest, l.Length());
+		}
+
+		float need = longest * 9 + 16;
+		for (int c = Math.Min(n, MAX_COLUMNS); c > 1; c--)
+		{
+			if ((FIELD - (c - 1) * 4) / c >= need)
+				return c;
+		}
+
+		return 1;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -110,14 +141,14 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 		ROOT_AE3_UI.Text(m_wRoot, x + 16, y + 14, WIDTH - 32, 26, m_sTitle, 20);
 		float fy = y + 52;
 		float fx = x + 24 + LABEL;
-		float fw = WIDTH - LABEL - 40;
+		float fw = FIELD;
 		foreach (int i, ROOT_AE3_GmField f : m_aFields)
 		{
 			if (!Visible(i))
 				continue;
 
 			float rh = RowHeight(f);
-			ROOT_AE3_UI.Text(m_wRoot, x + 16, fy + 5, LABEL, rh - 5, f.m_sLabel, 14, ROOT_AE3_UI.Rgb(0.75, 0.75, 0.78), false, true);
+			ROOT_AE3_UI.Text(m_wRoot, x + 16, fy + 5, LABEL, Math.Max(rh, ROW * 2) - 5, f.m_sLabel, 14, ROOT_AE3_UI.Rgb(0.75, 0.75, 0.78), false, true);
 			BuildField(i, f, fx, fy, fw, rh, accent);
 			fy += rh + GAP;
 		}
@@ -178,12 +209,15 @@ class ROOT_AE3_GmDialogForm : ROOT_AE3_UiListener
 					return;
 				}
 
-				if (n <= MAX_SEGMENTS)
+				int cols = Columns(f);
+				if (cols > 0)
 				{
-					float bw = (fw - (n - 1) * 4) / n;
+					float bw = (fw - (cols - 1) * 4) / cols;
 					for (int k = 0; k < n; k++)
 					{
-						ROOT_AE3_UI.Button(m_wRoot, fx + k * (bw + 4), fy, bw, rh, f.m_aLabels[k], base + PART_OPTION + k, this, Pick(f.m_aValues[k] == f.m_sValue, on), null, 14);
+						int col = k % cols;
+						int row = k / cols;
+						ROOT_AE3_UI.Button(m_wRoot, fx + col * (bw + 4), fy + row * (ROW + 4), bw, ROW, f.m_aLabels[k], base + PART_OPTION + k, this, Pick(f.m_aValues[k] == f.m_sValue, on), null, 14);
 					}
 
 					return;

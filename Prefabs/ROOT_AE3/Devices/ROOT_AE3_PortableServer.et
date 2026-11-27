@@ -43,8 +43,8 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    m_iInterfaceMode "Terminal only"
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB11621D17}" {
-   m_vNetPort 0.1 0.12 -0.245
-   m_vPowerPort -0.15 0.12 -0.245
+   m_vNetPort 0.1 0.12 0.245
+   m_vPowerPort -0.15 0.12 0.245
   }
   ROOT_AE3_DeviceComponent "{6AF041BB11621D46}" {
    m_eType SERVER
@@ -114,19 +114,10 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    }
   }
   ActionsManagerComponent "{508AB5952B584B2E}" {
-   ActionContexts {
-    UserActionContext "{6AF041BB11621D8C}" {
-     ContextName "ae3"
-     Position PointInfo "{6AF041BB11621D9D}" {
-      Offset 0 0.3 -0.25
-     }
-     Radius 0.6
-    }
-   }
    additionalActions {
     ROOT_AE3_PowerAction "{6AF041BB11621C67}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11621C74}" {
       Name "ROOT_AE3_PowerAction"
@@ -134,7 +125,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_ConnectPowerAction "{6AF041BB11621C45}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11621C5D}" {
       Name "ROOT_AE3_ConnectPowerAction"
@@ -142,7 +133,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_ConnectNetworkAction "{6AF041BB11621C2D}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11621C24}" {
       Name "ROOT_AE3_ConnectNetworkAction"
@@ -150,7 +141,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_StatusAction "{6AF041BB11621C37}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11621C31}" {
       Name "ROOT_AE3_StatusAction"
@@ -158,7 +149,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_RenameAction "{6AF4C4261115E766}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF4C4261115E761}" {
       Name "ROOT_AE3_RenameAction"

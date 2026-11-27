@@ -8,6 +8,7 @@ import wave
 import numpy as np
 
 RATE = 44100
+PEAK = 0.08
 OUT = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..")
 
 
@@ -33,7 +34,7 @@ def mix(parts):
 
 
 def save(name, data):
-    data = np.clip(data / max(1e-6, np.max(np.abs(data))) * 0.8, -1, 1)
+    data = np.clip(data / max(1e-6, np.max(np.abs(data))) * PEAK, -1, 1)
     fade = min(len(data), int(RATE * 0.02))
     data[-fade:] *= np.linspace(1, 0, fade)
     path = os.path.join(OUT, name + ".wav")

@@ -37,7 +37,14 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 		if (ROOT_AE3_Util.IsDestroyed(GetOwner()))
 			return false;
 
-		return ROOT_AE3_NetworkComponent.Of(GetOwner()) && IsPlaced(GetOwner());
+		IEntity owner = GetOwner();
+		if (!ROOT_AE3_NetworkComponent.Of(owner) || !IsPlaced(owner))
+			return false;
+
+		if (Holding(owner) || Finishing(owner) || Wired(owner))
+			return true;
+
+		return CanBePerformedScript(user);
 	}
 
 	//------------------------------------------------------------------------------------------------

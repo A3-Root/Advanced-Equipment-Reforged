@@ -91,6 +91,11 @@
 - Sounds: start, shut down, standby, flash drive in / out, error, mail and message chimes (`Sounds/ROOT_AE3`).
 - Choice of network cable when several lengths are carried.
 - Spare cable length lies in a coil on the floor halfway between the devices.
+- Flash drive choice form when several drives are carried; My Computer inserts drives from the inventory; quick panel "Flash drives" button.
+- Desktop icons can be dragged freely; other icons keep their place (layout per computer and user); new desktop files go where the menu was opened when free; renamed files keep their place.
+- Add file owner "New account": name and password, creates the account when missing.
+- Desktop right-click "Sort by" (name, type, size), "Group by" (none, type) and "Align icons to grid".
+- Inventory "Use" on a flash drive, router or battery pack opens the name form; a flash drive name is its label.
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -164,6 +169,13 @@
 - Desktop keeps an opaque base layer under the background.
 - Picking up a device with a network cable puts the cable item into the carrier's inventory or at the carrier's feet.
 - README and wiki rewritten by audience (players, Game Master, World Editor, server admins, systems, reference, developers).
+- Game Master forms: choice buttons wrap into a grid that fits the labels; shorter Add file and cipher labels.
+- UI sounds 20 dB quieter; the switch sound plays only for players out of chime range.
+- Terminal input keeps focus after Enter.
+- Cable ports on the laptop, router, portable server, solar panel and battery pack moved to the back of the models (were mirrored to the front); port directions default to +Z; ports use the world transform.
+- Cable lines use up to 320 segments so long cables keep their thickness.
+- Laptop, router, battery pack and portable server actions moved to the "Pick up" action point.
+- Device actions that cannot run are hidden (insert flash drive, power, wake, refuel, use, power and network cable).
 
 ### Removed
 - Power plug into the nearest source within 6 m (replaced by the power cable taken from the source).

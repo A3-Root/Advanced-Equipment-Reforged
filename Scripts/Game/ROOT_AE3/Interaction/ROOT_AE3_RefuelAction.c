@@ -43,7 +43,7 @@ class ROOT_AE3_RefuelAction : ROOT_AE3_UserActionBase
 			return false;
 
 		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(GetOwner());
-		return p && p.GetFuelCapacity() > 0 && IsPlaced(GetOwner());
+		return p && p.GetFuelCapacity() > 0 && IsPlaced(GetOwner()) && CanBePerformedScript(user);
 	}
 
 	//------------------------------------------------------------------------------------------------

@@ -8,7 +8,7 @@ class ROOT_AE3_CableView
 	static const ResourceName POWER_MODEL = "{C0E4F070C24AC863}Assets/ROOT_AE3/ROOT_AE3_CableSegmentPower/ROOT_AE3_CableSegmentPower.xob";
 	protected static const ResourceName COIL_MODEL = "{043FF542270ABA41}Assets/ROOT_AE3/ROOT_AE3_NetworkCable/ROOT_AE3_NetworkCable.xob";
 	protected static const float SEG_LEN = 0.25;
-	protected static const int MAX_SEGMENTS = 160;
+	protected static const int MAX_SEGMENTS = 320;
 	protected static const float LEAD = 0.06;				//!< Straight part out of the port
 	protected static const float COIL_SLACK = 1.5;			//!< Spare length in m above which the rest is coiled
 

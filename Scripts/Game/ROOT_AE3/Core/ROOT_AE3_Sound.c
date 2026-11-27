@@ -1,5 +1,5 @@
-//! Device sounds. Start, shut down, standby and flash drive: a switch sound at the device for everyone in range and
-//! a chime (Sounds/ROOT_AE3/*.wav) for the player using the device or standing within CHIME_RANGE. Error, mail,
+//! Device sounds. Start, shut down, standby and flash drive: a chime (Sounds/ROOT_AE3/*.wav) for the player using the
+//! device or standing within CHIME_RANGE, a switch sound at the device for the other players in range. Error, mail,
 //! message, notification and click: the chime for the player using the device only.
 class ROOT_AE3_Sound
 {
@@ -55,14 +55,18 @@ class ROOT_AE3_Sound
 		if (soundId == START || soundId == USB)
 			ev = "SOUND_TURN_ON";
 
-		vector mat[4];
-		device.GetWorldTransform(mat);
-		AudioSystem.PlayEvent(SWITCH_ACP, ev, mat);
 		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
 		IEntity me = SCR_PlayerController.GetLocalControlledEntity();
 		bool mine = d && ROOT_AE3_Client.Get().m_DeviceId == d.GetRplId();
 		if (mine || (me && vector.Distance(me.GetOrigin(), ROOT_AE3_Util.WorldPos(device)) <= CHIME_RANGE))
+		{
 			PlayLocal(soundId);
+			return;
+		}
+
+		vector mat[4];
+		device.GetWorldTransform(mat);
+		AudioSystem.PlayEvent(SWITCH_ACP, ev, mat);
 	}
 
 	//------------------------------------------------------------------------------------------------

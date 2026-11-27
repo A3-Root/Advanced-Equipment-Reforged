@@ -1,8 +1,7 @@
-# Advanced Equipment Reforged (AE3)
+# Advanced Equipment Reforged (AER)
 
 Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Port of
-[Advanced Equipment Revamped](https://github.com/y0014984/Advanced-Equipment) (Arma 3) 2.1.0.8, with the
-ciphers of Root's Cyber Warfare.
+[Advanced Equipment Revamped](https://github.com/y0014984/Advanced-Equipment) (Arma 3).
 
 A laptop runs armaOS: a terminal (command line), a desktop (windows and apps), or both. Computers have users,
 passwords, a permission-based filesystem, mail, chat, web pages, a calendar, CCTV, games and network tools. Routers
@@ -12,8 +11,7 @@ script.
 
 ## Requirements
 
-- Arma Reforger 1.9 or later. No other addons.
-- Dedicated servers need nothing extra; the desktop runs on each client.
+- Arma Reforger 1.9 or later.
 
 ## Installation
 

@@ -11,7 +11,7 @@ class ROOT_AE3_StandbyAction : ROOT_AE3_UserActionBase
 		if (!p || !ROOT_AE3_ComputerComponent.Of(GetOwner()) || !IsPlaced(GetOwner()))
 			return false;
 
-		return p.GetState() == ROOT_AE3_EPowerState.ON || p.GetState() == ROOT_AE3_EPowerState.STANDBY;
+		return (p.GetState() == ROOT_AE3_EPowerState.ON || p.GetState() == ROOT_AE3_EPowerState.STANDBY) && CanBePerformedScript(user);
 	}
 
 	//------------------------------------------------------------------------------------------------

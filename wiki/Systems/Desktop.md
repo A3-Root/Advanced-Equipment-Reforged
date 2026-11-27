@@ -19,15 +19,21 @@ switch at once.
 - Sign-in screen (Tab: next field; "Use terminal" switches to the terminal).
 - Background: black, wallpapers 1-5, an image file or a web address.
 - Desktop icons: apps, then the files and folders in `~/Desktop` (file browsing on). Click selects, double click or
-  Enter opens, right click for the menu (files: Open, Rename, Delete). Right click on the background: Refresh, New
+  Enter opens, right click for the menu (files: Open, Rename, Delete). Drag an icon anywhere; the other icons stay
+  where they are. With "Align icons to grid" (default on) the icon snaps to a cell and an icon already there takes
+  the old place. Right click on the background: "Sort by" (name, type, size) and "Group by" (none, type: apps,
+  folders, files, each group in a new column) rearrange all icons. New folder / New text document from the
+  background menu go where the menu was opened, or to the first free cell when an icon is there; a renamed file
+  keeps its place. The layout is kept per computer and user until
+  the player leaves the game. Right click on the background: Sort by, Group by, Align icons to grid, Refresh, New
   folder, New text document, Files, Terminal, Personalize, System info.
 - Windows: drag by the title bar; drop on the top edge to maximize, on the left or right edge to fill that half;
   double click the title bar to maximize or restore; resize from the bottom right corner. Ctrl+W closes.
 - Taskbar: start button, search, pinned Files / Browser / Email / Terminal, open windows (click to focus or
   minimize, right click to close), window size, tray (flash drive, network, power and battery; click opens the quick
   panel), clock (opens Calendar), show desktop (right edge: minimize or restore all windows).
-- Quick panel: network, power and storage state; Network, My Computer, Terminal, Theme, Window size, Settings;
-  Standby, Shut down, Sign out.
+- Quick panel: network, power and storage state ("Flash drives" opens My Computer); Network, My Computer, Terminal,
+  Theme, Window size, Settings; Standby, Shut down, Sign out.
 - Start menu: search box for apps and files (two letters or more; files in the home folder, or the whole computer
   while file browsing is on); Enter opens the first match. User, hostname and power menu.
 - Open / Save dialog (Notepad, Photos, Remote Access): places (Home, This computer, Drives, Temp), Up, New folder,
@@ -49,7 +55,7 @@ hear a switch sound at the device.
 
 | App | Use |
 | --- | --- |
-| My Computer | Volume cards with usage meters; flash drive open, mount, unmount, eject |
+| My Computer | Volume cards with usage meters; flash drive open, mount, unmount, eject; drives in the inventory with insert |
 | Files | Back / forward / up, address bar, search, navigation pane, large icons or details (sort by header), right-click menus, new folder / text document, cut / copy / paste, rename, delete to Recycle Bin, shortcuts, properties (owner, permissions), unlock. Keys: Enter, Backspace, Delete, F2, F5, arrows, Ctrl+C / X / V |
 | Notepad | New, Open..., Save, Save as... |
 | Photos | Media files with caption, Web address... (image or video), Paste base64..., Save as..., Set as background; videos: Play, Stop, Restart |

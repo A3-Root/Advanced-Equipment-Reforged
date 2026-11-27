@@ -580,6 +580,17 @@ class ROOT_AE3_GuiRouter
 					res.Insert(ROOT_AE3_Codec.JoinSub(row));
 				}
 
+				// Flash drives the player carries: "drive", id, name.
+				array<IEntity> drives = {};
+				if (!s.IsGmRoot())
+					ROOT_AE3_UsbManager.Drives(GetGame().GetPlayerManager().GetPlayerControlledEntity(s.m_iPlayerId), drives);
+
+				foreach (IEntity d : drives)
+				{
+					array<string> drow = {"drive", ROOT_AE3_UsbManager.DriveId(d).ToString(), ROOT_AE3_UsbManager.DriveName(d)};
+					res.Insert(ROOT_AE3_Codec.JoinSub(drow));
+				}
+
 				Reply(s, rid, true, cmd, res);
 				return;
 			}
@@ -601,6 +612,22 @@ class ROOT_AE3_GuiRouter
 					Msg(s, rid, false, cmd, "Not mounted.");
 				else
 					Msg(s, rid, true, cmd, "Unmounted.");
+
+				return;
+			}
+
+			case "vol_insert":
+			{
+				string reason = "That flash drive is not in your inventory.";
+				IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(s.m_iPlayerId);
+				IEntity drive;
+				if (!s.IsGmRoot())
+					drive = ROOT_AE3_UsbManager.FindDriveById(player, A(f, 2).ToInt());
+
+				if (drive && ROOT_AE3_UsbManager.Insert(c, player, reason, drive))
+					Msg(s, rid, true, cmd, "Drive inserted.");
+				else
+					Msg(s, rid, false, cmd, reason);
 
 				return;
 			}
@@ -658,7 +685,7 @@ class ROOT_AE3_GuiRouter
 			size = ROOT_AE3_Util.FormatSize(node.GetSize());
 
 		bool program = !ROOT_AE3_CommandRegistry.ProgramOf(node.m_sContent).IsEmpty();
-		array<string> e = {full, type, size, node.m_sOwner, node.PermString(), ROOT_AE3_Util.BoolStr(ROOT_AE3_Intel.IsMedia(node.m_sContent)), ROOT_AE3_Util.BoolStr(ROOT_AE3_Intel.IsLocked(node.m_sContent)), ROOT_AE3_Util.BoolStr(program)};
+		array<string> e = {full, type, size, node.m_sOwner, node.PermString(), ROOT_AE3_Util.BoolStr(ROOT_AE3_Intel.IsMedia(node.m_sContent)), ROOT_AE3_Util.BoolStr(ROOT_AE3_Intel.IsLocked(node.m_sContent)), ROOT_AE3_Util.BoolStr(program), node.GetSize().ToString()};
 		return ROOT_AE3_Codec.JoinSub(e);
 	}
 

@@ -50,6 +50,9 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	void Destroy()
 	{
 		ReleaseHandlers();
+		if (GetGame())
+			GetGame().GetCallqueue().Remove(Focus);
+
 		if (m_wRoot)
 			m_wRoot.RemoveFromHierarchy();
 	}
@@ -279,7 +282,8 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 
 		c.Send(ROOT_AE3_EMsg.TERM_LINE, line);
 		m_sLastSynced = "";
-		Focus();
+		// Write mode ends after the change event: activated again next frame.
+		GetGame().GetCallqueue().CallLater(Focus, 0, false);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -305,6 +309,10 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 	void Update(float dt)
 	{
 		m_fSincePrompt += dt;
+		// Typing goes to the input line whenever no button is held.
+		if (m_wInput && !m_wInput.IsInWriteMode() && GetGame().GetInputManager().GetActionValue("MouseLeft") <= 0)
+			Focus();
+
 		m_fBlink += dt;
 		if (m_fBlink >= 0.5)
 		{
@@ -353,7 +361,8 @@ class ROOT_AE3_TerminalView : ROOT_AE3_UiListener
 				return false;
 
 			// Write mode ends without Enter when the box is refocused after a prompt: no empty line then.
-			if (m_wInput && m_wInput.GetText().IsEmpty() && m_fSincePrompt < 0.6)
+			bool enter = Debug.KeyState(KeyCode.KC_RETURN) != 0 || Debug.KeyState(KeyCode.KC_NUMPADENTER) != 0;
+			if (m_wInput && m_wInput.GetText().IsEmpty() && (m_fSincePrompt < 0.6 || !enter))
 				return true;
 
 			Submit();

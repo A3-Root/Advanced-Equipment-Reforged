@@ -330,7 +330,37 @@ class ROOT_AE3_Manager
 		}
 
 		dev.SetDeviceName(name);
+		ROOT_AE3_UsbDriveComponent drive = ROOT_AE3_UsbDriveComponent.Of(owner);
+		if (drive)
+			drive.OnRenamed(dev.GetCustomName());
+
 		f[1] = "Renamed to " + dev.GetDeviceName() + ".";
+		ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Server: a flash drive chosen by the player goes into the computer (placed within reach or carried).
+	protected void InsertDrive(int playerId, RplId deviceId, int driveId)
+	{
+		ROOT_AE3_DeviceComponent dev = ROOT_AE3_DeviceComponent.FromRplId(deviceId);
+		IEntity player = GetGame().GetPlayerManager().GetPlayerControlledEntity(playerId);
+		if (!dev || !player || dev.IsHidden() || ROOT_AE3_Util.IsDestroyed(dev.GetOwner()))
+			return;
+
+		ROOT_AE3_ComputerComponent c = ROOT_AE3_ComputerComponent.Of(dev.GetOwner());
+		if (!c)
+			return;
+
+		bool carried = ROOT_AE3_Util.CarriedBy(dev.GetOwner(), player);
+		if (!carried && (ROOT_AE3_Util.IsCarried(dev.GetOwner()) || vector.Distance(player.GetOrigin(), dev.GetOwner().GetOrigin()) > USE_RANGE + 1))
+			return;
+
+		string reason = "That flash drive is not in your inventory.";
+		IEntity drive = ROOT_AE3_UsbManager.FindDriveById(player, driveId);
+		if (drive && ROOT_AE3_UsbManager.Insert(c, player, reason, drive))
+			return;
+
+		array<string> f = {"Advanced Equipment", reason};
 		ROOT_AE3_Net.SendToPlayer(playerId, ROOT_AE3_EMsg.NOTIFY, ROOT_AE3_Codec.Join(f));
 	}
 
@@ -538,6 +568,17 @@ class ROOT_AE3_Manager
 
 			m_mLastRename.Set(playerId, nowCable);
 			TakeCable(playerId, deviceId, data.ToFloat());
+			return;
+		}
+
+		if (op == ROOT_AE3_EMsg.USB_INSERT)
+		{
+			float nowUsb = GetGame().GetWorld().GetWorldTime() / 1000.0;
+			if (nowUsb - m_mLastRename.Get(playerId) < 0.5)
+				return;
+
+			m_mLastRename.Set(playerId, nowUsb);
+			InsertDrive(playerId, deviceId, data.ToInt());
 			return;
 		}
 

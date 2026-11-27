@@ -21,7 +21,12 @@ class ROOT_AE3_UseComputerAction : ROOT_AE3_UserActionBase
 		if (m_iMode == 1 && iface == 0)
 			return false;
 
-		return true;
+		ROOT_AE3_LidComponent lid = ROOT_AE3_LidComponent.Of(GetOwner());
+		if (lid && !lid.IsOpen())
+			return false;
+
+		int screen = c.GetScreen();
+		return screen != ROOT_AE3_EScreen.OFF && screen != ROOT_AE3_EScreen.SHUTDOWN && screen != ROOT_AE3_EScreen.CRASHED;
 	}
 
 	//------------------------------------------------------------------------------------------------

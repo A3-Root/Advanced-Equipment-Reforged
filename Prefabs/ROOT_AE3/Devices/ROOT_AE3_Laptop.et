@@ -49,8 +49,8 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    m_iUsbPorts 2
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB11622A5D}" {
-   m_vNetPort 0.08 0.011 -0.121
-   m_vPowerPort -0.08 0.011 -0.121
+   m_vNetPort 0.08 0.011 0.121
+   m_vPowerPort -0.08 0.011 0.121
   }
   ROOT_AE3_DeviceComponent "{6AF041BB11625293}" {
    m_eType LAPTOP
@@ -130,19 +130,10 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    }
   }
   ActionsManagerComponent "{508AB5952B584B2E}" {
-   ActionContexts {
-    UserActionContext "{6AF041BB11622AF0}" {
-     ContextName "ae3"
-     Position PointInfo "{6AF041BB11622ADE}" {
-      Offset 0 0.05 -0.05
-     }
-     Radius 0.6
-    }
-   }
    additionalActions {
     ROOT_AE3_LidAction "{6AF041BB11622AA7}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622AB8}" {
       Name "ROOT_AE3_LidAction"
@@ -150,7 +141,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_UseComputerAction "{6AF041BB11622A88}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622A83}" {
       Name "ROOT_AE3_UseComputerAction"
@@ -159,7 +150,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_UseComputerAction "{6AF041BB11622A9A}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622A96}" {
       Name "ROOT_AE3_UseComputerAction"
@@ -168,7 +159,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_PowerAction "{6AF041BB11622561}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622579}" {
       Name "ROOT_AE3_PowerAction"
@@ -176,7 +167,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_StandbyAction "{6AF041BB1162254A}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622547}" {
       Name "ROOT_AE3_StandbyAction"
@@ -184,7 +175,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_ConnectPowerAction "{6AF041BB11622559}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622552}" {
       Name "ROOT_AE3_ConnectPowerAction"
@@ -192,7 +183,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_UsbAction "{6AF041BB11622527}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622521}" {
       Name "ROOT_AE3_UsbAction"
@@ -200,7 +191,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_UsbAction "{6AF041BB1162253C}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622538}" {
       Name "ROOT_AE3_UsbAction"
@@ -209,7 +200,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_ConnectNetworkAction "{6AF0880E11EAA595}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF0880E11EAA46C}" {
       Name "ROOT_AE3_ConnectNetworkAction"
@@ -217,7 +208,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_StatusAction "{6AF041BB1162250A}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF041BB11622506}" {
       Name "ROOT_AE3_StatusAction"
@@ -225,7 +216,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
     ROOT_AE3_RenameAction "{6AF4C42611150A40}" {
      ParentContextList {
-      "ae3"
+      "default"
      }
      UIInfo UIInfo "{6AF4C42611150A58}" {
       Name "ROOT_AE3_RenameAction"

@@ -1,5 +1,5 @@
 //! Volumes as cards: the local disk and each USB port with its drive, state, usage meter and Open, Mount /
-//! Unmount and Eject buttons.
+//! Unmount and Eject buttons; below, the flash drives in the player's inventory with Insert.
 class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 {
 	protected static const int ID_REFRESH = 1;
@@ -8,6 +8,9 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 	protected static const int A_MOUNT = 1;
 	protected static const int A_UNMOUNT = 2;
 	protected static const int A_EJECT = 3;
+	protected static const int ID_INSERT = 1000;	//!< + carried drive
+
+	protected ref array<ref array<string>> m_aDrives = {};	//!< Carried drives: "drive", id, name
 
 	protected ref array<ref array<string>> m_aVolumes = {};	//!< id, path, device, state, used text, bytes, capacity MB
 
@@ -26,7 +29,7 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 	//------------------------------------------------------------------------------------------------
 	override vector GetSize()
 	{
-		return Vector(640, 440, 0);
+		return Vector(640, 540, 0);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -54,6 +57,7 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 
 		float cw = (w - 36) * 0.5;
 		float ch = 112;
+		float bottom = top;
 		foreach (int i, array<string> v : m_aVolumes)
 		{
 			int col = i % 2;
@@ -64,6 +68,27 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 				break;
 
 			BuildCard(i, v, x, y, cw, ch);
+			bottom = y + ch;
+		}
+
+		float dy = bottom + 16;
+		ROOT_AE3_UI.Text(GetContent(), 12, dy, w - 24, 18, ROOT_AE3_Theme.Caption("Flash drives in your inventory"), 13, ROOT_AE3_Theme.Muted());
+		dy += 24;
+		if (m_aDrives.IsEmpty())
+		{
+			ROOT_AE3_UI.Text(GetContent(), 12, dy, w - 24, 18, "None", 13, ROOT_AE3_Theme.Muted());
+			return;
+		}
+
+		foreach (int k, array<string> d : m_aDrives)
+		{
+			if (dy + 32 > h)
+				break;
+
+			ROOT_AE3_UI.Icon(GetContent(), 14, dy + 4, 20, "drive");
+			ROOT_AE3_UI.Text(GetContent(), 42, dy + 6, w - 170, 18, d[2], 14, ROOT_AE3_Theme.Text());
+			Btn(w - 112, dy + 2, 100, 26, "Insert", ID_INSERT + k);
+			dy += 34;
 		}
 	}
 
@@ -152,9 +177,16 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 		}
 
 		m_aVolumes.Clear();
+		m_aDrives.Clear();
 		foreach (string p : payload)
 		{
 			array<string> e = ROOT_AE3_Codec.SplitSub(p);
+			if (e.Count() >= 3 && e[0] == "drive")
+			{
+				m_aDrives.Insert(e);
+				continue;
+			}
+
 			if (e.Count() < 5)
 				continue;
 
@@ -175,6 +207,12 @@ class ROOT_AE3_AppMyComputer : ROOT_AE3_App
 		if (id == ID_REFRESH)
 		{
 			Request0("vol_list");
+			return true;
+		}
+
+		if (id >= ID_INSERT && id < ID_INSERT + m_aDrives.Count())
+		{
+			Request1("vol_insert", m_aDrives[id - ID_INSERT][1]);
 			return true;
 		}
 

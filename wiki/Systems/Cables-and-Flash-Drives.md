@@ -31,10 +31,14 @@ the right hand of the local player.
 
 ## Flash drives
 
-- "Insert flash drive" plugs the first drive from the inventory into a free USB port; the drive prop shows in the port
-  and stays attached while the laptop is carried. The drive is mounted at `/mnt/usbN`.
+- "Insert flash drive" (shown with a carried drive and a free port) plugs a drive from the inventory into a free USB
+  port; with several drives a form asks which one. The drive prop shows in the port and stays attached while the
+  laptop is carried. The drive is mounted at `/mnt/usbN`.
+- My Computer lists the drives in the player's inventory with "Insert", also for a laptop used from the inventory.
 - "Eject flash drive" (highest occupied port) or My Computer "Eject" (any port) put the drive back into the inventory
   or onto the ground with its files.
+- Inventory "Use" on a flash drive (also router, battery pack) opens the name form; a drive's name is its label in
+  `lsusb`, My Computer and the drive choice form, and stays with the drive when it is ejected.
 - `lsusb` lists ports, `mount usbN` / `umount usbN` mount and unmount. Copies to a drive run at `m_fTransferSpeedUsb`.
 - A drive holds its capacity (`m_iCapacity`, 8192 MB) and at most 500,000 characters.
 - Files are added in the World Editor (`ROOT_AE3_UsbDriveComponent`), by the Game Master (add file / directory / image)

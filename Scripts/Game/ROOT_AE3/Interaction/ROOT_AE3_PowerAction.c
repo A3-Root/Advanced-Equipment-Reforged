@@ -5,7 +5,7 @@ class ROOT_AE3_PowerAction : ROOT_AE3_UserActionBase
 	override bool CanBeShownScript(IEntity user)
 	{
 		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(GetOwner());
-		return p && IsPlaced(GetOwner()) && !ROOT_AE3_Util.IsDestroyed(GetOwner());
+		return p && IsPlaced(GetOwner()) && !ROOT_AE3_Util.IsDestroyed(GetOwner()) && CanBePerformedScript(user);
 	}
 
 	//------------------------------------------------------------------------------------------------
