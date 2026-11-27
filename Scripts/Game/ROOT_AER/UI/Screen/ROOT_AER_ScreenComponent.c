@@ -19,6 +19,8 @@ class ROOT_AER_ScreenComponent : ScriptComponent
 	protected bool m_bDirty = true;
 	protected int m_iRenderedScreen = -1;
 	protected int m_iRenderedDesign = -1;
+	protected int m_iRenderedStyle = -1;
+	protected bool m_bRenderedLogin;
 	protected TextWidget m_wText;
 	protected static int s_iActive;
 	static const int MAX_SCREENS = 4;	//!< Render-target screens one client draws at the same time
@@ -146,7 +148,9 @@ class ROOT_AER_ScreenComponent : ScriptComponent
 		m_bDirty = false;
 		int design = c.GetDesign();
 		int screenMode = c.GetScreen();
-		if (m_wText && screenMode == m_iRenderedScreen && design == m_iRenderedDesign)
+		int style = c.GetScreenStyle();
+		bool login = IsLogin(c);
+		if (m_wText && screenMode == m_iRenderedScreen && design == m_iRenderedDesign && style == m_iRenderedStyle && login == m_bRenderedLogin)
 		{
 			UpdateText(c);
 			return;
@@ -154,6 +158,8 @@ class ROOT_AER_ScreenComponent : ScriptComponent
 
 		m_iRenderedScreen = screenMode;
 		m_iRenderedDesign = design;
+		m_iRenderedStyle = style;
+		m_bRenderedLogin = login;
 		m_wText = null;
 		ROOT_AER_UI.Clear(m_wScreen);
 		float w = 1024;
@@ -191,10 +197,28 @@ class ROOT_AER_ScreenComponent : ScriptComponent
 
 			case ROOT_AER_EScreen.DESKTOP:
 			{
-				ROOT_AER_UI.Rect(m_wScreen, 0, 0, w, h, ROOT_AER_UI.Rgb(0.11, 0.14, 0.2));
-				ROOT_AER_UI.Rect(m_wScreen, 0, h - 40, w, 40, ROOT_AER_UI.Rgb(0.08, 0.08, 0.1));
-				ROOT_AER_UI.Rect(m_wScreen, 6, h - 34, 110, 28, ROOT_AER_UI.Rgb(0.91, 0.33, 0.13));
-				m_wText = ROOT_AER_UI.Text(m_wScreen, 40, 40, w - 80, h - 120, "", 30, Color.FromInt(Color.WHITE), false, true);
+				if (login)
+				{
+					BuildLogin(c, style, w, h);
+					return;
+				}
+
+				if (style == 1)
+				{
+					ROOT_AER_UI.Rect(m_wScreen, 0, 0, w, h, ROOT_AER_UI.Rgb(0.03, 0.06, 0.04));
+					ROOT_AER_UI.Rect(m_wScreen, 0, h - 40, w, 40, ROOT_AER_UI.Rgb(0.05, 0.1, 0.07));
+					ROOT_AER_UI.Rect(m_wScreen, 0, h - 40, w, 2, ROOT_AER_UI.Rgb(0.45, 0.85, 0.55));
+					ROOT_AER_UI.Icon(m_wScreen, 10, h - 34, 28, "g_start_tac", ROOT_AER_UI.Rgb(0.45, 0.85, 0.55));
+					m_wText = ROOT_AER_UI.Text(m_wScreen, 40, 40, w - 80, h - 120, "", 28, ROOT_AER_UI.Rgb(0.6, 0.95, 0.7), true, true);
+				}
+				else
+				{
+					ROOT_AER_UI.Rect(m_wScreen, 0, 0, w, h, ROOT_AER_UI.Rgb(0.11, 0.2, 0.36));
+					ROOT_AER_UI.Rect(m_wScreen, 0, h - 40, w, 40, ROOT_AER_UI.Rgb(0.08, 0.09, 0.12));
+					ROOT_AER_UI.Icon(m_wScreen, 10, h - 36, 32, "start");
+					m_wText = ROOT_AER_UI.Text(m_wScreen, 40, 40, w - 80, h - 120, "", 30, Color.FromInt(Color.WHITE), false, true);
+				}
+
 				UpdateText(c);
 				return;
 			}
@@ -203,6 +227,50 @@ class ROOT_AER_ScreenComponent : ScriptComponent
 		ROOT_AER_UI.Rect(m_wScreen, 0, 0, w, h, ROOT_AER_TerminalDesigns.Get(design, 1));
 		m_wText = ROOT_AER_UI.Text(m_wScreen, 16, 12, w - 32, h - 24, "", 26, ROOT_AER_TerminalDesigns.Get(design, 3), true, false);
 		UpdateText(c);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Desktop sign-in mirror: "<hostname>\nLogin".
+	protected static bool IsLogin(ROOT_AER_ComputerComponent c)
+	{
+		return c.GetScreen() == ROOT_AER_EScreen.DESKTOP && c.GetScreenText().EndsWith("\nLogin");
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Sign-in screen of the computer's style with its hostname.
+	protected void BuildLogin(ROOT_AER_ComputerComponent c, int style, float w, float h)
+	{
+		string host = c.GetScreenText();
+		host = host.Substring(0, host.Length() - 6);
+		float cx = w * 0.5;
+		if (style == 1)
+		{
+			Color ink = ROOT_AER_UI.Rgb(0.45, 0.85, 0.55);
+			ROOT_AER_UI.Rect(m_wScreen, 0, 0, w, h, ROOT_AER_UI.Rgb(0.03, 0.06, 0.04));
+			ROOT_AER_UI.Rect(m_wScreen, cx - 260, 120, 520, 2, ink);
+			ROOT_AER_UI.Rect(m_wScreen, cx - 260, 470, 520, 2, ink);
+			ROOT_AER_UI.Icon(m_wScreen, cx - 48, 150, 96, "g_start_tac", ink);
+			ROOT_AER_UI.Text(m_wScreen, 0, 262, w, 40, "RADIX FIELD SYSTEMS", 30, ink, true, false, 1);
+			string node = host;
+			node.ToUpper();
+			ROOT_AER_UI.Text(m_wScreen, 0, 304, w, 30, "NODE " + node, 24, ROOT_AER_UI.Rgb(0.6, 0.95, 0.7), true, false, 1);
+			ROOT_AER_UI.Rect(m_wScreen, cx - 200, 360, 400, 44, ink);
+			ROOT_AER_UI.Rect(m_wScreen, cx - 198, 362, 396, 40, ROOT_AER_UI.Rgb(0.03, 0.06, 0.04));
+			ROOT_AER_UI.Text(m_wScreen, 0, 368, w, 30, "[ AUTHENTICATE ]", 24, ink, true, false, 1);
+			ROOT_AER_UI.Text(m_wScreen, 0, 490, w, 26, "AUTHORIZED PERSONNEL ONLY", 18, ROOT_AER_UI.Rgb(0.3, 0.55, 0.36), true, false, 1);
+			return;
+		}
+
+		ROOT_AER_UI.Rect(m_wScreen, 0, 0, w, h, ROOT_AER_UI.Rgb(0.11, 0.2, 0.36));
+		ROOT_AER_UI.Rect(m_wScreen, 0, h * 0.5, w, h * 0.5, ROOT_AER_UI.Rgb(0.08, 0.15, 0.28));
+		ROOT_AER_UI.Icon(m_wScreen, cx - 64, 120, 128, "user");
+		ROOT_AER_UI.Text(m_wScreen, 0, 264, w, 44, host, 34, Color.FromInt(Color.WHITE), false, false, 1);
+		ROOT_AER_UI.Rect(m_wScreen, cx - 180, 330, 360, 44, ROOT_AER_UI.Rgb(1, 1, 1, 0.9));
+		ROOT_AER_UI.Text(m_wScreen, cx - 168, 338, 336, 30, "Password", 24, ROOT_AER_UI.Rgb(0.45, 0.45, 0.48));
+		ROOT_AER_UI.Rect(m_wScreen, cx - 180, 390, 360, 44, ROOT_AER_UI.Rgb(0.16, 0.45, 0.9));
+		ROOT_AER_UI.Text(m_wScreen, 0, 398, w, 30, "Sign in", 24, Color.FromInt(Color.WHITE), false, false, 1);
+		ROOT_AER_UI.Icon(m_wScreen, 24, h - 72, 48, "logo");
+		ROOT_AER_UI.Text(m_wScreen, 84, h - 62, 400, 30, "Radix RT-89", 22, ROOT_AER_UI.Rgb(0.85, 0.9, 1));
 	}
 
 	//------------------------------------------------------------------------------------------------

@@ -36,7 +36,7 @@ Changes are sent to all players.
 | `m_iUiMaxTransmitLines` | | 22 | Lines mirrored to the screen |
 | `m_fUiKeystrokeSyncInterval` | | 0.3 | Interval in s for mirroring the typed line |
 | `m_bUiEnableChangeDetection` | | 1 | Mirror only changed screens |
-| `m_sTerminalDialogTitle`, `m_sTerminalBiosVersion`, `m_sTerminalCopyright`, `m_sTerminalBootMessage`, `m_sTerminalTipMessage`, `m_bTerminalShowAsciiArt`, `m_sTerminalTagline` | | FUBAR(TM) texts | Terminal title and boot header |
+| `m_sTerminalDialogTitle`, `m_sTerminalBiosVersion`, `m_sTerminalCopyright`, `m_sTerminalBootMessage`, `m_sTerminalTipMessage`, `m_bTerminalShowAsciiArt`, `m_sTerminalTagline` | | RADIX texts | Terminal title and boot header |
 | `m_fStartupTime` / `m_fShutdownTime` | `startup_time` / `shutdown_time` | 15 / 15 | Boot and shutdown duration in s |
 
 ## Desktop

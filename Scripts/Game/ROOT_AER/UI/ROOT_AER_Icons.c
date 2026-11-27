@@ -98,6 +98,8 @@ class ROOT_AER_Icons
 		s_mIcons.Insert("games_board", "{AA3BCC0E56D69473}UI/Textures/ROOT_AER/Icons/games_board.edds");
 		s_mIcons.Insert("info", "{5D30E0172E523695}UI/Textures/ROOT_AER/Icons/info.edds");
 		s_mIcons.Insert("logo", "{E693820BA87C8B7F}UI/Textures/ROOT_AER/Icons/logo.edds");
+		s_mIcons.Insert("start", "{70849521CB5D1C82}UI/Textures/ROOT_AER/Icons/start.edds");
+		s_mIcons.Insert("g_start_tac", "{B731FA669A153BDF}UI/Textures/ROOT_AER/Icons/g_start_tac.edds");
 		s_mIcons.Insert("mail", "{C8545DA12039FF07}UI/Textures/ROOT_AER/Icons/mail.edds");
 		s_mIcons.Insert("map", "{7280B2B746292665}UI/Textures/ROOT_AER/Icons/map.edds");
 		s_mIcons.Insert("messenger", "{1604823747E741D9}UI/Textures/ROOT_AER/Icons/messenger.edds");

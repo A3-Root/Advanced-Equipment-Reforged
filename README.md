@@ -1,6 +1,6 @@
 # Advanced Equipment Reforged (AER)
 
-Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Official port of Advanced Equipment from Arma 3 to Arma Reforger by its lead developer.
+Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Official port of Advanced Equipment from Arma 3 to Arma Reforger.
 
 A laptop runs armaOS: a terminal (command line), a desktop (windows and apps), or both. Computers have users, passwords, a permission-based filesystem, mail, chat, web pages, a calendar, CCTV, games and network tools. Routers build wireless and cabled networks; generators, batteries and solar panels power the devices through cables players carry and plug in. Game Masters and mission makers add intel, accounts and links in game, in the World Editor or by script.
 

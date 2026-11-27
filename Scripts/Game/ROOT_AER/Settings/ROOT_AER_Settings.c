@@ -74,25 +74,25 @@ class ROOT_AER_Settings
 	[Attribute("1", desc: "Mirror only when the screen content changed", category: "armaOS")]
 	bool m_bUiEnableChangeDetection;
 
-	[Attribute("FUBAR(TM) SYSTEMS", desc: "Terminal window title", category: "armaOS")]
+	[Attribute("RADIX FIELD SYSTEMS", desc: "Terminal window title", category: "armaOS")]
 	string m_sTerminalDialogTitle;
 
-	[Attribute("FUBAR(TM) BIOS v2.6.0 - Field-Hardened Edition", desc: "Header BIOS line", category: "armaOS")]
+	[Attribute("RADIX(R) BIOS v2.6.0 - RT-89 Field Edition", desc: "Header BIOS line", category: "armaOS")]
 	string m_sTerminalBiosVersion;
 
-	[Attribute("(c) 2026 Field-Unified Business Automation & Research Corp. All rights reserved.", desc: "Header copyright line", category: "armaOS")]
+	[Attribute("(c) 1989 Radix Corporation. All rights reserved.", desc: "Header copyright line", category: "armaOS")]
 	string m_sTerminalCopyright;
 
 	[Attribute("Initializing kernel... please wait...", desc: "Header boot line", category: "armaOS")]
 	string m_sTerminalBootMessage;
 
-	[Attribute("> Tip: FUBAR(TM) laptops are drop-tested to military standard. Once.", desc: "Header tip line", category: "armaOS")]
+	[Attribute("> Tip: Radix laptops are designed to survive a 2m drop with data surviving a 1m drop.", desc: "Header tip line", category: "armaOS")]
 	string m_sTerminalTipMessage;
 
 	[Attribute("1", desc: "Header ASCII art", category: "armaOS")]
 	bool m_bTerminalShowAsciiArt;
 
-	[Attribute("FUBAR(TM) Systems - Situation normal since 1987.", desc: "Header tagline", category: "armaOS")]
+	[Attribute("RADIX - We get to the root of the problem. Usually with a shovel.", desc: "Header tagline", category: "armaOS")]
 	string m_sTerminalTagline;
 
 	[Attribute("15", desc: "Boot duration in s", params: "3 15 1", category: "armaOS")]

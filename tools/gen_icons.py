@@ -329,9 +329,35 @@ def _info(img):
 
 @icon("logo")
 def _logo(img):
-    paint(img, mask(rr((40, 40, 472, 472), 96)), "#FF8A50", "#E2501C")
-    stroke(img, lambda d, c: thick_line(d, [(146, 384), (256, 128), (366, 384)], 52, c), "#FFFFFF")
-    stroke(img, lambda d, c: d.line((196, 300, 316, 300), fill=c, width=40), "#FFFFFF")
+    """Radix emblem: a stem splitting into five roots on a green tile."""
+    paint(img, mask(rr((32, 32, 480, 480), 104)), "#3FA672", "#185C3E")
+    w = "#FFFFFF"
+    stroke(img, lambda d, c: thick_line(d, [(256, 92), (256, 236)], 40, c), w)
+    roots = ([(256, 236), (196, 290), (132, 330), (112, 404)],
+             [(256, 236), (220, 320), (196, 420)],
+             [(256, 236), (256, 432)],
+             [(256, 236), (292, 320), (316, 420)],
+             [(256, 236), (316, 290), (380, 330), (400, 404)])
+    for r in roots:
+        stroke(img, lambda d, c, r=r: thick_line(d, r, 22, c), w)
+
+
+def hexagon(cx, cy, r, rot=90):
+    return [(cx + r * math.cos(math.radians(rot + 60 * k)), cy + r * math.sin(math.radians(rot + 60 * k))) for k in range(6)]
+
+
+@icon("start")
+def _start(img):
+    """Start button, civilian style: armaOS node mark (hexagon, hub and three spokes) on a blue tile."""
+    paint(img, mask(rr((32, 32, 480, 480), 104)), "#4FA3FF", "#1B5FD1")
+    hexa = hexagon(256, 256, 168)
+    stroke(img, lambda d, c: d.line(hexa + [hexa[0]], fill=c, width=34, joint="curve"), "#FFFFFF")
+    for k in (0, 2, 4):
+        x, y = hexa[k]
+        stroke(img, lambda d, c, x=x, y=y: thick_line(d, [(256, 256), (x, y)], 26, c), "#FFFFFF")
+        stroke(img, lambda d, c, x=x, y=y: d.ellipse((x - 30, y - 30, x + 30, y + 30), fill=c), "#FFFFFF")
+    stroke(img, lambda d, c: d.ellipse((206, 206, 306, 306), fill=c), "#FFFFFF")
+    paint(img, mask(ell((236, 236, 276, 276))), "#1B5FD1")
 
 
 @icon("user")
@@ -453,6 +479,8 @@ glyph("link", lambda d, c: (d.rounded_rectangle((64, 192, 292, 320), 64, outline
 glyph("newfolder", lambda d, c: (d.line((72, 132, 200, 132, 236, 176, 440, 176, 440, 420, 72, 420, 72, 132), fill=c, width=32, joint="curve"), thick_line(d, [(256, 236), (256, 360)], 30, c), thick_line(d, [(194, 298), (318, 298)], 30, c)))
 glyph("newfile", lambda d, c: (d.line((120, 72, 300, 72, 392, 164, 392, 440, 120, 440, 120, 72), fill=c, width=32, joint="curve"), thick_line(d, [(256, 220), (256, 360)], 30, c), thick_line(d, [(186, 290), (326, 290)], 30, c)))
 glyph("dot", lambda d, c: d.ellipse((176, 176, 336, 336), fill=c))
+# Start button, military style: hexagon frame with a reticle.
+glyph("start_tac", lambda d, c: (d.line(hexagon(256, 256, 216) + [hexagon(256, 256, 216)[0]], fill=c, width=30, joint="curve"), d.ellipse((136, 136, 376, 376), outline=c, width=26), [thick_line(d, p, 26, c) for p in ([(256, 64), (256, 176)], [(256, 336), (256, 448)], [(64, 256), (176, 256)], [(336, 256), (448, 256)])], d.ellipse((232, 232, 280, 280), fill=c)))
 
 
 def main():

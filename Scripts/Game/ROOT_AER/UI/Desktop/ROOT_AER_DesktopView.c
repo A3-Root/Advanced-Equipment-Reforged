@@ -1253,7 +1253,7 @@ class ROOT_AER_DesktopView : ROOT_AER_GuiReplyHandler
 		if (m_wMenu)
 			startBg = ROOT_AER_Theme.Select();
 
-		ROOT_AER_UI.IconButton(m_wTaskbar, 6, 4, 44, BAR_H - 8, "logo", ID_START, m_TaskbarListener, 26, null, startBg, hover);
+		ROOT_AER_UI.IconButton(m_wTaskbar, 6, 4, 44, BAR_H - 8, "start", ID_START, m_TaskbarListener, 28, null, startBg, hover);
 		float x = 56;
 		if (m_fW >= 960)
 		{
@@ -1386,7 +1386,9 @@ class ROOT_AER_DesktopView : ROOT_AER_GuiReplyHandler
 			startFg = ROOT_AER_Theme.OnAccent();
 		}
 
-		ROOT_AER_UI.Button(m_wTaskbar, 6, 8, 76, BAR_H - 16, "Menu", ID_START, m_TaskbarListener, startBg, startFg, 14);
+		ROOT_AER_UI.Button(m_wTaskbar, 6, 8, 76, BAR_H - 16, "", ID_START, m_TaskbarListener, startBg, startFg, 14);
+		ROOT_AER_UI.Icon(m_wTaskbar, 14, 8 + (BAR_H - 16 - 20) * 0.5, 20, "g_start_tac", startFg);
+		ROOT_AER_UI.Text(m_wTaskbar, 40, 8, 40, BAR_H - 16, "MENU", 13, startFg, true).SetTextOffset(0, (BAR_H - 16 - 13) * 0.5 - 2);
 		ROOT_AER_UI.Button(m_wTaskbar, 88, 8, 44, BAR_H - 16, "/", ID_SEARCHBAR, m_TaskbarListener, ROOT_AER_Theme.Panel(), ink, 14);
 		float x = 140;
 

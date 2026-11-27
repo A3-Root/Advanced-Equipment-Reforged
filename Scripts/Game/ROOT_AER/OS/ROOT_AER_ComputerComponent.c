@@ -69,6 +69,9 @@ class ROOT_AER_ComputerComponent : ScriptComponent
 	[RplProp(onRplName: "OnScreenRpl")]
 	protected int m_iScreen;
 
+	[RplProp(onRplName: "OnScreenRpl")]
+	protected int m_iScreenStyle;		//!< Desktop style shown on the screen (GetUiStyle when the screen was set)
+
 	protected string m_sScreenText;		//!< Sent by RPC to players in screen range only (ROOT_AER_EMsg.SCREEN)
 	protected string m_sScreenInput;
 	protected ref array<int> m_aViewers = {};
@@ -675,6 +678,7 @@ class ROOT_AER_ComputerComponent : ScriptComponent
 	{
 		SetPref("", "ui_style", Math.ClampInt(style, -1, 1).ToString());
 		ROOT_AER_Manager.Get().ResendSessionsOf(this);
+		SetScreen(m_iScreen);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -1098,8 +1102,7 @@ class ROOT_AER_ComputerComponent : ScriptComponent
 						m_Terminal.m_eInput = ROOT_AER_ETermInput.LOGIN;
 					}
 
-					SetScreen(ROOT_AER_EScreen.TERMINAL);
-					PushMirror(true);
+					ShowIdle();
 					break;
 				}
 
@@ -1191,8 +1194,7 @@ class ROOT_AER_ComputerComponent : ScriptComponent
 		m_bBooting = false;
 		ROOT_AER_Shell.AddHeader(m_Terminal);
 		m_Terminal.m_eInput = ROOT_AER_ETermInput.LOGIN;
-		SetScreen(ROOT_AER_EScreen.TERMINAL);
-		PushMirror(true);
+		ShowIdle();
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -1277,6 +1279,29 @@ class ROOT_AER_ComputerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! 0 civilian, 1 military.
+	int GetScreenStyle()
+	{
+		return m_iScreenStyle;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority: screen of a running computer nobody uses: the desktop sign-in of its style, or the terminal on
+	//! terminal-only computers.
+	void ShowIdle()
+	{
+		if (GetInterfaceMode() == 0)
+		{
+			SetScreen(ROOT_AER_EScreen.TERMINAL);
+			PushMirror(true);
+			return;
+		}
+
+		SetScreen(ROOT_AER_EScreen.DESKTOP);
+		SetDesktopMirror(GetHostname() + "\nLogin");
+	}
+
+	//------------------------------------------------------------------------------------------------
 	string GetScreenText()
 	{
 		return m_sScreenText;
@@ -1292,10 +1317,11 @@ class ROOT_AER_ComputerComponent : ScriptComponent
 	//! Authority.
 	void SetScreen(ROOT_AER_EScreen screen)
 	{
-		if (m_iScreen == screen)
+		if (m_iScreen == screen && m_iScreenStyle == GetUiStyle())
 			return;
 
 		m_iScreen = screen;
+		m_iScreenStyle = GetUiStyle();
 		Replication.BumpMe();
 		OnScreenRpl();
 	}

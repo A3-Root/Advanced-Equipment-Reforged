@@ -276,12 +276,12 @@ class ROOT_AER_Session : Managed
 			}
 
 			ROOT_AER_GameTableSystem.Get().OnSessionClosed(this);
-			if (m_Computer.GetScreen() == ROOT_AER_EScreen.DESKTOP)
-				m_Computer.SetScreen(ROOT_AER_EScreen.TERMINAL);
-
 			m_Computer.SetOperator(0);
 			m_Computer.SetScreenInput("");
-			m_Computer.PushMirror(true);
+			if (m_Computer.GetScreen() == ROOT_AER_EScreen.DESKTOP || m_Computer.GetScreen() == ROOT_AER_EScreen.TERMINAL)
+				m_Computer.ShowIdle();
+			else
+				m_Computer.PushMirror(true);
 		}
 	}
 
