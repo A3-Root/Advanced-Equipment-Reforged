@@ -3,7 +3,7 @@ name: release
 # Runs on every push (any branch, including merge commits), every pull request and on demand.
 # - Publish: a push to main where any pushed commit message contains RELEASE. Creates tag vX.Y.Z and a
 #   GitHub release from the top version section of releases/CHANGELOG.md, with a source zip
-#   (ROOT_AE3-X.Y.Z.zip from git archive) attached.
+#   (ROOT_AER-X.Y.Z.zip from git archive) attached.
 # - Preview: pull requests or pushes to other branches mentioning RELEASE get a dry run.
 on:
   push:

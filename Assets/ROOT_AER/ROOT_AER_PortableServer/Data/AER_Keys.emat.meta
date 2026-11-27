@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{A3612CA74768129F}Assets/ROOT_AER/ROOT_AER_PortableServer/Data/AER_Keys.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

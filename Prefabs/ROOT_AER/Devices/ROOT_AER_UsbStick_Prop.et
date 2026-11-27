@@ -1,0 +1,26 @@
+GenericEntity {
+ ID "6AF041BB11629130"
+ components {
+  MeshObject "{6AF041BB11629F38}" {
+   Object "{C886A982424854B3}Assets/ROOT_AER/ROOT_AER_UsbStick/ROOT_AER_UsbStick.xob"
+   Materials {
+    MaterialAssignClass "{6AF4C426111A6467}" {
+     SourceMaterial "AER_Accent"
+     AssignedMaterial "{A423E78DC18880D1}Assets/ROOT_AER/Data/AER_Accent_Red.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162916B}" {
+     SourceMaterial "AER_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AER/Data/AER_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162914E}" {
+     SourceMaterial "AER_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AER/Data/AER_Metal.emat"
+    }
+   }
+  }
+  RplComponent "{6AF041BB11629120}" {
+  }
+  Hierarchy "{6AF041BB11629134}" {
+  }
+ }
+}

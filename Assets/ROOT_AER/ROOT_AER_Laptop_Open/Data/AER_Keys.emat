@@ -1,0 +1,5 @@
+MatPBRBasic {
+ Color 0.03 0.03 0.034 1
+ BCRMap "{A6FAD38EA67B4E72}Assets/ROOT_AER/Data/Textures/AER_Keys_BCR.edds"
+ NMOMap "{678C7AE394DD0CBD}Assets/_SharedData/Plastic/ST_Plastic_Fine01_1m_NMO.edds"
+}

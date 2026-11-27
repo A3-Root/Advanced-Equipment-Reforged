@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{5779B11B3998ADC5}Assets/ROOT_AER/ROOT_AER_SolarPanel/Data/AER_Metal.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

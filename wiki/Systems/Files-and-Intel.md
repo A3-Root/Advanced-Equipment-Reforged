@@ -13,16 +13,16 @@ Permissions are six characters: owner read, write, execute, then everyone read, 
 
 | Way | Where |
 | --- | --- |
-| World Editor | `ROOT_AE3_SetupComponent` (computers), `ROOT_AE3_UsbDriveComponent` (flash drives) |
+| World Editor | `ROOT_AER_SetupComponent` (computers), `ROOT_AER_UsbDriveComponent` (flash drives) |
 | Game Master | "Add file", "Add directory", "Add image" |
-| Script | `ROOT_AE3_API.AddFile`, `AddDirectory`, `AddMedia` |
+| Script | `ROOT_AER_API.AddFile`, `AddDirectory`, `AddMedia` |
 
 A file can be locked with a password (`unlock FILE PASSWORD` prints it, `unlock -p` removes the lock), encrypted with
 one of 15 ciphers (see [Encryption](Encryption.md)), or both. "Shown size" replaces the size `ls -l` and Files show.
 
 ## Images and videos
 
-Media files hold `AE3_MEDIA|<kind>|<source>|<caption>` and open in Photos: kind `image` (texture resource), `url`
+Media files hold `AER_MEDIA|<kind>|<source>|<caption>` and open in Photos: kind `image` (texture resource), `url`
 (http or https address of a PNG, JPEG or GIF), `video` (http or https address of a video file) or `base64` (image bytes
 as base64, `data:` prefix allowed). `AddMedia` and "Add image" pick the kind from the source.
 
@@ -42,5 +42,5 @@ by the World Editor, Game Master or `AddBrowserHistory`.
 ## Calendar and CCTV
 
 Calendar events (date, time, title, details, location) come from the World Editor, Game Master or
-`AddCalendarEvent`. Cameras registered with `ROOT_AE3_API.RegisterCamera(camera, name)` show in the CCTV app; feeds of
+`AddCalendarEvent`. Cameras registered with `ROOT_AER_API.RegisterCamera(camera, name)` show in the CCTV app; feeds of
 cameras outside the viewer's streaming range stay dark.

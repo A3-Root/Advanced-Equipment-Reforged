@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{AEB3566B6C543EA3}Prefabs/ROOT_AER/Devices/Variants/ROOT_AER_PortableServer_Olive.et"
+ Configurations {
+  EntityTemplateResourceClass PC {
+  }
+  EntityTemplateResourceClass XBOX_ONE : PC {
+  }
+  EntityTemplateResourceClass XBOX_SERIES : PC {
+  }
+  EntityTemplateResourceClass PS4 : PC {
+  }
+  EntityTemplateResourceClass PS5 : PC {
+  }
+  EntityTemplateResourceClass HEADLESS : PC {
+  }
+ }
+}

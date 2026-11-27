@@ -1,0 +1,228 @@
+GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
+ ID "6AF041BB116225EF"
+ components {
+  SoundComponent "{6AF082F611E06A1C}" {
+   Filenames {
+    "{5FC6F9522FDC06B3}Sounds/Props/Civilian/Computer_E_01/Props_Computer_E_01.acp"
+   }
+  }
+  MeshObject "{6AF041BB116248DE}" {
+   Object "{E124D93187244507}Assets/ROOT_AER/ROOT_AER_Laptop_Open/ROOT_AER_Laptop_Open.xob"
+   Materials {
+    MaterialAssignClass "{6AF4C42611150E29}" {
+     SourceMaterial "AER_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AER/Data/AER_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF4C42611150E34}" {
+     SourceMaterial "AER_LED_Blue"
+     AssignedMaterial "{83593EBE15E53DEF}Assets/ROOT_AER/Data/AER_LED_Blue.emat"
+    }
+    MaterialAssignClass "{6AF041BB11625246}" {
+     SourceMaterial "AER_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AER/Data/AER_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB11625223}" {
+     SourceMaterial "AER_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AER/Data/AER_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162523A}" {
+     SourceMaterial "AER_Keys"
+     AssignedMaterial "{8F260F3F2AD19A41}Assets/ROOT_AER/Data/AER_Keys.emat"
+    }
+    MaterialAssignClass "{6AF041BB11625234}" {
+     SourceMaterial "AER_Screen"
+     AssignedMaterial "{08164CE68094C8D6}Assets/ROOT_AER/Data/AER_Screen.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162520C}" {
+     SourceMaterial "AER_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AER/Data/AER_LED.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162521E}" {
+     SourceMaterial "AER_Rubber"
+     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AER/Data/AER_Rubber.emat"
+    }
+   }
+  }
+  ROOT_AER_ComputerComponent "{6AF041BB11622D53}" {
+   m_vUsb0 -0.171 0.011 0
+   m_vUsb1 0.171 0.011 0
+   m_iUsbPorts 2
+  }
+  ROOT_AER_ConnectionComponent "{6AF041BB11622A5D}" {
+   m_vNetPort 0.08 0.011 0.121
+   m_vPowerPort -0.08 0.011 0.121
+  }
+  ROOT_AER_DeviceComponent "{6AF041BB11625293}" {
+   m_eType LAPTOP
+   m_sDeviceName ""
+  }
+  ROOT_AER_DeviceSoundComponent "{6AF082F611E06AC9}" {
+   m_sLoopEvent "SOUND_COMPUTER_LP"
+  }
+  ROOT_AER_LidComponent "{6AF041BB11622D0B}" {
+   m_sOpenModel "{E124D93187244507}Assets/ROOT_AER/ROOT_AER_Laptop_Open/ROOT_AER_Laptop_Open.xob"
+   m_sClosedModel "{98F45E642D8060A7}Assets/ROOT_AER/ROOT_AER_Laptop_Closed/ROOT_AER_Laptop_Closed.xob"
+   m_aRemap {
+    "AER_Plastic_Dark" "{20B61DA722305D98}Assets/ROOT_AER/Data/AER_Plastic_Dark.emat" "AER_Plastic_Olive" "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat" "AER_Metal" "{2F4E280681D4177D}Assets/ROOT_AER/Data/AER_Metal.emat" "AER_Keys" "{8F260F3F2AD19A41}Assets/ROOT_AER/Data/AER_Keys.emat" "AER_Screen" "{08164CE68094C8D6}Assets/ROOT_AER/Data/AER_Screen.emat" "AER_LED" "{36A9DC2B23547521}Assets/ROOT_AER/Data/AER_LED.emat" "AER_SolarCells" "{7C60B5DED537EC00}Assets/ROOT_AER/Data/AER_SolarCells.emat" "AER_Rubber" "{DE2513B590625AA8}Assets/ROOT_AER/Data/AER_Rubber.emat" "AER_Accent" "{BA1A4CB5E941E41D}Assets/ROOT_AER/Data/AER_Accent_Orange.emat" "AER_LED_Blue" "{83593EBE15E53DEF}Assets/ROOT_AER/Data/AER_LED_Blue.emat"
+   }
+  }
+  ROOT_AER_NetworkComponent "{6AF041BB11622D5F}" {
+   m_bSshEnabled 1
+  }
+  ROOT_AER_PowerComponent "{6AF041BB11622D7C}" {
+   m_eRole CONSUMER
+   m_fOnDrawW 10
+   m_fStandbyDrawW 0.1
+   m_fOutputW 0
+   m_fCapacityKWh 0.1
+   m_fRechargeW 50
+   m_fFuelCapacityL 0
+   m_fBurnLph 0
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 0
+  }
+  ROOT_AER_ScreenComponent "{6AF041BB11622D37}" {
+  }
+  ROOT_AER_SetupComponent "{6AF041BB11622A2D}" {
+  }
+  RigidBody "{6AF041BB116252EA}" {
+   LayerPreset "ItemFireView"
+   Mass 2.2
+   ModelGeometry 1
+  }
+  SCR_EditableEntityComponent "{6AF041BB11622A0D}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11622A18}" {
+    Name "#ROOT_AER-Editable_Laptop_Name"
+    m_Image "{E21E0AEE8472A028}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_Laptop.edds"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_XS THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611E4C5B9}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_Laptop_Name"
+    }
+    ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
+     Weight 2.2
+     SizeSetupStrategy Manual
+     ItemDimensions 10 10 10
+     ItemVolume 500
+    }
+    CustomAttributes {
+     PreviewRenderAttributes "{6AF2EA5011A61505}" {
+      CameraOrbitAngles -45 30 0
+      CameraDistanceToItem 2.8
+      FOV 10
+      PreviewModel "{98F45E642D8060A7}Assets/ROOT_AER/ROOT_AER_Laptop_Closed/ROOT_AER_Laptop_Closed.xob"
+     }
+    }
+    m_Size SLOT_2x2
+    m_SlotType SLOT_LOADOUT_STORAGE
+   }
+  }
+  ActionsManagerComponent "{508AB5952B584B2E}" {
+   additionalActions {
+    ROOT_AER_LidAction "{6AF041BB11622AA7}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622AB8}" {
+      Name "ROOT_AER_LidAction"
+     }
+    }
+    ROOT_AER_UseComputerAction "{6AF041BB11622A88}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622A83}" {
+      Name "ROOT_AER_UseComputerAction"
+     }
+     m_iMode Terminal
+    }
+    ROOT_AER_UseComputerAction "{6AF041BB11622A9A}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622A96}" {
+      Name "ROOT_AER_UseComputerAction"
+     }
+     m_iMode Desktop
+    }
+    ROOT_AER_PowerAction "{6AF041BB11622561}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622579}" {
+      Name "ROOT_AER_PowerAction"
+     }
+    }
+    ROOT_AER_StandbyAction "{6AF041BB1162254A}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622547}" {
+      Name "ROOT_AER_StandbyAction"
+     }
+    }
+    ROOT_AER_ConnectPowerAction "{6AF041BB11622559}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622552}" {
+      Name "ROOT_AER_ConnectPowerAction"
+     }
+    }
+    ROOT_AER_UsbAction "{6AF041BB11622527}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622521}" {
+      Name "ROOT_AER_UsbAction"
+     }
+    }
+    ROOT_AER_UsbAction "{6AF041BB1162253C}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622538}" {
+      Name "ROOT_AER_UsbAction"
+     }
+     m_bEject 1
+    }
+    ROOT_AER_ConnectNetworkAction "{6AF0880E11EAA595}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF0880E11EAA46C}" {
+      Name "ROOT_AER_ConnectNetworkAction"
+     }
+    }
+    ROOT_AER_StatusAction "{6AF041BB1162250A}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11622506}" {
+      Name "ROOT_AER_StatusAction"
+     }
+    }
+    ROOT_AER_RenameAction "{6AF4C42611150A40}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF4C42611150A58}" {
+      Name "ROOT_AER_RenameAction"
+     }
+    }
+   }
+  }
+ }
+}

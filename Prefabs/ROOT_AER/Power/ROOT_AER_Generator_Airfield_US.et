@@ -1,0 +1,108 @@
+GenericEntity : "{7F671B405CDBF0A2}Prefabs/Props/Airport/GeneratorAirfield_US_01/GeneratorAirfield_US_01.et" {
+ ID "6AF041BB11635F12"
+ components {
+  Persistence "{6AF0826A11E0E96F}" {
+  }
+  SoundComponent "{6AF082F611E17348}" {
+   Filenames {
+    "{299F0FB4042E2314}Sounds/Props/Airport/GeneratorAirfield/Props_GeneratorAirfield_US.acp"
+   }
+  }
+  ROOT_AER_ConnectionComponent "{6AF041BB11635CB8}" {
+   m_vPowerPort 0 0.6 0
+  }
+  ROOT_AER_DeviceComponent "{6AF041BB11635CC9}" {
+   m_eType GENERATOR
+   m_sDeviceName "Airfield Generator US"
+  }
+  ROOT_AER_DeviceSoundComponent "{6AF082F611E17350}" {
+   m_sLoopEvent "SOUND_GENERATOR_LP"
+  }
+  ROOT_AER_PowerComponent "{6AF041BB11635CD5}" {
+   m_eRole GENERATOR
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 100000
+   m_fCapacityKWh 0
+   m_fRechargeW 0
+   m_fFuelCapacityL 300
+   m_fBurnLph 30
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 0
+   m_fCableLength 25
+  }
+  SCR_EditableEntityComponent "{6AF041BB11635C86}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11635C99}" {
+    Name "#ROOT_AER-Editable_Generator_Airfield_US_Name"
+    m_Image "{1B255BA92F6E420D}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_Generator_Airfield_US.edds"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_M THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611EA334C}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  StaticSoundComponent "{585497CF23028AC0}" {
+   Enabled 0
+  }
+  ActionsManagerComponent "{585497CF23028AEE}" {
+   ActionContexts {
+    UserActionContext "{6AF041BB11635F7B}" {
+     ContextName "aer"
+     Position PointInfo "{6AF041BB11635F4E}" {
+      Offset 0 0.8 0
+     }
+     Radius 1.2
+    }
+   }
+   additionalActions {
+    ROOT_AER_ConnectPowerAction "{6AF635AC118B0872}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF635AC118B0813}" {
+      Name "ROOT_AER_TakePowerCable"
+     }
+     m_bSource 1
+    }
+    ROOT_AER_PowerAction "{6AF041BB11635F5A}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF041BB11635F2D}" {
+      Name "ROOT_AER_PowerAction"
+     }
+    }
+    ROOT_AER_RefuelAction "{6AF041BB11635F3C}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF041BB11635F36}" {
+      Name "ROOT_AER_RefuelAction"
+     }
+    }
+    ROOT_AER_StatusAction "{6AF041BB11635F04}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF041BB11635F00}" {
+      Name "ROOT_AER_StatusAction"
+     }
+    }
+    ROOT_AER_RenameAction "{6AF4C426111B85BA}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF4C426111B85B5}" {
+      Name "ROOT_AER_RenameAction"
+     }
+    }
+   }
+  }
+ }
+}

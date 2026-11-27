@@ -1,5 +1,0 @@
-MatPBRBasic {
- Color 0.03 0.03 0.03 1
- BCRMap "{CE80C48A13C112CB}Assets/ROOT_AE3/Data/Textures/AE3_Rubber_BCR.edds"
- NMOMap "{678C7AE394DD0CBD}Assets/_SharedData/Plastic/ST_Plastic_Fine01_1m_NMO.edds"
-}

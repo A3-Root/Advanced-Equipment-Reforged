@@ -1,0 +1,28 @@
+GenericEntity : "{84677A5327CD4C61}Prefabs/ROOT_AER/Devices/ROOT_AER_PortableServer.et" {
+ ID "6AF08C671B2DE9A0"
+ components {
+  MeshObject "{6AF041BB11620821}" {
+   Materials {
+    MaterialAssignClass "{6AF4C4261115EB9A}" {
+     AssignedMaterial "{E27C94EB2087E308}Assets/ROOT_AER/Data/AER_Accent_Coyote.emat"
+    }
+    MaterialAssignClass "{6AF041BB116202B8}" {
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB11621DCD}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11621DD8}" {
+    Name "#ROOT_AER-Editable_PortableServer_Olive_Name"
+    m_Image "{74927CE3DDFF700A}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_PortableServer_Olive.edds"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_PortableServer_Olive_Name"
+    }
+   }
+  }
+ }
+}

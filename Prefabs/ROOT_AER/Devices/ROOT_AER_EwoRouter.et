@@ -1,0 +1,28 @@
+GenericEntity {
+ ID "6AF4C426111525FA"
+ components {
+  ROOT_AER_DeviceComponent "{6AF4C42611152545}" {
+   m_eType ROUTER
+   m_sDeviceName ""
+   m_bHidden 1
+  }
+  ROOT_AER_NetworkComponent "{6AF4C4261115253B}" {
+   m_bRouter 1
+  }
+  ROOT_AER_PowerComponent "{6AF4C42611152502}" {
+   m_eRole CONSUMER
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 0
+   m_fCapacityKWh 0
+   m_fRechargeW 0
+   m_fFuelCapacityL 0
+   m_fBurnLph 0
+   m_bMains 1
+   m_bRequiresExternal 0
+   m_bStartOn 0
+  }
+  RplComponent "{6AF4C426111525E2}" {
+  }
+ }
+}

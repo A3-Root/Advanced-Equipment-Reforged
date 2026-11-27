@@ -11,7 +11,7 @@ Each computer has a style:
   themes Green, Amber, Night.
 
 The style comes from the computer (Game Master attribute or action "Desktop style", World Editor
-`ROOT_AE3_ComputerComponent.m_iUiStyle`, `ROOT_AE3_API.SetUiStyle`), else the setting `m_iDesktopStyle`. Open sessions
+`ROOT_AER_ComputerComponent.m_iUiStyle`, `ROOT_AER_API.SetUiStyle`), else the setting `m_iDesktopStyle`. Open sessions
 switch at once.
 
 ## Shell
@@ -40,7 +40,7 @@ switch at once.
   click selects, double click opens a folder or picks a file, file name field; Enter accepts, Backspace goes up, Esc
   cancels.
 - Window size Fullscreen / Large / Medium / Small: taskbar Size button or F11; stored per player in
-  `$profile:ROOT_AE3/client.txt` (default `m_iDesktopSize`, Large).
+  `$profile:ROOT_AER/client.txt` (default `m_iDesktopSize`, Large).
 - When a session ends, the client keeps its open windows and unsaved text; they return when the same player opens the
   same computer as the same user.
 - Keys reach the focused window while no text field is in write mode.
@@ -79,7 +79,7 @@ hear a switch sound at the device.
 ## Web access
 
 With `m_bDesktopWebImages` on, each client downloads addresses itself and stores media in
-`$profile:ROOT_AE3/media/`. Image addresses go through the web image proxy (`m_sDesktopWebImageProxy`), which returns
+`$profile:ROOT_AER/media/`. Image addresses go through the web image proxy (`m_sDesktopWebImageProxy`), which returns
 the image as base64 text; empty = direct download (addresses that return base64 text only). Images: PNG, JPEG, GIF
 (first frame), base64 at most 2 MB. Videos (mp4, webm, ogv, mov, m4v, avi, mkv, bk2, bik): at most 8 MB, played by the
 engine video player, which refuses formats it does not take. Pages: text, headings, lists and links.

@@ -1,6 +1,6 @@
 # Script API
 
-`ROOT_AE3_API` (`Scripts/Game/ROOT_AE3/API/ROOT_AE3_API.c`). Calls change state on the authority (server, or the
+`ROOT_AER_API` (`Scripts/Game/ROOT_AER/API/ROOT_AER_API.c`). Calls change state on the authority (server, or the
 host in singleplayer / listen host) and return false elsewhere. Devices are entities. `bool` calls return false when
 the device lacks the component or the call fails; `GetLastError()` holds the reason of the last failed `AddFile`.
 
@@ -18,7 +18,7 @@ start. It fires again after a persistence or Game Master restore with `restored`
 | `SetUiStyle(device, style)` | -1 setting, 0 civilian (Windows), 1 military (Tactical) |
 | `SetInterfaceAccess(device, mode, entries)` | Access list (mode 0 terminal, 1 desktop): identity IDs, faction keys, player names |
 | `SetGlobalNumber(key, value)`, `SetGlobalText(key, value)` | Mission setting by key (System module keys) |
-| `SaveComputer(device, name)`, `RestoreComputer(device, name)` | `$profile:ROOT_AE3/saves/<name>.txt` |
+| `SaveComputer(device, name)`, `RestoreComputer(device, name)` | `$profile:ROOT_AER/saves/<name>.txt` |
 
 ## Users
 
@@ -33,7 +33,7 @@ start. It fires again after a persistence or Game Master restore with `restored`
 
 | Call | Effect |
 | --- | --- |
-| `AddFile(device, path, content, owner = "root", perms = "rw-r--", encryption = 0, key = "", password = "", size = -1)` | File on a computer or flash drive; `encryption` is a `ROOT_AE3_Encryption` id (see [Encryption](../Systems/Encryption.md)), empty key = default key |
+| `AddFile(device, path, content, owner = "root", perms = "rw-r--", encryption = 0, key = "", password = "", size = -1)` | File on a computer or flash drive; `encryption` is a `ROOT_AER_Encryption` id (see [Encryption](../Systems/Encryption.md)), empty key = default key |
 | `AddDirectory(device, path, owner = "root", perms = "rwxr-x")` | Folder |
 | `ReadFile(device, path, out content)`, `RemovePath(device, path)` | Read or delete |
 | `AddMedia(device, path, source, caption = "")` | Image or video file (texture resource, http(s) address or base64) |
@@ -83,15 +83,15 @@ start. It fires again after a persistence or Game Master restore with `restored`
 ## Hooks
 
 `AddAccessCondition` / `RemoveAccessCondition`, `AddConnectCondition` / `RemoveConnectCondition`,
-`AddRangeModifier` / `RemoveRangeModifier`: see [Extending AE3](../Developer/Extending.md).
+`AddRangeModifier` / `RemoveRangeModifier`: see [Extending AER](../Developer/Extending.md).
 
 ## Example
 
 ```c
 IEntity laptop = GetGame().GetWorld().FindEntityByName("laptop1");
-ROOT_AE3_API.AddUser(laptop, "smith", "1234", true);
-ROOT_AE3_API.AddFile(laptop, "/home/smith/Desktop/orders.txt", "Move at dawn.", "smith", "rw----");
-ROOT_AE3_API.AddFile(laptop, "/home/smith/codes.txt", "ALPHA", "smith", "rw----", ROOT_AE3_Encryption.VIGENERE, "LEMON", "secret");
-ROOT_AE3_API.RegisterWebpage("intel.local", "Intel", "# Intel\n\n[Home](rootnet.home)");
-ROOT_AE3_API.SetUiStyle(laptop, 1);
+ROOT_AER_API.AddUser(laptop, "smith", "1234", true);
+ROOT_AER_API.AddFile(laptop, "/home/smith/Desktop/orders.txt", "Move at dawn.", "smith", "rw----");
+ROOT_AER_API.AddFile(laptop, "/home/smith/codes.txt", "ALPHA", "smith", "rw----", ROOT_AER_Encryption.VIGENERE, "LEMON", "secret");
+ROOT_AER_API.RegisterWebpage("intel.local", "Intel", "# Intel\n\n[Home](rootnet.home)");
+ROOT_AER_API.SetUiStyle(laptop, 1);
 ```

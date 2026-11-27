@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{89D37D19C3452EB6}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_LED_Blue.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

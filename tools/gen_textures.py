@@ -1,4 +1,4 @@
-"""Writes the tiling device textures Assets/ROOT_AE3/Data/Textures/AE3_<Name>_BCR.png (1024x1024, seamless).
+"""Writes the tiling device textures Assets/ROOT_AER/Data/Textures/AER_<Name>_BCR.png (1024x1024, seamless).
 RGB is a near-white detail layer (the material Color tints it), alpha is roughness.
 Usage: python tools/gen_textures.py"""
 import pathlib
@@ -7,7 +7,7 @@ import numpy as np
 from PIL import Image
 
 N = 1024
-OUT = pathlib.Path(__file__).resolve().parent.parent / "Assets/ROOT_AE3/Data/Textures"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "Assets/ROOT_AER/Data/Textures"
 rng = np.random.default_rng(3)
 
 
@@ -57,7 +57,7 @@ def save(name, rgb, rough):
     a = np.clip(rough, 0, 1)[:, :, None]
     img = np.concatenate([rgb, a], axis=2)
     OUT.mkdir(parents=True, exist_ok=True)
-    Image.fromarray((img * 255 + 0.5).astype(np.uint8), "RGBA").save(OUT / ("AE3_%s_BCR.png" % name))
+    Image.fromarray((img * 255 + 0.5).astype(np.uint8), "RGBA").save(OUT / ("AER_%s_BCR.png" % name))
     print("wrote", name)
 
 

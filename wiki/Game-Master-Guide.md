@@ -2,13 +2,13 @@
 
 ## Placing devices
 
-Edit mode lists every device (search "AE3", "Laptop", "Router", "Generator", "Cable"). Placed devices start off; use
-"Power on" in the action panel or the attribute "Powered on". Place the AE3 System module (Systems) to change
+Edit mode lists every device (search "AER", "Laptop", "Router", "Generator", "Cable"). Placed devices start off; use
+"Power on" in the action panel or the attribute "Powered on". Place the AER System module (Systems) to change
 mission settings in game.
 
 ## Action panel
 
-Hover or select one or more devices, open the context menu and choose "Advanced Equipment...". The panel lists the
+Hover or select one or more devices, open the context menu and choose "Advanced Equipment Reforged...". The panel lists the
 actions that apply to the selection; an action with fields opens a form with the current values of the first
 selected device. Each action reports how many devices it changed and the first error.
 
@@ -52,12 +52,12 @@ closes.
 
 ### Save and restore
 
-"Save computer" writes the computer state to `$profile:ROOT_AE3/saves/<name>.txt` on the server; "Restore computer"
+"Save computer" writes the computer state to `$profile:ROOT_AER/saves/<name>.txt` on the server; "Restore computer"
 loads it (empty name lists the saves).
 
 ## Device attributes
 
-Attributes window, category "Advanced Equipment":
+Attributes window, category "Advanced Equipment Reforged":
 
 | Attribute | Devices |
 | --- | --- |
@@ -67,7 +67,7 @@ Attributes window, category "Advanced Equipment":
 | Root login, Interface, Desktop style, SSH server | Computers |
 | Wireless range, Transfer speed, Accept connections, External SSH | Routers (transfer speed also computers) |
 
-## AE3 System module
+## AER System module
 
 The module's attributes window holds the mission settings: boot and shutdown time, root login, sudoers act as root,
 any login, log out on session end, default interface, desktop theme, desktop style, window size, file browsing,

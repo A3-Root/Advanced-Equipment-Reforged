@@ -1,0 +1,108 @@
+GenericEntity : "{FCBEDECB2A39B6BC}Prefabs/Props/Military/Generators/GeneratorPortable_USSR_01.et" {
+ ID "6AF041BB1163F17B"
+ components {
+  Persistence "{6AF0826A11E07843}" {
+  }
+  SoundComponent "{6AF082F611E1C74A}" {
+   Filenames {
+    "{B32068D3B876A98E}Sounds/Props/Military/Generators/Props_PortableGenerator_Soviet.acp"
+   }
+  }
+  ROOT_AER_ConnectionComponent "{6AF041BB1163F617}" {
+   m_vPowerPort 0 0.35 0
+  }
+  ROOT_AER_DeviceComponent "{6AF041BB1163F620}" {
+   m_eType GENERATOR
+   m_sDeviceName "Portable Generator USSR"
+  }
+  ROOT_AER_DeviceSoundComponent "{6AF082F611E1C759}" {
+   m_sLoopEvent "SOUND_GENERATOR_LP"
+  }
+  ROOT_AER_PowerComponent "{6AF041BB1163F60E}" {
+   m_eRole GENERATOR
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 5000
+   m_fCapacityKWh 0
+   m_fRechargeW 0
+   m_fFuelCapacityL 5
+   m_fBurnLph 1.5
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 0
+   m_fCableLength 15
+  }
+  SCR_EditableEntityComponent "{6AF041BB1163F6E7}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1163F6F8}" {
+    Name "#ROOT_AER-Editable_Generator_Portable_USSR_Name"
+    m_Image "{359C887568BB92F8}UI/Textures/EditorPreviews/Auto/Props/Military/Generators/E_GeneratorPortable_USSR_01.edds"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611EA4197}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  StaticSoundComponent "{54F46129DBCF6FD3}" {
+   Enabled 0
+  }
+  ActionsManagerComponent "{529A99F8B5243CC2}" {
+   ActionContexts {
+    UserActionContext "{6AF041BB1163F6DD}" {
+     ContextName "aer"
+     Position PointInfo "{6AF041BB1163F6D3}" {
+      Offset 0 0.8 0
+     }
+     Radius 0.6
+    }
+   }
+   additionalActions {
+    ROOT_AER_ConnectPowerAction "{6AF635AC1188650A}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF635AC11886519}" {
+      Name "ROOT_AER_TakePowerCable"
+     }
+     m_bSource 1
+    }
+    ROOT_AER_PowerAction "{6AF041BB1163F6BC}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF041BB1163F68F}" {
+      Name "ROOT_AER_PowerAction"
+     }
+    }
+    ROOT_AER_RefuelAction "{6AF041BB1163F683}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF041BB1163F69D}" {
+      Name "ROOT_AER_RefuelAction"
+     }
+    }
+    ROOT_AER_StatusAction "{6AF041BB1163F16A}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF041BB1163F167}" {
+      Name "ROOT_AER_StatusAction"
+     }
+    }
+    ROOT_AER_RenameAction "{6AF4C426111806FE}" {
+     ParentContextList {
+      "aer"
+     }
+     UIInfo UIInfo "{6AF4C426111806F9}" {
+      Name "ROOT_AER_RenameAction"
+     }
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,38 @@
+//! Message ids between client and server (SCR_PlayerController RPCs).
+enum ROOT_AER_EMsg
+{
+	CHUNK,			//!< Part of a long payload; the next non-chunk message completes it.
+	// client -> server
+	OPEN,			//!< data: requested mode (0 terminal, 1 desktop)
+	CLOSE,
+	TERM_LINE,		//!< data: entered line
+	TERM_TAB,		//!< data: current line, reply TERM_SET_LINE
+	TERM_KEY,		//!< data: key name (CTRL_C)
+	GUI,			//!< data: rid, cmd, args...
+	GAME_INPUT,		//!< data: table id, move
+	// server -> client
+	SESSION,		//!< data: device name, mode, settings, design, theme, user, history...
+	TERM_OUT,		//!< data: text to append
+	TERM_CLEAR,
+	TERM_PROMPT,	//!< data: prompt, obfuscate (0/1)
+	TERM_SET_LINE,	//!< data: line
+	GUI_REPLY,		//!< data: rid, ok, payload...
+	ENDED,			//!< data: reason
+	MODE,			//!< data: 0 terminal, 1 desktop
+	NOTIFY,			//!< data: title, text
+	GAME_STATE,		//!< data: table view
+	SNAKE,			//!< data: big (0/1)
+	SETTINGS,		//!< data: ROOT_AER_Settings.PackClient
+	SCREEN,			//!< data: device RplId, screen text, input line
+	SCREEN_INPUT,	//!< data: device RplId, input line
+	SOUND,			//!< data: sound id (ROOT_AER_Sound), UI sound for the operator
+	// client -> server
+	OPEN_CARRIED,	//!< data: requested mode (-1 auto, 0 terminal, 1 desktop); device in the player's inventory
+	RENAME,			//!< data: new device name
+	EWO,			//!< data: EWO request (ROOT_AER_EwoSystem.OnRequest)
+	CABLE_TAKE,		//!< data: cable length; device = the device the network cable is plugged into first
+	USB_INSERT,		//!< data: ROOT_AER_UsbManager.DriveId of a carried flash drive; device = the computer
+	// server -> client
+	EWO_STATE,		//!< data: EWO pack state (ROOT_AER_EwoPanel)
+	CABLE_HAND		//!< data: kind (0 none, 1 network, 2 power), first device RplId, cable length (ROOT_AER_CableHand)
+}

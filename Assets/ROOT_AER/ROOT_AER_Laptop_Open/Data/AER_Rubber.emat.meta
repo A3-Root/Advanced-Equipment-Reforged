@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{C5687D5F78BECC52}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Rubber.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

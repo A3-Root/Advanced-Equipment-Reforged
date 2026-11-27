@@ -1,0 +1,14 @@
+enum ROOT_AER_EDeviceType
+{
+	LAPTOP,
+	SERVER,
+	DESKTOP,
+	ROUTER,
+	USB_DRIVE,
+	GENERATOR,
+	BATTERY,
+	SOLAR,
+	LAMP,
+	OTHER,
+	SYSTEM	//!< AER System module
+}

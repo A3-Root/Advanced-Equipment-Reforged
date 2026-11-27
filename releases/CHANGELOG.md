@@ -12,7 +12,7 @@
 - Mail, chat, in-game web pages and sites, browser history, calendar, CCTV feeds.
 - Networked games: chess, checkers, uno, ludo, snakes and ladders, blackjack, rock paper scissors, battleship; Snake.
 - Screen content on the laptop model for nearby players.
-- Game Master context action "Advanced Equipment..." with an action panel, text form and result notifications.
+- Game Master context action "Advanced Equipment Reforged..." with an action panel, text form and result notifications.
 - World Editor components for users, files, mail, web pages, calendar, power and network links.
 - Mission header settings, public script API and events, persistence serializers, named save / restore.
 - Per-computer terminal / desktop access lists (player names, faction keys) and per-user transfer speed.
@@ -23,14 +23,14 @@
 - Portable server as an inventory item.
 - Device textures (plastic, metal, rubber, keys, solar cells) from `tools/gen_textures.py`.
 - Inventory and arsenal preview cameras; laptop shown closed.
-- Workbench plugin `-ae3Items` inventory inspection.
+- Workbench plugin `-aerItems` inventory inspection.
 - Optional `crypto` and `crack` programs (caesar, columnar).
 - Terminal `wifi` command; password attempts delayed after failures; per-filesystem storage limit, flash drive capacity enforced.
 - Game Master device attributes: power, battery, fuel, root login, interface mode, SSH, router range / accept / external SSH.
-- Game Master game settings category "Advanced Equipment" (boot / shutdown time, login, desktop, network, games), sent to all players.
-- String table `Language/ROOT_AE3_localization.st` for device names (Game Master browser search).
+- Game Master game settings category "Advanced Equipment Reforged" (boot / shutdown time, login, desktop, network, games), sent to all players.
+- String table `Language/ROOT_AER_localization.st` for device names (Game Master browser search).
 - Game Master browser preview images for every device and variant; vanilla previews for portable generators and floodlight.
-- Workbench plugin `-ae3Dump` writes resources (vanilla configs) to a file.
+- Workbench plugin `-aerDump` writes resources (vanilla configs) to a file.
 - Desktop icon set (62 app, file type and glyph icons) from `tools/gen_icons.py`.
 - Desktop right-click menus (background, icons, taskbar, Files) and modal dialogs.
 - Start menu search box and power menu; taskbar pinned apps (Files, Browser, Mail, Terminal).
@@ -55,40 +55,40 @@
 - Games app lobby banner with a picture of the game, waiting room with seat cards, table with seat chips and a side panel.
 - Rules method `Gui(seat)`: board state for the graphical boards (game_view field 12, seat names after it).
 - Inventory "Use" on a carried laptop (uniform, vest, backpack, also in vehicles): wakes or boots it and opens the desktop or terminal.
-- Device names: Rename action, Game Master "Rename device", `ROOT_AE3_API.SetDeviceName`; shown in the inventory with hostname, battery, state and flash drives.
+- Device names: Rename action, Game Master "Rename device", `ROOT_AER_API.SetDeviceName`; shown in the inventory with hostname, battery, state and flash drives.
 - Desktop window size button (taskbar) and F11, stored per player in the profile.
 - 77th JSOC EWO mode: AN/PRC-77 (configurable) packs with energy pool, wireless network, laptop charging and power source recharge; EWO panel from inventory "Use".
-- AE3 System module (Game Master Systems, World Editor) with all mission settings; device values keep priority.
+- AER System module (Game Master Systems, World Editor) with all mission settings; device values keep priority.
 - Game Master global attributes for EWO; module actions for default root password and EWO pack prefabs.
-- `ROOT_AE3_API.SetGlobalNumber` / `SetGlobalText`.
+- `ROOT_AER_API.SetGlobalNumber` / `SetGlobalText`.
 - Accent colour parts (bumpers, stripes, logo plates, caps) and a blue network LED on all device models.
 - Flash drives in red, blue and yellow.
 - `tools/build_strings.py` builds the runtime string table from the .st file.
 - Inventory Use on a carried laptop shows its name field with Open and Rename.
 - Inventory Use enabled for gamepad.
 - EWO panel for packs carried or placed in the vicinity; it updates every 3 s and closes when the pack is out of reach, the player dies or EWO mode is off.
-- Persistence saves the names of all devices and the AE3 System module settings (`ROOT_AE3_SystemModuleSerializer`).
-- `ROOT_AE3_DeviceComponent` attribute hidden (set on the EWO router).
-- `ROOT_AE3_PowerComponent.SetExternalLoad` / `GetExternalFactor`: loads outside AE3 links served from what consumers leave.
+- Persistence saves the names of all devices and the AER System module settings (`ROOT_AER_SystemModuleSerializer`).
+- `ROOT_AER_DeviceComponent` attribute hidden (set on the EWO router).
+- `ROOT_AER_PowerComponent.SetExternalLoad` / `GetExternalFactor`: loads outside AER links served from what consumers leave.
 - Game Master action "Connect to network" for single devices: router list with distance, wireless or cable, ignore range.
 - Game Master device attribute "Transfer speed".
 - Game Master forms show the current values of the device with on / off, choice, multiline, password and permission fields.
-- Remote access switch: desktop Network app button, terminal `sshd on|off|status`, `ROOT_AE3_API.SetSshEnabled`.
+- Remote access switch: desktop Network app button, terminal `sshd on|off|status`, `ROOT_AER_API.SetSshEnabled`.
 - `ssh` and Remote Access accept hostnames.
 - Setting `m_sDesktopWebImageProxy` (System module action "Web image proxy"): web images load as base64 through `wsrv.nl` by default.
 - Editor previews for the airfield and military generators.
 - Closed sessions keep the open desktop windows and unsaved text on the client for the same computer and user.
 - Network cable items 5 m, 15 m and 30 m (inventory, arsenal, Game Master).
 - Plugged network cables and power links are drawn between device ports on every client.
-- Desktop styles Windows and Tactical per computer: Game Master attribute "Desktop style", World Editor attribute, setting `m_iDesktopStyle`, `ROOT_AE3_API.SetUiStyle`.
+- Desktop styles Windows and Tactical per computer: Game Master attribute "Desktop style", World Editor attribute, setting `m_iDesktopStyle`, `ROOT_AER_API.SetUiStyle`.
 - Two-step cable plugging: network cable from a device to a router (or router to router), power cable from a generator, battery or solar panel to a device; the held end is drawn to the player's hand.
-- Power cable length per source (`m_fCableLength`), Game Master actions "Power source" and "Power cable length", `ROOT_AE3_API.SetPowerCableLength`.
+- Power cable length per source (`m_fCableLength`), Game Master actions "Power source" and "Power cable length", `ROOT_AER_API.SetPowerCableLength`.
 - Taskbar search, tray (flash drive, network, power), quick panel, clock opening Calendar and show desktop.
-- Floodlight built-in generator (10 L, 0.5 L/h): devices with a fuel tank run without a power source; Game Master attribute "Fuel use" (0 = no fuel used), `ROOT_AE3_API.SetFuelUse`, Refuel and fuel slider on them.
-- Desktop style civilian (Windows) / military (Tactical): Game Master panel action "Desktop style" and the Advanced Equipment settings attribute "Desktop style".
+- Floodlight built-in generator (10 L, 0.5 L/h): devices with a fuel tank run without a power source; Game Master attribute "Fuel use" (0 = no fuel used), `ROOT_AER_API.SetFuelUse`, Refuel and fuel slider on them.
+- Desktop style civilian (Windows) / military (Tactical): Game Master panel action "Desktop style" and the Advanced Equipment Reforged settings attribute "Desktop style".
 - Desktop search finds files as well as apps (start menu and taskbar search).
 - Ciphers from Root's Cyber Warfare: Vigenere, ROT, Affine, rail fence, Morse, spelling alphabet, Bacon, substitution, Base32, Base64, Ascii85, Unicode and integer, besides Caesar and Columnar; `crypto` and `crack` take them.
-- Sounds: start, shut down, standby, flash drive in / out, error, mail and message chimes (`Sounds/ROOT_AE3`).
+- Sounds: start, shut down, standby, flash drive in / out, error, mail and message chimes (`Sounds/ROOT_AER`).
 - Choice of network cable when several lengths are carried.
 - Spare cable length lies in a coil on the floor halfway between the devices.
 - Flash drive choice form when several drives are carried; My Computer inserts drives from the inventory; quick panel "Flash drives" button.
@@ -98,6 +98,7 @@
 - Inventory "Use" on a flash drive, router or battery pack opens the name form; a flash drive name is its label.
 
 ### Changed
+- Renamed to Advanced Equipment Reforged (AER): class prefix `ROOT_AER_`, folders and resources `ROOT_AER`, string keys, model material slots `AER_*`, plugin flags `-aer*`, saves in `$profile:ROOT_AER`.
 - Device variants recolour the body material (router, battery pack, portable server).
 - Prefabs list only the material slots their models have.
 - Portable server collision uses the vanilla metal game material.
@@ -110,7 +111,7 @@
 - Container frames ignore the cursor; widgets behind them get clicks.
 - Editor preview textures built (white Game Master icons).
 - Apps renamed: Text Editor to Notepad, Image Viewer to Photos, SSH to Remote Access, Mail to Email.
-- Email, Messenger and Calendar laid out as in AE3: Email toolbar with tabs, search and reading pane; Messenger navigation rail, conversation list and bubbles; Calendar month grid with day panel.
+- Email, Messenger and Calendar laid out as in AER: Email toolbar with tabs, search and reading pane; Messenger navigation rail, conversation list and bubbles; Calendar month grid with day panel.
 - Network app only joins and leaves networks; static IP, SSH toggle and router settings removed from the desktop (Game Master, World Editor, script API).
 - Default desktop background plain black (wallpaper 0).
 - Boot screen brand FUBAR(TM) Systems (BIOS, copyright 2026, tip, tagline, ASCII art); About and boot art credit Root only.
@@ -134,7 +135,7 @@
 - EWO networks get a random 8 character password and the lowest free gateway number 1-254; the router exists only while broadcasting, is hidden from the Map app and is configured only when name or password change.
 - EWO recharge loads the power source; pack state stays while EWO mode is off.
 - Rename and EWO requests are rate limited per player.
-- AE3 System module applies its settings at init; only the active module can be edited; deleting it activates the next module or the mission defaults.
+- AER System module applies its settings at init; only the active module can be edited; deleting it activates the next module or the mission defaults.
 - Power update interval follows setting changes at runtime.
 - Numeric settings are clamped to their attribute ranges; Game Master EWO energy slider up to 5000, range up to 1000.
 - Desktop window size default Large; changing it keeps open windows and their content; taskbar button labelled "Size".
@@ -161,7 +162,7 @@
 - Network cable collider uses the gadget plastic surface (wrong game material reference).
 - Generators, solar panel and battery take power cables; generators and the floodlight have power port positions.
 - Taskbar no longer stops with "Wrong parameter value" before the first tray update.
-- Cable lines are built from segment entities (`ROOT_AE3_CableSegment.xob`) instead of a procedural mesh, which crashed Workbench when drawn.
+- Cable lines are built from segment entities (`ROOT_AER_CableSegment.xob`) instead of a procedural mesh, which crashed Workbench when drawn.
 - Game Master "Add file" form: where (desktop or home of a user, top folder, other folder), file name, who can open it, protection (password, cipher or both) with one key field per cipher.
 - Network cables 7 mm and power cables 11 mm thick; cable lines stay above the floor under them.
 - Terminal: the prompt and typed text follow the last line with a cursor; no blank line after each command and no empty line sent when the input is refocused.

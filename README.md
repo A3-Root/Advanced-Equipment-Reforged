@@ -1,6 +1,6 @@
 # Advanced Equipment Reforged (AER)
 
-Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Port of [Advanced Equipment Revamped](https://github.com/y0014984/Advanced-Equipment) (Arma 3).
+Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Official port of Advanced Equipment from Arma 3 to Arma Reforger by its lead developer.
 
 A laptop runs armaOS: a terminal (command line), a desktop (windows and apps), or both. Computers have users, passwords, a permission-based filesystem, mail, chat, web pages, a calendar, CCTV, games and network tools. Routers build wireless and cabled networks; generators, batteries and solar panels power the devices through cables players carry and plug in. Game Masters and mission makers add intel, accounts and links in game, in the World Editor or by script.
 
@@ -55,12 +55,12 @@ blue and yellow. All are in the Game Master Edit list, the World Editor and the 
 ### Game Master and World Editor
 
 - Action panel with 43 actions (users, files and intel, power, network, desktop style, save / restore).
-- Device attributes and an AE3 System module for mission-wide settings.
+- Device attributes and an AER System module for mission-wide settings.
 - Components with every device setting for the World Editor; settings in the mission header.
 
 ### Script API
 
-`ROOT_AE3_API` adds users, files, mail, web pages, links and power states, registers custom programs and desktop apps, and raises events for logins, commands, file changes and device setup.
+`ROOT_AER_API` adds users, files, mail, web pages, links and power states, registers custom programs and desktop apps, and raises events for logins, commands, file changes and device setup.
 
 ## Documentation
 

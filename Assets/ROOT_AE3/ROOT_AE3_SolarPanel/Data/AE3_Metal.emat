@@ -1,6 +1,0 @@
-MatPBRBasic {
- Color 0.6 0.6 0.62 1
- BCRMap "{88D763CFFDF37C20}Assets/ROOT_AE3/Data/Textures/AE3_Metal_BCR.edds"
- NMOMap "{0D074FB526BA3473}Assets/_SharedData/Metal/ST_Metal_Fine01_1m_NMO.edds"
- MetalnessScale 1
-}

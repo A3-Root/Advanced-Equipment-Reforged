@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{EFD7EF1DA9E28F4A}Assets/ROOT_AER/ROOT_AER_Laptop_Closed/Data/AER_Plastic_Dark.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

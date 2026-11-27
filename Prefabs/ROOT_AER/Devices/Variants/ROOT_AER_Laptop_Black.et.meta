@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{E1168F75F64F9AE5}Prefabs/ROOT_AER/Devices/Variants/ROOT_AER_Laptop_Black.et"
+ Configurations {
+  EntityTemplateResourceClass PC {
+  }
+  EntityTemplateResourceClass XBOX_ONE : PC {
+  }
+  EntityTemplateResourceClass XBOX_SERIES : PC {
+  }
+  EntityTemplateResourceClass PS4 : PC {
+  }
+  EntityTemplateResourceClass PS5 : PC {
+  }
+  EntityTemplateResourceClass HEADLESS : PC {
+  }
+ }
+}

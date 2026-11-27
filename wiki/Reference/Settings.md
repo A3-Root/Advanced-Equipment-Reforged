@@ -1,9 +1,9 @@
 # Settings
 
-`ROOT_AE3_Settings`. Defaults in `Configs/ROOT_AE3/Settings.conf`; a scenario overrides them with
-`m_ROOT_AE3_Settings` in its `SCR_MissionHeader`; an AE3 System module (`m_Settings`) overrides both. Devices follow
+`ROOT_AER_Settings`. Defaults in `Configs/ROOT_AER/Settings.conf`; a scenario overrides them with
+`m_ROOT_AER_Settings` in its `SCR_MissionHeader`; an AER System module (`m_Settings`) overrides both. Devices follow
 the settings where their own value is "Setting default". The Game Master changes the settings with a key in the
-System module's attributes; script: `ROOT_AE3_API.SetGlobalNumber(key, value)` / `SetGlobalText(key, value)`.
+System module's attributes; script: `ROOT_AER_API.SetGlobalNumber(key, value)` / `SetGlobalText(key, value)`.
 Changes are sent to all players.
 
 ## Main

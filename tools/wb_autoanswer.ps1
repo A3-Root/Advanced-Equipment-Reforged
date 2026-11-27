@@ -4,7 +4,7 @@ param([int]$Seconds = 1800, [int]$ParentPid = 0)
 Add-Type -AssemblyName UIAutomationClient, UIAutomationTypes
 Add-Type @"
 using System; using System.Text; using System.Runtime.InteropServices; using System.Collections.Generic;
-public class AE3Win { public delegate bool P(IntPtr h, IntPtr l);
+public class AERWin { public delegate bool P(IntPtr h, IntPtr l);
 [DllImport("user32.dll")] public static extern bool EnumWindows(P p, IntPtr l);
 [DllImport("user32.dll")] public static extern int GetWindowText(IntPtr h, StringBuilder s, int n);
 [DllImport("user32.dll")] public static extern bool IsWindowVisible(IntPtr h);
@@ -14,7 +14,7 @@ $deadline = (Get-Date).AddSeconds($Seconds)
 $ok = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, "OK")
 $name = New-Object System.Windows.Automation.PropertyCondition([System.Windows.Automation.AutomationElement]::NameProperty, "as Model")
 while ((Get-Date) -lt $deadline) {
-    foreach ($h in [AE3Win]::Find("Register Resource File(s)")) {
+    foreach ($h in [AERWin]::Find("Register Resource File(s)")) {
         $w = [System.Windows.Automation.AutomationElement]::FromHandle($h)
         $b = $w.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $name)
         if (-not $b) { $b = $w.FindFirst([System.Windows.Automation.TreeScope]::Descendants, $ok) }

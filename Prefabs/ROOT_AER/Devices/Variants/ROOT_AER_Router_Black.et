@@ -1,0 +1,28 @@
+GenericEntity : "{970C853CDA5C984F}Prefabs/ROOT_AER/Devices/ROOT_AER_Router.et" {
+ ID "6AF08C671B2DDEE8"
+ components {
+  MeshObject "{6AF041BB1162E7B8}" {
+   Materials {
+    MaterialAssignClass "{6AF4C4261115CAE8}" {
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AER/Data/AER_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162F934}" {
+     AssignedMaterial "{CFA85D4E05855592}Assets/ROOT_AER/Data/AER_Plastic_Black.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162F80F}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162F81C}" {
+    Name "#ROOT_AER-Editable_Router_Black_Name"
+    m_Image "{29E709C3F88C9AA1}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_Router_Black.edds"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_Router_Black_Name"
+    }
+   }
+  }
+ }
+}

@@ -1,0 +1,33 @@
+GenericEntity : "{6E95A480D5E97564}Prefabs/ROOT_AER/Devices/ROOT_AER_Laptop.et" {
+ ID "6AF08C671B2D507D"
+ components {
+  MeshObject "{6AF041BB116248DE}" {
+   Materials {
+    MaterialAssignClass "{6AF4C42611150E29}" {
+     AssignedMaterial "{E27C94EB2087E308}Assets/ROOT_AER/Data/AER_Accent_Coyote.emat"
+    }
+    MaterialAssignClass "{6AF041BB11625246}" {
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat"
+    }
+   }
+  }
+  ROOT_AER_LidComponent "{6AF041BB11622D0B}" {
+   m_aRemap {
+    "AER_Plastic_Dark" "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat" "AER_Plastic_Olive" "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat" "AER_Metal" "{2F4E280681D4177D}Assets/ROOT_AER/Data/AER_Metal.emat" "AER_Keys" "{8F260F3F2AD19A41}Assets/ROOT_AER/Data/AER_Keys.emat" "AER_Screen" "{08164CE68094C8D6}Assets/ROOT_AER/Data/AER_Screen.emat" "AER_LED" "{36A9DC2B23547521}Assets/ROOT_AER/Data/AER_LED.emat" "AER_SolarCells" "{7C60B5DED537EC00}Assets/ROOT_AER/Data/AER_SolarCells.emat" "AER_Rubber" "{DE2513B590625AA8}Assets/ROOT_AER/Data/AER_Rubber.emat" "AER_Accent" "{E27C94EB2087E308}Assets/ROOT_AER/Data/AER_Accent_Coyote.emat" "AER_LED_Blue" "{83593EBE15E53DEF}Assets/ROOT_AER/Data/AER_LED_Blue.emat"
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB11622A0D}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11622A18}" {
+    Name "#ROOT_AER-Editable_Laptop_Olive_Name"
+    m_Image "{4D7E31C65140FBD2}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_Laptop_Olive.edds"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_Laptop_Olive_Name"
+    }
+   }
+  }
+ }
+}

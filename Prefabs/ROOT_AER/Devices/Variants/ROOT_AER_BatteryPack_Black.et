@@ -1,0 +1,28 @@
+GenericEntity : "{41B2C75A0CB1EFC7}Prefabs/ROOT_AER/Devices/ROOT_AER_BatteryPack.et" {
+ ID "6AF08C671B2CB965"
+ components {
+  MeshObject "{6AF041BB117D932C}" {
+   Materials {
+    MaterialAssignClass "{6AF4C426111549B3}" {
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AER/Data/AER_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264EC}" {
+     AssignedMaterial "{CFA85D4E05855592}Assets/ROOT_AER/Data/AER_Plastic_Black.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB11626798}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11626666}" {
+    Name "#ROOT_AER-Editable_BatteryPack_Black_Name"
+    m_Image "{88FCEEC7ED47D808}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_BatteryPack_Black.edds"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_BatteryPack_Black_Name"
+    }
+   }
+  }
+ }
+}

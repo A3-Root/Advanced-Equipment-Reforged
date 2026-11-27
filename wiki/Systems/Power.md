@@ -25,11 +25,11 @@ A consumer or battery has one provider. Links are made by:
 - players: "Take power cable" on the source, "Plug power cable into ..." on the device (see
   [Cables and Flash Drives](Cables-and-Flash-Drives.md));
 - the Game Master: "Power source" (sources within 500 m), "Connect power (selection)";
-- the World Editor: `ROOT_AE3_ConnectionComponent.m_sPowerSource`;
-- script: `ROOT_AE3_API.ConnectPower(consumer, source)`.
+- the World Editor: `ROOT_AER_ConnectionComponent.m_sPowerSource`;
+- script: `ROOT_AER_API.ConnectPower(consumer, source)`.
 
 A link drops when either device is picked up or they move farther apart than the cable. The power cable length of a
-source is `ROOT_AE3_PowerComponent.m_fCableLength` (Game Master "Power cable length", `SetPowerCableLength`).
+source is `ROOT_AER_PowerComponent.m_fCableLength` (Game Master "Power cable length", `SetPowerCableLength`).
 
 ## States
 

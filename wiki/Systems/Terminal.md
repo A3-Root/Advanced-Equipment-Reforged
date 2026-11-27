@@ -29,7 +29,7 @@ last line, quotes, `>` / `>>` redirection, Tab completion, history (Up / Down), 
 
 ## Programs are files
 
-Programs are files (`#!ae3 <name>`) in `/bin`, `/sbin`, `/usr/bin`, `/games`. A program runs only when its root-owned
+Programs are files (`#!aer <name>`) in `/bin`, `/sbin`, `/usr/bin`, `/games`. A program runs only when its root-owned
 file exists and it was installed on that computer; deleting the file removes it. Program files on flash drives or
 outside these folders do not run. Other executable files run as scripts (one command per line, at most 50 lines).
 

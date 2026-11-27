@@ -1,6 +1,6 @@
 # EWO Packs (77th JSOC EWO mode)
 
-Off by default (setting `m_bEwoMode`, AE3 System module, Game Master attribute "77th JSOC EWO mode"). Packs whose
+Off by default (setting `m_bEwoMode`, AER System module, Game Master attribute "77th JSOC EWO mode"). Packs whose
 prefab path contains a name in `m_sEwoPrefabs` (default `Radio_ANPRC77`, the AN/PRC-77 radio backpack) are EWO packs,
 worn, carried or placed. Inventory "Use" on a pack in the own inventory or the vicinity opens the EWO panel; it updates
 every 3 s and closes when the pack is out of reach, the player dies or EWO mode is turned off.

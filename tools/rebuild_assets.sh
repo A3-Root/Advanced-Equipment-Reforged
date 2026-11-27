@@ -28,7 +28,7 @@ BEFORE=$(powershell.exe -NoProfile -Command '(Get-Process ArmaReforgerWorkbenchS
 powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$ROOT/tools/wb_autoanswer.ps1")" -Seconds 1200 &
 W=$!
 "$EXE" -gproj "$(cygpath -m "$ROOT/addon.gproj")" -addonsDir "$ADDONS" -wbmodule=ScriptEditor \
-  -plugin=ROOT_AE3_RegisterResourcesPlugin "-ae3List=$L" -ae3KeepOpen=1 -wbsilent -scriptAuthorizeAll \
+  -plugin=ROOT_AER_RegisterResourcesPlugin "-aerList=$L" -aerKeepOpen=1 -wbsilent -scriptAuthorizeAll \
   -logsDir "$(cygpath -m "$LOG")" > /dev/null 2>&1 &
 missing=${#SRC[@]}
 for i in $(seq 1 240); do

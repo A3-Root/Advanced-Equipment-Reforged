@@ -13,12 +13,12 @@ Editor or script API.
   password; it needs a router that accepts connections.
 - Game Master: "Connect to network" (router list with distance, wireless or cable, ignore range), "Connect selection to
   router", "Disconnect network".
-- World Editor: `ROOT_AE3_ConnectionComponent.m_sNetwork`. Script: `ConnectNetwork`, `DisconnectNetwork`, `SetStaticIp`.
+- World Editor: `ROOT_AER_ConnectionComponent.m_sNetwork`. Script: `ConnectNetwork`, `DisconnectNetwork`, `SetStaticIp`.
 
 ## Remote access
 
 Computers accept SSH logins while `m_bSshEnabled` is on (laptops and the portable server by default); root and sudoers
-switch it with `sshd on|off` or the Network app; Game Master attribute "SSH server"; `ROOT_AE3_API.SetSshEnabled`.
+switch it with `sshd on|off` or the Network app; Game Master attribute "SSH server"; `ROOT_AER_API.SetSshEnabled`.
 `ssh` and Remote Access take an IP address or a hostname. SSH to a computer in standby fails with "Host is in standby."
 Routers filter SSH from other subnets (`m_bAllowExternalSsh`, regular expressions in `m_aExternalAllow`). A router
 without password changes settings only for sudoers.

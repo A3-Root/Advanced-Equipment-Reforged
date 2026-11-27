@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{FC1B0A9BBF7ADB42}Configs/Editor/AttributeCategories/ROOT_AER_Device.conf"
+ Configurations {
+  CONFResourceClass PC {
+  }
+  CONFResourceClass XBOX_ONE : PC {
+  }
+  CONFResourceClass XBOX_SERIES : PC {
+  }
+  CONFResourceClass PS4 : PC {
+  }
+  CONFResourceClass PS5 : PC {
+  }
+  CONFResourceClass HEADLESS : PC {
+  }
+ }
+}

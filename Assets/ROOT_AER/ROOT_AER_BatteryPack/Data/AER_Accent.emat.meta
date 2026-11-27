@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{58DD3912314682D1}Assets/ROOT_AER/ROOT_AER_BatteryPack/Data/AER_Accent.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

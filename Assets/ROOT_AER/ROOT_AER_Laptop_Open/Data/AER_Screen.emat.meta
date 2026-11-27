@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{135B220C68485E2C}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Screen.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

@@ -1,0 +1,86 @@
+MetaFileClass {
+ Name "{E124D93187244507}Assets/ROOT_AER/ROOT_AER_Laptop_Open/ROOT_AER_Laptop_Open.xob"
+ Configurations {
+  FBXResourceClass PC {
+   MaterialAssigns {
+    MaterialAssignClass "{6AF11E6A14202375}" {
+     SourceMaterial "AER_Plastic_Dark"
+     AssignedMaterial "{4BE8FB7E88018C52}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF11E6A1420234D}" {
+     SourceMaterial "AER_Keys"
+     AssignedMaterial "{26A74143078EC119}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Keys.emat"
+    }
+    MaterialAssignClass "{6AF11E6A14202348}" {
+     SourceMaterial "AER_LED"
+     AssignedMaterial "{6CABE210E84CF66A}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_LED.emat"
+    }
+    MaterialAssignClass "{6AF11E6A14202346}" {
+     SourceMaterial "AER_Metal"
+     AssignedMaterial "{44166D753711DF43}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Metal.emat"
+    }
+    MaterialAssignClass "{6AF11E6A14202347}" {
+     SourceMaterial "AER_Rubber"
+     AssignedMaterial "{C5687D5F78BECC52}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Rubber.emat"
+    }
+    MaterialAssignClass "{6AF11E6A14202342}" {
+     SourceMaterial "AER_Screen"
+     AssignedMaterial "{135B220C68485E2C}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Screen.emat"
+    }
+    MaterialAssignClass "{6AF4BE75165E51BE}" {
+     SourceMaterial "AER_LED_Blue"
+     AssignedMaterial "{89D37D19C3452EB6}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_LED_Blue.emat"
+    }
+    MaterialAssignClass "{6AF4BE75165E51B7}" {
+     SourceMaterial "AER_Accent"
+     AssignedMaterial "{86A846A84215CDC8}Assets/ROOT_AER/ROOT_AER_Laptop_Open/Data/AER_Accent.emat"
+    }
+   }
+   MeshParams {
+    MeshParam ROOT_AER_Laptop_Open {
+    }
+   }
+   GeometryParams {
+    GeometryParam UCX_ROOT_AER_Laptop_Open_base {
+     SurfaceProperties {
+      "{DFAD927815FE1E61}Common/Materials/Game/Gadgets/gadget_plastic.gamemat"
+     }
+     Mass 0
+     Margin 0
+    }
+    GeometryParam UCX_ROOT_AER_Laptop_Open_lid {
+     SurfaceProperties {
+      "{DFAD927815FE1E61}Common/Materials/Game/Gadgets/gadget_plastic.gamemat"
+     }
+     Mass 0
+     Margin 0
+    }
+   }
+   Common TXOCommonClass "{6AF11E6A16B5F13B}" : "{0877E7C4BB2B2C9A}Configs/System/ResourceTypes/PC/MeshObjectCommon.conf" {
+   }
+   ApplicationVendor "Blender Foundation"
+   ApplicationName "Blender (stable FBX IO)"
+   ApplicationVersion "5.2.2 LTS"
+  }
+  FBXResourceClass XBOX_ONE : PC {
+   Common TXOCommonClass "{6AF11E6A16B5F1BE}" : "{9D5B6207F7628CE2}Configs/System/ResourceTypes/XBOX_ONE/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass XBOX_SERIES : PC {
+   Common TXOCommonClass "{6AF11E6A16B5F184}" : "{DD9F02115C764647}Configs/System/ResourceTypes/XBOX_SERIES/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass PS4 : PC {
+   Common TXOCommonClass "{6AF11E6A16B5F06C}" : "{53EC476BC921D99A}Configs/System/ResourceTypes/PS4/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass PS5 : PC {
+   Common TXOCommonClass "{6AF11E6A16B5F076}" : "{F62AA8E7B8EA9D26}Configs/System/ResourceTypes/PS5/MeshObjectCommon.conf" {
+   }
+  }
+  FBXResourceClass HEADLESS : PC {
+   Common TXOCommonClass "{6AF11E6A16B5F0FE}" : "{3A5B3356978039E8}Configs/System/ResourceTypes/HEADLESS/MeshObjectCommon.conf" {
+   }
+  }
+ }
+}

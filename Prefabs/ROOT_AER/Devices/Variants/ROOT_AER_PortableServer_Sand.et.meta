@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{FF78F1A358D358E0}Prefabs/ROOT_AER/Devices/Variants/ROOT_AER_PortableServer_Sand.et"
+ Configurations {
+  EntityTemplateResourceClass PC {
+  }
+  EntityTemplateResourceClass XBOX_ONE : PC {
+  }
+  EntityTemplateResourceClass XBOX_SERIES : PC {
+  }
+  EntityTemplateResourceClass PS4 : PC {
+  }
+  EntityTemplateResourceClass PS5 : PC {
+  }
+  EntityTemplateResourceClass HEADLESS : PC {
+  }
+ }
+}

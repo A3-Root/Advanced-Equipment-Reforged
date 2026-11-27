@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{CB22A667BEF74716}Assets/ROOT_AER/ROOT_AER_BatteryPack/Data/AER_Metal.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

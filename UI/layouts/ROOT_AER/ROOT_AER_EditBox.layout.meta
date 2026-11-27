@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{CC1D9D6F84A4BB01}UI/layouts/ROOT_AER/ROOT_AER_EditBox.layout"
+ Configurations {
+  LayoutResourceClass PC {
+  }
+  LayoutResourceClass XBOX_ONE : PC {
+  }
+  LayoutResourceClass XBOX_SERIES : PC {
+  }
+  LayoutResourceClass PS4 : PC {
+  }
+  LayoutResourceClass PS5 : PC {
+  }
+  LayoutResourceClass HEADLESS : PC {
+  }
+ }
+}

@@ -1,0 +1,34 @@
+GenericEntity : "{E09D16B3CAD616CF}Prefabs/ROOT_AER/Devices/ROOT_AER_NetworkCable.et" {
+ ID "6AF56A0516240187"
+ components {
+  MeshObject "{6AF5691116223884}" {
+   Materials {
+    MaterialAssignClass "{6AF5691116223B70}" {
+     AssignedMaterial "{9513F577CD2E9E9F}Assets/ROOT_AER/Data/AER_Accent_Yellow.emat"
+    }
+   }
+  }
+  ROOT_AER_CableComponent "{6AF5691116223B00}" {
+   m_fLength 5
+  }
+  RigidBody "{6AF5691116223BE0}" {
+   Mass 0.2
+  }
+  SCR_EditableEntityComponent "{6AF5691116223080}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF569111622337C}" {
+    Name "#ROOT_AER-Editable_NetworkCable_5m_Name"
+    m_Image "{7EF937D5F4757CEB}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_NetworkCable_5m.edds"
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName UIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_NetworkCable_5m_Name"
+    }
+    ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
+     Weight 0.05
+    }
+   }
+  }
+ }
+}

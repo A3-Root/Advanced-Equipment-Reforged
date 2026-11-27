@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Registers every resource file without a .meta, re-saves new .et / .conf / .layout so Workbench writes IDs,
 # gives dependency overrides their original GUID and resolves {?}path references.
-# Uses headless Workbench (-scriptAuthorizeAll), ROOT_AE3_RegisterResourcesPlugin and wb_autoanswer.ps1 (FBX = model).
+# Uses headless Workbench (-scriptAuthorizeAll), ROOT_AER_RegisterResourcesPlugin and wb_autoanswer.ps1 (FBX = model).
 # Usage: tools/register_resources.sh [--resave-all]
 set -u
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
@@ -36,16 +36,16 @@ run() {
   powershell.exe -NoProfile -ExecutionPolicy Bypass -File "$(cygpath -w "$ROOT/tools/wb_autoanswer.ps1")" -Seconds 900 &
   local watcher=$!
   timeout 900 "$EXE" -gproj "$(cygpath -m "$ROOT/addon.gproj")" -addonsDir "$ADDONS" -wbmodule=ScriptEditor \
-    -plugin=ROOT_AE3_RegisterResourcesPlugin "$2" -wbsilent -scriptAuthorizeAll -logsDir "$(cygpath -m "$log")" > /dev/null 2>&1
+    -plugin=ROOT_AER_RegisterResourcesPlugin "$2" -wbsilent -scriptAuthorizeAll -logsDir "$(cygpath -m "$log")" > /dev/null 2>&1
   local code=$?
   kill "$watcher" 2>/dev/null
   echo "$1 exit $code"
-  grep -h "\[AE3\] \(FAILED\|NO META\|RESAVE FAILED\|done\)" "$log"/console.log 2>/dev/null
+  grep -h "\[AER\] \(FAILED\|NO META\|RESAVE FAILED\|done\)" "$log"/console.log 2>/dev/null
 }
 
 echo "register: $(wc -l < "$LIST"), resave: $(wc -l < "$RESAVE")"
-[ -s "$LIST" ] && run register "-ae3List=$(paste -sd'|' "$LIST")"
+[ -s "$LIST" ] && run register "-aerList=$(paste -sd'|' "$LIST")"
 python "$ROOT/tools/fix_overrides.py"
 python "$ROOT/tools/resolve_refs.py"
-[ -s "$RESAVE" ] && run resave "-ae3Resave=$(paste -sd'|' "$RESAVE")"
+[ -s "$RESAVE" ] && run resave "-aerResave=$(paste -sd'|' "$RESAVE")"
 exit 0

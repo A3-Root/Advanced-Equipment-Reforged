@@ -6,7 +6,7 @@ resourceDatabase.rdb
 UserMaps.desc
 *.tmp
 *.bak
-releases/ROOT_AE3-*.zip
+releases/ROOT_AER-*.zip
 
 # =========================
 # Server configs (credentials)

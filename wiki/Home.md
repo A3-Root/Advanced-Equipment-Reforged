@@ -35,4 +35,4 @@ admins and script authors.
 
 ## Developers
 
-- [Extending AE3](Developer/Extending.md): custom programs, desktop apps, desktop requests, network and access hooks.
+- [Extending AER](Developer/Extending.md): custom programs, desktop apps, desktop requests, network and access hooks.

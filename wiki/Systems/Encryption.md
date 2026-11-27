@@ -1,8 +1,8 @@
 # Encryption
 
-Files can hold text encrypted with one of 15 ciphers (`ROOT_AE3_Encryption`). Players decrypt it with `crypto` when they
+Files can hold text encrypted with one of 15 ciphers (`ROOT_AER_Encryption`). Players decrypt it with `crypto` when they
 know the key, or attack it with `crack`. Both programs are installed on computers with
-`ROOT_AE3_ComputerComponent.m_bInstallSecurity` or `ROOT_AE3_API.InstallCommand(device, "crypto")` / `"crack"`.
+`ROOT_AER_ComputerComponent.m_bInstallSecurity` or `ROOT_AER_API.InstallCommand(device, "crypto")` / `"crack"`.
 
 | Id | Name (`-a`) | Key (`-k`) | Default key |
 | --- | --- | --- | --- |
@@ -46,7 +46,5 @@ needed for caesar, columnar, vigenere, affine, railfence and substitution. A fil
 ## Setting up an encrypted file
 
 - Game Master: "Add file", Protection "Encrypted text (cipher)" or "Password and cipher", then the cipher and its key.
-- World Editor: `ROOT_AE3_FileEntry` Encryption and Key (empty key = default key).
-- Script: `ROOT_AE3_API.AddFile(device, path, content, owner, perms, ROOT_AE3_Encryption.VIGENERE, "LEMON")`.
-
-The ciphers come from Root's Cyber Warfare (Arma 3); Advanced Equipment for Arma 3 has Caesar and Columnar.
+- World Editor: `ROOT_AER_FileEntry` Encryption and Key (empty key = default key).
+- Script: `ROOT_AER_API.AddFile(device, path, content, owner, perms, ROOT_AER_Encryption.VIGENERE, "LEMON")`.

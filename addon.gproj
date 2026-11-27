@@ -10,11 +10,11 @@ GameProject {
    WidgetManagerSettings WidgetManagerSettings {
     StringTables {
      StringTableDefinition {
-      StringTableSource "{FF3CBFFA29A424BD}Language/ROOT_AE3_localization.st"
+      StringTableSource "{FF3CBFFA29A424BD}Language/ROOT_AER_localization.st"
       Languages {
        LanguageDefinition {
         Code "en_us"
-        StringTableRuntime "{67719202B7EDE889}Language/ROOT_AE3_localization.en_us.conf"
+        StringTableRuntime "{67719202B7EDE889}Language/ROOT_AER_localization.en_us.conf"
        }
       }
      }

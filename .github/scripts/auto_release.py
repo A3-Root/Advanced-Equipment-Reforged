@@ -16,7 +16,7 @@ from pathlib import Path
 
 from packaging.version import Version  # type: ignore
 
-PREFIX = "ROOT_AE3"
+PREFIX = "ROOT_AER"
 CHANGELOG = Path("releases/CHANGELOG.md")
 VERSION_TOKEN = re.compile(r"v?(\d+\.\d+\.\d+)\b")
 DRY_RUN = "--dry-run" in sys.argv

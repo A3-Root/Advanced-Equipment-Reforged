@@ -1,0 +1,12 @@
+GenericEntity : "{3CB164F06FC982E4}Prefabs/ROOT_AER/Devices/ROOT_AER_UsbStick_Prop.et" {
+ ID "6AF4C477110688C6"
+ components {
+  MeshObject "{6AF041BB11629F38}" {
+   Materials {
+    MaterialAssignClass "{6AF4C426111A6467}" {
+     AssignedMaterial "{461E8C729B9742CC}Assets/ROOT_AER/Data/AER_Accent_Blue.emat"
+    }
+   }
+  }
+ }
+}

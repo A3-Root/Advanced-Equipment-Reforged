@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{213567ED90B56562}Assets/ROOT_AER/ROOT_AER_PortableServer/Data/AER_Plastic_Olive.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

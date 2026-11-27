@@ -1,4 +1,4 @@
-"""Writes the desktop icons UI/Textures/ROOT_AE3/Icons/<name>.png (128x128 RGBA, drawn at 512 and downscaled).
+"""Writes the desktop icons UI/Textures/ROOT_AER/Icons/<name>.png (128x128 RGBA, drawn at 512 and downscaled).
 App and file icons are coloured; glyph icons (prefix g_) are white for tinting.
 Usage: python tools/gen_icons.py"""
 import math
@@ -8,7 +8,7 @@ from PIL import Image, ImageDraw, ImageFilter
 
 S = 512
 OUT_SIZE = 128
-OUT = pathlib.Path(__file__).resolve().parent.parent / "UI/Textures/ROOT_AE3/Icons"
+OUT = pathlib.Path(__file__).resolve().parent.parent / "UI/Textures/ROOT_AER/Icons"
 ICONS = {}
 
 

@@ -1,4 +1,4 @@
-"""Writes Language/ROOT_AE3_localization.en_us.conf (StringTableRuntime) from Language/ROOT_AE3_localization.st,
+"""Writes Language/ROOT_AER_localization.en_us.conf (StringTableRuntime) from Language/ROOT_AER_localization.st,
 entries sorted by Id. Optional: --set Id=Text ... adds or replaces entries in the .st first.
 Usage: python tools/build_strings.py [--set Id=Text ...]"""
 import pathlib
@@ -6,8 +6,8 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
-ST = ROOT / "Language/ROOT_AE3_localization.st"
-RT = ROOT / "Language/ROOT_AE3_localization.en_us.conf"
+ST = ROOT / "Language/ROOT_AER_localization.st"
+RT = ROOT / "Language/ROOT_AER_localization.en_us.conf"
 
 text = ST.read_text()
 items = dict(re.findall(r'Id "([^"]+)"\s*Target_en_us "([^"]*)"', text))

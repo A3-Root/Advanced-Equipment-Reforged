@@ -1,0 +1,21 @@
+GenericEntity : "{64D68C86AFC359FB}Prefabs/ROOT_AER/Devices/ROOT_AER_SolarPanel.et" {
+ ID "6AF08C671BD26943"
+ components {
+  MeshObject "{6AF041BB1162C222}" {
+   Materials {
+    MaterialAssignClass "{6AF4C4261115A069}" {
+     AssignedMaterial "{E27C94EB2087E308}Assets/ROOT_AER/Data/AER_Accent_Coyote.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162D443}" {
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat"
+    }
+   }
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162D4B7}" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162D487}" {
+    Name "#ROOT_AER-Editable_SolarPanel_Olive_Name"
+    m_Image "{2C6184CD1E0BD594}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_SolarPanel_Olive.edds"
+   }
+  }
+ }
+}

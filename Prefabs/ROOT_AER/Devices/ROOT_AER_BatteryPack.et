@@ -1,0 +1,139 @@
+GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
+ ID "6AF041BB116266FC"
+ components {
+  MeshObject "{6AF041BB117D932C}" {
+   Object "{6FBCBDC6ECBC17C8}Assets/ROOT_AER/ROOT_AER_BatteryPack/ROOT_AER_BatteryPack.xob"
+   Materials {
+    MaterialAssignClass "{6AF4C426111549B3}" {
+     SourceMaterial "AER_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AER/Data/AER_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF041BB11626405}" {
+     SourceMaterial "AER_Plastic_Dark"
+     AssignedMaterial "{20B61DA722305D98}Assets/ROOT_AER/Data/AER_Plastic_Dark.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264EC}" {
+     SourceMaterial "AER_Plastic_Olive"
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264E2}" {
+     SourceMaterial "AER_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AER/Data/AER_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB116264CF}" {
+     SourceMaterial "AER_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AER/Data/AER_LED.emat"
+    }
+   }
+  }
+  ROOT_AER_ConnectionComponent "{6AF041BB116267E1}" {
+   m_vPowerPort 0.13 0.19 0.06
+   m_vPowerPortDir 0 1 0
+  }
+  ROOT_AER_DeviceComponent "{6AF041BB1162672F}" {
+   m_eType BATTERY
+   m_sDeviceName ""
+  }
+  ROOT_AER_PowerComponent "{6AF041BB11626705}" {
+   m_eRole BATTERY
+   m_fOnDrawW 0
+   m_fStandbyDrawW 0
+   m_fOutputW 2000
+   m_fCapacityKWh 0.6
+   m_fRechargeW 300
+   m_fFuelCapacityL 0
+   m_fBurnLph 0
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 1
+   m_fCableLength 5
+  }
+  RigidBody "{6AF041BB116264AD}" {
+   LayerPreset "ItemFireView"
+   Mass 12
+   ModelGeometry 1
+  }
+  SCR_EditableEntityComponent "{6AF041BB11626798}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11626666}" {
+    Name "#ROOT_AER-Editable_BatteryPack_Name"
+    m_Image "{CE4616B1BF89916A}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_BatteryPack.edds"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_S THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611E4E762}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_BatteryPack_Name"
+    }
+    ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
+     Weight 12
+     SizeSetupStrategy Manual
+     ItemDimensions 10 10 10
+     ItemVolume 500
+    }
+    CustomAttributes {
+     PreviewRenderAttributes "{6AF2EA5011A63F0C}" {
+      CameraOrbitAngles -25 30 0
+      CameraDistanceToItem 2.7
+      FOV 10
+     }
+    }
+    m_Size SLOT_2x2
+    m_SlotType SLOT_LOADOUT_STORAGE
+   }
+  }
+  ActionsManagerComponent "{508AB5952B584B2E}" {
+   additionalActions {
+    ROOT_AER_ConnectPowerAction "{6AF635AC11883886}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF635AC11883895}" {
+      Name "ROOT_AER_TakePowerCable"
+     }
+     m_bSource 1
+    }
+    ROOT_AER_PowerAction "{6AF0880E11EACD0A}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF0880E11EACD1E}" {
+      Name "ROOT_AER_PowerAction"
+     }
+    }
+    ROOT_AER_ConnectPowerAction "{6AF041BB1162660E}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11626605}" {
+      Name "ROOT_AER_ConnectPowerAction"
+     }
+    }
+    ROOT_AER_StatusAction "{6AF041BB11626616}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB11626611}" {
+      Name "ROOT_AER_StatusAction"
+     }
+    }
+    ROOT_AER_RenameAction "{6AF4C42611154A14}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF4C42611154AEF}" {
+      Name "ROOT_AER_RenameAction"
+     }
+    }
+   }
+  }
+ }
+}

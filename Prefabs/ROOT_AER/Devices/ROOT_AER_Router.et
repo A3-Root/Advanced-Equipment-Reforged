@@ -1,0 +1,145 @@
+GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
+ ID "6AF041BB1162FB7E"
+ components {
+  MeshObject "{6AF041BB1162E7B8}" {
+   Object "{A6B20D03B7ACB870}Assets/ROOT_AER/ROOT_AER_Router/ROOT_AER_Router.xob"
+   Materials {
+    MaterialAssignClass "{6AF4C4261115CAE8}" {
+     SourceMaterial "AER_Accent"
+     AssignedMaterial "{BA1A4CB5E941E41D}Assets/ROOT_AER/Data/AER_Accent_Orange.emat"
+    }
+    MaterialAssignClass "{6AF4C4261115CAF5}" {
+     SourceMaterial "AER_LED_Blue"
+     AssignedMaterial "{83593EBE15E53DEF}Assets/ROOT_AER/Data/AER_LED_Blue.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162F934}" {
+     SourceMaterial "AER_Plastic_Olive"
+     AssignedMaterial "{EE23D17BA860D058}Assets/ROOT_AER/Data/AER_Plastic_Olive.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162F90C}" {
+     SourceMaterial "AER_Metal"
+     AssignedMaterial "{2F4E280681D4177D}Assets/ROOT_AER/Data/AER_Metal.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162F91A}" {
+     SourceMaterial "AER_LED"
+     AssignedMaterial "{36A9DC2B23547521}Assets/ROOT_AER/Data/AER_LED.emat"
+    }
+    MaterialAssignClass "{6AF041BB1162F9EF}" {
+     SourceMaterial "AER_Rubber"
+     AssignedMaterial "{DE2513B590625AA8}Assets/ROOT_AER/Data/AER_Rubber.emat"
+    }
+   }
+  }
+  ROOT_AER_ConnectionComponent "{6AF041BB1162F82F}" {
+   m_vNetPort -0.05 0.014 0.0725
+   m_vNetPortStep 0.025 0 0
+   m_vPowerPort 0.085 0.016 0.0725
+  }
+  ROOT_AER_DeviceComponent "{6AF041BB1162F86C}" {
+   m_eType ROUTER
+   m_sDeviceName ""
+  }
+  ROOT_AER_NetworkComponent "{6AF041BB1162F85E}" {
+   m_bRouter 1
+  }
+  ROOT_AER_PowerComponent "{6AF041BB1162F87B}" {
+   m_eRole CONSUMER
+   m_fOnDrawW 10
+   m_fStandbyDrawW 0
+   m_fOutputW 0
+   m_fCapacityKWh 0.1
+   m_fRechargeW 50
+   m_fFuelCapacityL 0
+   m_fBurnLph 0
+   m_bMains 0
+   m_bRequiresExternal 0
+   m_bStartOn 1
+  }
+  RigidBody "{6AF041BB1162F9FC}" {
+   LayerPreset "ItemFireView"
+   Mass 0.8
+   ModelGeometry 1
+  }
+  SCR_EditableEntityComponent "{6AF041BB1162F80F}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
+   m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1162F81C}" {
+    Name "#ROOT_AER-Editable_Router_Name"
+    m_Image "{DD5ADEEE05CA651E}UI/Textures/EditorPreviews/ROOT_AER/E_ROOT_AER_Router.edds"
+    m_aAuthoredLabels {
+     ENTITYTYPE_OBJECT FACTION_NONE SIZE_XS THEME_MILITARY
+    }
+    m_EntityBudgetCost {
+     SCR_EntityBudgetValue "{6AF17CE611E409A1}" {
+      m_BudgetType PROPS
+      m_Value 1
+     }
+    }
+   }
+  }
+  SCR_PlaceableInventoryItemComponent "{5222EB4D0C73006B}" {
+   Attributes SCR_ItemAttributeCollection "{5222EB4D0A2B466B}" {
+    ItemDisplayName ROOT_AER_DeviceInventoryUIInfo "{5222EB4D07D865FA}" {
+     Name "#ROOT_AER-Item_Router_Name"
+    }
+    ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
+     Weight 0.8
+     SizeSetupStrategy Manual
+     ItemDimensions 8 8 8
+     ItemVolume 250
+    }
+    CustomAttributes {
+     PreviewRenderAttributes "{6AF2EA5011A6D63F}" {
+      CameraOrbitAngles -25 30 0
+      CameraDistanceToItem 1.6
+      FOV 10
+     }
+    }
+    m_Size SLOT_2x1
+    m_SlotType SLOT_LOADOUT_STORAGE
+   }
+  }
+  ActionsManagerComponent "{508AB5952B584B2E}" {
+   additionalActions {
+    ROOT_AER_PowerAction "{6AF041BB1162F8D5}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB1162F8AB}" {
+      Name "ROOT_AER_PowerAction"
+     }
+    }
+    ROOT_AER_ConnectPowerAction "{6AF041BB1162F8BC}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB1162F8B9}" {
+      Name "ROOT_AER_ConnectPowerAction"
+     }
+    }
+    ROOT_AER_ConnectNetworkAction "{6AF041BB1162F889}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB1162F882}" {
+      Name "ROOT_AER_ConnectNetworkAction"
+     }
+    }
+    ROOT_AER_StatusAction "{6AF041BB1162F899}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF041BB1162F895}" {
+      Name "ROOT_AER_StatusAction"
+     }
+    }
+    ROOT_AER_RenameAction "{6AF4C4261115C4BA}" {
+     ParentContextList {
+      "default"
+     }
+     UIInfo UIInfo "{6AF4C4261115C4B5}" {
+      Name "ROOT_AER_RenameAction"
+     }
+    }
+   }
+  }
+ }
+}

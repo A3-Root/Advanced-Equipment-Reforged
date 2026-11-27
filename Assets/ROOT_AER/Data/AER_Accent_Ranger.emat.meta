@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{5E34CA544DFDBD6E}Assets/ROOT_AER/Data/AER_Accent_Ranger.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}

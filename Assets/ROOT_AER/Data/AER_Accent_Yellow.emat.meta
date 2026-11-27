@@ -1,0 +1,17 @@
+MetaFileClass {
+ Name "{9513F577CD2E9E9F}Assets/ROOT_AER/Data/AER_Accent_Yellow.emat"
+ Configurations {
+  EMATResourceClass PC {
+  }
+  EMATResourceClass XBOX_ONE : PC {
+  }
+  EMATResourceClass XBOX_SERIES : PC {
+  }
+  EMATResourceClass PS4 : PC {
+  }
+  EMATResourceClass PS5 : PC {
+  }
+  EMATResourceClass HEADLESS : PC {
+  }
+ }
+}
