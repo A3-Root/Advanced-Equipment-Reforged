@@ -46,6 +46,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
    m_bMains 0
    m_bRequiresExternal 0
    m_bStartOn 1
+   m_fCableLength 5
   }
   RigidBody "{6AF041BB116264AD}" {
    LayerPreset "ItemFireView"
@@ -100,6 +101,15 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
     }
    }
    additionalActions {
+    ROOT_AE3_ConnectPowerAction "{6AF635AC11883886}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF635AC11883895}" {
+      Name "ROOT_AE3_TakePowerCable"
+     }
+     m_bSource 1
+    }
     ROOT_AE3_PowerAction "{6AF0880E11EACD0A}" {
      ParentContextList {
       "ae3"

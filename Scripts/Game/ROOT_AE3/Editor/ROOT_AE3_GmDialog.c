@@ -1,8 +1,7 @@
 //! Game Master dialog: action panel for the selected devices, then the field form of the chosen action.
 //! The fields of an action, with the current values of the first selected device, come from the server
 //! (SCR_PlayerController.ROOT_AE3_GmQuery, answered by OnFields).
-//! Also the player rename form (key RENAME_KEY, sent as ROOT_AE3_EMsg.RENAME instead of a Game Master request)
-//! and the network cable form of a device (key CABLE_KEY: router and cable, sent as ROOT_AE3_EMsg.PLUG_NET).
+//! Also the player rename form (key RENAME_KEY, sent as ROOT_AE3_EMsg.RENAME instead of a Game Master request).
 class ROOT_AE3_GmDialog : ChimeraMenuBase
 {
 	protected static string s_sKey;
@@ -15,7 +14,6 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	protected static ROOT_AE3_GmDialog s_Open;
 
 	static const string RENAME_KEY = "_rename";
-	static const string CABLE_KEY = "_cable";
 
 	protected ref ROOT_AE3_GmDialogForm m_Form;
 	protected ref ROOT_AE3_GmPanel m_Panel;
@@ -107,18 +105,6 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Player: network cable form of a placed device (fields: router, cable length).
-	static void OpenCable(IEntity device, notnull array<ref ROOT_AE3_GmField> fields)
-	{
-		ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(device);
-		if (!d)
-			return;
-
-		array<RplId> targets = {d.GetRplId()};
-		OpenLocal(CABLE_KEY, "Plug network cable: " + d.GetDeviceName(), fields, targets);
-	}
-
-	//------------------------------------------------------------------------------------------------
 	protected static void Query()
 	{
 		SCR_PlayerController pc = SCR_PlayerController.Cast(GetGame().GetPlayerController());
@@ -200,10 +186,7 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 			return;
 		}
 
-		if (s_sKey == CABLE_KEY)
-			m_Form = new ROOT_AE3_GmDialogForm(this, root, s_sTitle, s_aFields, "Plug in");
-		else
-			m_Form = new ROOT_AE3_GmDialogForm(this, root, s_sTitle, s_aFields);
+		m_Form = new ROOT_AE3_GmDialogForm(this, root, s_sTitle, s_aFields);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -236,17 +219,6 @@ class ROOT_AE3_GmDialog : ChimeraMenuBase
 	//------------------------------------------------------------------------------------------------
 	void Submit(notnull array<string> values)
 	{
-		if (s_sKey == CABLE_KEY)
-		{
-			foreach (RplId id : s_aTargets)
-			{
-				ROOT_AE3_Net.SendToServer(id, ROOT_AE3_EMsg.PLUG_NET, ROOT_AE3_Codec.Join(values));
-			}
-
-			Close();
-			return;
-		}
-
 		if (s_sKey == RENAME_KEY)
 		{
 			string name;

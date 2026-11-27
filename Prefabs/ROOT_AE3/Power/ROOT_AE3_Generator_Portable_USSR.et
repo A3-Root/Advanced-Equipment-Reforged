@@ -9,6 +9,7 @@ GenericEntity : "{FCBEDECB2A39B6BC}Prefabs/Props/Military/Generators/GeneratorPo
    }
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB1163F617}" {
+   m_vPowerPort 0 0.35 0
   }
   ROOT_AE3_DeviceComponent "{6AF041BB1163F620}" {
    m_eType GENERATOR
@@ -29,6 +30,7 @@ GenericEntity : "{FCBEDECB2A39B6BC}Prefabs/Props/Military/Generators/GeneratorPo
    m_bMains 0
    m_bRequiresExternal 0
    m_bStartOn 0
+   m_fCableLength 15
   }
   SCR_EditableEntityComponent "{6AF041BB1163F6E7}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB1163F6F8}" {
@@ -59,6 +61,15 @@ GenericEntity : "{FCBEDECB2A39B6BC}Prefabs/Props/Military/Generators/GeneratorPo
     }
    }
    additionalActions {
+    ROOT_AE3_ConnectPowerAction "{6AF635AC1188650A}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF635AC11886519}" {
+      Name "ROOT_AE3_TakePowerCable"
+     }
+     m_bSource 1
+    }
     ROOT_AE3_PowerAction "{6AF041BB1163F6BC}" {
      ParentContextList {
       "ae3"

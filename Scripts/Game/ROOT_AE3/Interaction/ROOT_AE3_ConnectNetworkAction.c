@@ -1,6 +1,7 @@
-//! Network cable of a device: plug a carried cable into a router (form with the routers within the longest
-//! carried cable and the cable lengths, ROOT_AE3_GmDialog.OpenCable), or unplug it (cable back to the user).
-//! Routers cascade to a parent router the same way.
+//! Network cable of a device, in two steps (ROOT_AE3_CableHand): "Plug in network cable" on the first device (needs a
+//! carried network cable; the longest is used), then "Plug network cable into ..." on the other end (computer to router,
+//! router to router). The second step fails while the devices are farther apart than the cable.
+//! Without a held cable: "Unplug network cable" on a wired device gives the cable item back.
 class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 {
 	//------------------------------------------------------------------------------------------------
@@ -11,50 +12,23 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Distinct lengths of the carried cables, ascending.
-	protected static void Lengths(IEntity user, notnull array<float> outLengths)
+	protected bool IsRouter(IEntity owner)
 	{
-		outLengths.Clear();
-		array<IEntity> items = {};
-		ROOT_AE3_CableComponent.Carried(user, items);
-		foreach (IEntity item : items)
-		{
-			float l = ROOT_AE3_CableComponent.Of(item).GetLength();
-			if (!outLengths.Contains(l))
-				outLengths.Insert(l);
-		}
-
-		outLengths.Sort();
+		ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(owner);
+		return n && n.IsRouter();
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Routers within reach m, nearest first.
-	protected static void Routers(IEntity owner, float reach, notnull array<ROOT_AE3_NetworkComponent> outRouters, notnull array<float> outDist)
+	//! Client: the local player holds a network cable from another device.
+	protected bool Finishing(IEntity owner)
 	{
-		outRouters.Clear();
-		outDist.Clear();
-		foreach (ROOT_AE3_DeviceComponent d : ROOT_AE3_Manager.Get().GetDevices())
-		{
-			if (!d || d.IsHidden() || d.GetOwner() == owner || ROOT_AE3_Util.IsCarried(d.GetOwner()))
-				continue;
+		return ROOT_AE3_CableHand.LocalKind() == ROOT_AE3_CableHand.NET && ROOT_AE3_CableHand.LocalDevice() != owner;
+	}
 
-			ROOT_AE3_NetworkComponent n = ROOT_AE3_NetworkComponent.Of(d.GetOwner());
-			if (!n || !n.IsRouter())
-				continue;
-
-			float dist = vector.Distance(owner.GetOrigin(), d.GetOwner().GetOrigin());
-			if (dist > reach)
-				continue;
-
-			int at = 0;
-			while (at < outDist.Count() && outDist[at] <= dist)
-			{
-				at++;
-			}
-
-			outRouters.InsertAt(n, at);
-			outDist.InsertAt(dist, at);
-		}
+	//------------------------------------------------------------------------------------------------
+	protected bool Holding(IEntity owner)
+	{
+		return ROOT_AE3_CableHand.LocalKind() == ROOT_AE3_CableHand.NET && ROOT_AE3_CableHand.LocalDevice() == owner;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -69,7 +43,24 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 	//------------------------------------------------------------------------------------------------
 	override bool CanBePerformedScript(IEntity user)
 	{
-		if (Wired(GetOwner()))
+		IEntity owner = GetOwner();
+		if (Holding(owner))
+			return true;
+
+		if (Finishing(owner))
+		{
+			IEntity child, parent;
+			string reason = ROOT_AE3_CableHand.Check(ROOT_AE3_CableHand.NET, ROOT_AE3_CableHand.LocalDevice(), owner, ROOT_AE3_CableHand.LocalLength(), child, parent);
+			if (!reason.IsEmpty())
+			{
+				SetCannotPerformReason(reason);
+				return false;
+			}
+
+			return true;
+		}
+
+		if (Wired(owner))
 			return true;
 
 		if (!ScanDue(user))
@@ -80,9 +71,7 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 			return m_bScanResult;
 		}
 
-		array<float> lengths = {};
-		Lengths(user, lengths);
-		if (!CachedScan(true, !lengths.IsEmpty()))
+		if (!CachedScan(true, ROOT_AE3_CableComponent.FindCarried(user, 0) != null))
 		{
 			SetCannotPerformReason("No network cable");
 			return false;
@@ -92,18 +81,37 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Authority. The step follows the held cable of the player on the server, not the client's view.
 	override void PerformAction(IEntity pOwnerEntity, IEntity pUserEntity)
 	{
-		if (Wired(pOwnerEntity))
+		if (!IsAuthority(pOwnerEntity) || !InReach(pOwnerEntity, pUserEntity))
+			return;
+
+		int playerId = GetGame().GetPlayerManager().GetPlayerIdFromControlledEntity(pUserEntity);
+		ROOT_AE3_HeldCable held = ROOT_AE3_CableHand.GetHeld(playerId);
+		string reason;
+		if (held && held.m_iKind == ROOT_AE3_CableHand.NET)
 		{
-			if (IsAuthority(pOwnerEntity) && InReach(pOwnerEntity, pUserEntity))
-				Unplug(pOwnerEntity, pUserEntity);
+			if (held.m_Device == pOwnerEntity)
+			{
+				ROOT_AE3_CableHand.Drop(playerId, "Network cable unplugged from " + ROOT_AE3_CableHand.Name(pOwnerEntity) + ".");
+				return;
+			}
+
+			if (!ROOT_AE3_CableHand.Plug(pUserEntity, pOwnerEntity, reason))
+				Report(pUserEntity, reason);
 
 			return;
 		}
 
-		if (pUserEntity == SCR_PlayerController.GetLocalControlledEntity())
-			OpenForm(pOwnerEntity, pUserEntity);
+		if (Wired(pOwnerEntity))
+		{
+			Unplug(pOwnerEntity, pUserEntity);
+			return;
+		}
+
+		if (!ROOT_AE3_CableHand.Take(pUserEntity, ROOT_AE3_CableHand.NET, pOwnerEntity, reason))
+			Report(pUserEntity, reason);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -122,63 +130,29 @@ class ROOT_AE3_ConnectNetworkAction : ROOT_AE3_UserActionBase
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Local player: form with the routers within the longest carried cable and the cable lengths.
-	protected void OpenForm(IEntity owner, IEntity user)
-	{
-		array<float> lengths = {};
-		Lengths(user, lengths);
-		if (lengths.IsEmpty())
-			return;
-
-		array<ROOT_AE3_NetworkComponent> routers = {};
-		array<float> dists = {};
-		Routers(owner, lengths[lengths.Count() - 1], routers, dists);
-		if (routers.IsEmpty())
-		{
-			SCR_HintManagerComponent.ShowCustomHint(string.Format("No router within %1 m.", lengths[lengths.Count() - 1]), "Advanced Equipment", 4);
-			return;
-		}
-
-		array<string> ids = {};
-		array<string> labels = {};
-		foreach (int i, ROOT_AE3_NetworkComponent r : routers)
-		{
-			ROOT_AE3_DeviceComponent d = ROOT_AE3_DeviceComponent.Of(r.GetOwner());
-			int id = d.GetRplId();
-			ids.Insert(id.ToString());
-			string name = d.GetDeviceName();
-			if (!r.GetSsid().IsEmpty() && r.GetSsid() != name)
-				name = r.GetSsid() + " (" + name + ")";
-
-			labels.Insert(string.Format("%1 - %2 m", name, Math.Ceil(dists[i])));
-		}
-
-		// Shortest cable that reaches the nearest router.
-		array<string> lens = {};
-		array<string> lenLabels = {};
-		string pick;
-		foreach (float l : lengths)
-		{
-			lens.Insert(l.ToString());
-			lenLabels.Insert(l.ToString() + " m");
-			if (pick.IsEmpty() && l >= dists[0])
-				pick = l.ToString();
-		}
-
-		array<ref ROOT_AE3_GmField> fields = {
-			ROOT_AE3_GmField.Choice("Router", ids, labels, ids[0]),
-			ROOT_AE3_GmField.Choice("Cable", lens, lenLabels, pick)
-		};
-		ROOT_AE3_GmDialog.OpenCable(owner, fields);
-	}
-
-	//------------------------------------------------------------------------------------------------
 	override bool GetActionNameScript(out string outName)
 	{
-		if (Wired(GetOwner()))
+		IEntity owner = GetOwner();
+		if (Holding(owner))
+		{
+			outName = "Unplug held network cable";
+			return true;
+		}
+
+		if (Finishing(owner))
+		{
+			IEntity first = ROOT_AE3_CableHand.LocalDevice();
+			float dist = vector.Distance(first.GetOrigin(), owner.GetOrigin());
+			outName = string.Format("Plug network cable into %1 (%2 / %3 m)", ROOT_AE3_CableHand.Name(owner), Math.Ceil(dist), ROOT_AE3_CableHand.LocalLength());
+			return true;
+		}
+
+		if (Wired(owner))
 			outName = "Unplug network cable";
+		else if (IsRouter(owner))
+			outName = "Plug in network cable (router port)";
 		else
-			outName = "Plug network cable...";
+			outName = "Plug in network cable";
 
 		return true;
 	}

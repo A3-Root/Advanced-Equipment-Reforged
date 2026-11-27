@@ -68,6 +68,9 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	[Attribute("1", desc: "Fuel level at start (0-1)", params: "0 1 0.01", category: "Power")]
 	protected float m_fStartFuel;
 
+	[Attribute("15", desc: "Length in m of the power cable of this source (generator, battery, solar panel)", params: "1 200 1", category: "Power"), RplProp()]
+	protected float m_fCableLength;
+
 	[RplProp(onRplName: "OnStateRpl")]
 	protected int m_iState;
 
@@ -99,7 +102,7 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	protected bool m_bRestored;
 	protected int m_iRestoredState = -1;
 	[RplProp()]
-	protected float m_fLinkLength;	//!< Cable length when plugged in
+	protected float m_fLinkLength;	//!< Cable length of the link
 	protected float m_fChargeFactor = 1;	//!< Share of the recharge rate the provider can deliver
 	protected RplComponent m_RplComponent;
 	protected ref ScriptInvokerBase<ROOT_AE3_PowerStateInvoker> m_OnStateChanged;
@@ -327,10 +330,25 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Authority: cable stretched beyond its plugged length (device moved).
+	//! Replicated: power cable length of this source.
+	float GetCableLength()
+	{
+		return m_fCableLength;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority.
+	void SetCableLength(float length)
+	{
+		m_fCableLength = Math.Clamp(length, 1, 200);
+		Replication.BumpMe();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority: devices farther apart than the cable of the link.
 	bool LinkStretched()
 	{
-		return m_Provider && vector.Distance(GetOwner().GetOrigin(), m_Provider.GetOwner().GetOrigin()) > m_fLinkLength + 2;
+		return m_Provider && vector.Distance(GetOwner().GetOrigin(), m_Provider.GetOwner().GetOrigin()) > m_fLinkLength;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -623,7 +641,9 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 
 	//------------------------------------------------------------------------------------------------
 	//! Authority: connects this consumer to a provider; one provider per consumer.
-	bool ConnectTo(ROOT_AE3_PowerComponent provider, out string reason)
+	//! cable: link length in m; < 0: the longer of the cable of the provider and the distance + 2 m (links without a
+	//! player: Game Master, World Editor, script, persistence).
+	bool ConnectTo(ROOT_AE3_PowerComponent provider, out string reason, float cable = -1)
 	{
 		if (!provider || provider == this)
 		{
@@ -657,7 +677,10 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 
 		Disconnect();
 		m_Provider = provider;
-		m_fLinkLength = vector.Distance(GetOwner().GetOrigin(), provider.GetOwner().GetOrigin());
+		m_fLinkLength = cable;
+		if (cable <= 0)
+			m_fLinkLength = Math.Max(provider.GetCableLength(), vector.Distance(GetOwner().GetOrigin(), provider.GetOwner().GetOrigin()) + 2);
+
 		provider.m_aConsumers.Insert(this);
 		m_bHasProvider = true;
 		ROOT_AE3_DeviceComponent pd = ROOT_AE3_DeviceComponent.Of(provider.GetOwner());

@@ -30,8 +30,10 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 	[Attribute("0 0 -1", desc: "Model-relative direction out of the power port", category: "Cable ports")]
 	protected vector m_vPowerPortDir;
 
-	protected static const ResourceName NET_MATERIAL = "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat";
-	protected static const ResourceName POWER_MATERIAL = "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat";
+	static const ResourceName NET_MATERIAL = "{CFA85D4E05855592}Assets/ROOT_AE3/Data/AE3_Plastic_Black.emat";
+	static const ResourceName POWER_MATERIAL = "{BA1A4CB5E941E41D}Assets/ROOT_AE3/Data/AE3_Accent_Orange.emat";
+	static const float NET_RADIUS = 0.003;
+	static const float POWER_RADIUS = 0.005;
 
 	protected ref array<IEntity> m_aWired = {};
 	protected ref array<float> m_aWiredCable = {};			//!< Cable length in m
@@ -280,7 +282,7 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 		if (placed && rl && !ROOT_AE3_Util.IsCarried(router))
 		{
 			if (!m_NetView)
-				m_NetView = new ROOT_AE3_CableView(NET_MATERIAL, 0.003);
+				m_NetView = new ROOT_AE3_CableView(NET_MATERIAL, NET_RADIUS);
 
 			NetPort(0, a, aDir);
 			ROOT_AE3_DeviceComponent own = ROOT_AE3_DeviceComponent.Of(owner);
@@ -313,11 +315,11 @@ class ROOT_AE3_ConnectionComponent : ScriptComponent
 		if (placed && sl && !ROOT_AE3_Util.IsCarried(source))
 		{
 			if (!m_PowerView)
-				m_PowerView = new ROOT_AE3_CableView(POWER_MATERIAL, 0.004);
+				m_PowerView = new ROOT_AE3_CableView(POWER_MATERIAL, POWER_RADIUS);
 
 			PowerPort(a, aDir);
 			sl.PowerPort(b, bDir);
-			m_PowerView.Update(a, aDir, b, bDir, p.GetLinkLength() + 1.5);
+			m_PowerView.Update(a, aDir, b, bDir, p.GetLinkLength());
 		}
 		else
 		{

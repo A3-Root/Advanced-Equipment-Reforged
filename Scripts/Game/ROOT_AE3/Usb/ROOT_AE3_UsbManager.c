@@ -89,7 +89,7 @@ class ROOT_AE3_UsbManager
 		Math3D.MatrixMultiply4(world, local, p.Transform);
 		IEntity prop = GetGame().SpawnEntityPrefab(res, GetGame().GetWorld(), p);
 		if (prop)
-			c.GetOwner().AddChild(prop, -1, EAddChildFlags.AUTO_TRANSFORM);
+			c.GetOwner().AddChild(prop, -1, EAddChildFlags.AUTO_TRANSFORM | EAddChildFlags.RECALC_LOCAL_TRANSFORM);
 
 		return prop;
 	}

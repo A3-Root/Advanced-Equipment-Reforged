@@ -9,8 +9,8 @@
 | Generator | Burns fuel while on, switches off on overload or empty tank; refuel from a carried fuel container |
 | Solar panel | Output by sun elevation and panel tilt, buffered in its internal battery |
 
-Plugging: "Plug into power source" connects to the nearest provider within 6 m. Cables drop when either end is
-picked up or moved more than 2 m beyond the plugged length.
+Plugging: "Take power cable" on a source, then "Plug power cable into ..." on a device within the source cable length
+(`m_fCableLength`). Cables drop when either end is picked up or the devices move farther apart than the cable.
 
 ## Network
 
@@ -19,7 +19,7 @@ cable and accept wireless clients within their range. Static IP and router setti
 Game Master, World Editor or script API. Remote access (SSH logins, `m_bSshEnabled`, on for laptops and the
 portable server): Game Master attribute "SSH server", desktop Network app, `sshd on|off`, `ROOT_AE3_API.SetSshEnabled`.
 SSH to a computer in standby fails with "Host is in standby." `wifi scan`, `wifi connect`, the desktop Network app and
-the "Plug network cable" action (10 m) join a router. Wireless clients drop out of range or when the router
+the network cable actions (see Cables) join a router. Wireless clients drop out of range or when the router
 loses power; cables follow the same stretch rule as power cables. A router without password changes settings
 only for sudoers.
 
@@ -64,8 +64,11 @@ in the carrier's inventory and recharges from a running generator, battery or so
 
 ## Cables
 
-Network cable items: 5 m, 15 m, 30 m (`ROOT_AE3_CableComponent.m_fLength`). "Plug network cable..." on a placed device
-lists the routers within the longest carried cable; the server checks reach, length and accept, uses up the item and
-stores length and prefab with the link (saved by persistence). Unplug gives the item back; a link pulled beyond its
-length unplugs and drops the item at the device. Clients draw network cables to the router and power links to the
+Network cable items: 5 m, 15 m, 30 m (`ROOT_AE3_CableComponent.m_fLength`). Two steps (`ROOT_AE3_CableHand`): "Plug in
+network cable" on the first device (longest carried cable), then "Plug network cable into ..." on the other end (computer
+to router, router to router: the first router joins the second). The server checks length and accept, uses up the item
+and stores length and prefab with the link (saved by persistence). Power: "Take power cable" on a source, then "Plug
+power cable into ..." on a consumer or battery. The held end is drawn to the right hand and drops beyond the cable
+length from the first device. Unplug gives the network cable item back; a link pulled beyond its length unplugs and
+drops the item at the device. Clients draw network cables to the router and power links to the
 source between the ports of `ROOT_AE3_ConnectionComponent` (procedural tube, sag from the slack, not below the ground).

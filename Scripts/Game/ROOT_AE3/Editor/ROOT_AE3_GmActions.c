@@ -39,6 +39,8 @@ class ROOT_AE3_GmActions
 			"standby", "Standby", "Power",
 			"battery", "Battery level", "Power",
 			"fuel", "Fuel", "Power",
+			"power_source", "Power source", "Power",
+			"power_cable", "Power cable length", "Power",
 			"connect_power", "Connect power (selection)", "Power",
 			"disconnect_power", "Disconnect power", "Power",
 			"router", "Router name and password", "Network",
@@ -361,6 +363,44 @@ class ROOT_AE3_GmActions
 
 			case "battery": F(fields, ROOT_AE3_EGmField.TEXT, "Charge in percent 0-100", Math.Round(p.GetLevel() * 100).ToString()); return;
 			case "fuel": F(fields, ROOT_AE3_EGmField.TEXT, "Fuel in liters", p.GetFuel().ToString()); return;
+			case "power_cable": F(fields, ROOT_AE3_EGmField.TEXT, "Length in m of the power cable players take from this source", p.GetCableLength().ToString()); return;
+			case "power_source":
+			{
+				array<string> sv = {""};
+				array<string> sl = {"None (unplug)"};
+				vector at = ROOT_AE3_Util.WorldPos(e);
+				foreach (ROOT_AE3_DeviceComponent sd : ROOT_AE3_Manager.Get().GetDevices())
+				{
+					ROOT_AE3_PowerComponent sp;
+					if (sd && sd.GetOwner() != e)
+						sp = ROOT_AE3_PowerComponent.Of(sd.GetOwner());
+
+					if (!sp || !sp.IsProvider() || sp.GetProvider() == p || ROOT_AE3_Util.IsCarried(sd.GetOwner()))
+						continue;
+
+					float dist = vector.Distance(at, sd.GetOwner().GetOrigin());
+					if (dist > 500)
+						continue;
+
+					int sid = sd.GetRplId();
+					sv.Insert(sid.ToString());
+					sl.Insert(string.Format("%1 (%2 m, cable %3 m)", sd.GetDeviceName(), Math.Round(dist), sp.GetCableLength()));
+				}
+
+				string cur;
+				ROOT_AE3_DeviceComponent pd;
+				if (p.GetProvider())
+					pd = ROOT_AE3_DeviceComponent.Of(p.GetProvider().GetOwner());
+
+				if (pd)
+				{
+					int cid = pd.GetRplId();
+					cur = cid.ToString();
+				}
+
+				Choice(fields, "Power source within 500 m (the cable reaches any distance)", sv, sl, cur);
+				return;
+			}
 			case "router":
 			{
 				F(fields, ROOT_AE3_EGmField.TEXT, "Network name (SSID)", n.GetSsid());
@@ -450,6 +490,8 @@ class ROOT_AE3_GmActions
 
 			case "battery": return "battery";
 			case "fuel": return "generator";
+			case "power_source": return "consumer";
+			case "power_cable": return "source";
 			case "router": return "router";
 			case "connect_network":
 			case "disconnect_network":
@@ -481,6 +523,18 @@ class ROOT_AE3_GmActions
 			{
 				ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(e);
 				return p && p.GetRole() == ROOT_AE3_EPowerRole.GENERATOR;
+			}
+
+			case "consumer":
+			{
+				ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(e);
+				return p && !p.IsMains() && (p.GetRole() == ROOT_AE3_EPowerRole.CONSUMER || p.GetRole() == ROOT_AE3_EPowerRole.BATTERY);
+			}
+
+			case "source":
+			{
+				ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(e);
+				return p && p.IsProvider();
 			}
 
 			case "router":
@@ -724,6 +778,22 @@ class ROOT_AE3_GmActions
 			case "static_ip": return R(ROOT_AE3_API.SetStaticIp(e, V(v, 0)));
 			case "battery": return R(ROOT_AE3_API.SetBatteryLevel(e, V(v, 0).ToFloat() / 100));
 			case "fuel": return R(ROOT_AE3_API.SetFuel(e, V(v, 0).ToFloat()));
+			case "power_cable": return R(ROOT_AE3_API.SetPowerCableLength(e, V(v, 0).ToFloat()));
+			case "power_source":
+			{
+				if (V(v, 0).IsEmpty())
+					return R(ROOT_AE3_API.DisconnectPower(e));
+
+				ROOT_AE3_DeviceComponent src = ROOT_AE3_DeviceComponent.FromRplId(V(v, 0).ToInt());
+				if (!src)
+					return Fail("Power source not found.");
+
+				string preason;
+				if (!ROOT_AE3_ConnectionComponent.ConnectPower(e, src.GetOwner(), preason))
+					return Fail(preason);
+
+				return 1;
+			}
 			case "power_on": return R(ROOT_AE3_API.SetPowerState(e, 1));
 			case "power_off": return R(ROOT_AE3_API.SetPowerState(e, 0));
 			case "standby": return R(ROOT_AE3_API.SetPowerState(e, 2));

@@ -161,6 +161,9 @@ class ROOT_AE3_CableView
 		if (!m_Entity)
 		{
 			m_Entity = GetGame().SpawnEntity(GenericEntity, GetGame().GetWorld());
+			if (m_Entity)
+				m_Entity.SetFlags(EntityFlags.VISIBLE, false);
+
 			int numVerts[] = {RINGS * SIDES};
 			int numIndices[] = {(RINGS - 1) * SIDES * 12};
 			string materials[] = {m_Material};

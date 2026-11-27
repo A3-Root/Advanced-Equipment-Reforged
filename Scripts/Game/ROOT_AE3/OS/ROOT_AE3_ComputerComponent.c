@@ -1130,9 +1130,9 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Picked up: flash drives stay plugged in (port props removed), power links drop, a computer nobody
+	//! Picked up: flash drives stay plugged in (port props stay attached), power links drop, a computer nobody
 	//! operates from this inventory goes to standby. Sessions of other players end by ROOT_AE3_Session.PlayerValid.
-	//! Placed again: port props come back.
+	//! Placed again: missing port props come back.
 	protected void OnSlotChanged(InventoryStorageSlot oldSlot, InventoryStorageSlot newSlot)
 	{
 		if (!IsAuthority())
@@ -1144,7 +1144,6 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 			return;
 		}
 
-		RemoveUsbProps();
 		ROOT_AE3_PowerComponent p = GetPower();
 		if (!p)
 			return;
@@ -1158,19 +1157,6 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 		string reason;
 		if (p.IsOn() && (carrierId <= 0 || !ROOT_AE3_Manager.Get().HasSession(carrierId, this)))
 			p.Standby(reason);
-	}
-
-	//------------------------------------------------------------------------------------------------
-	protected void RemoveUsbProps()
-	{
-		foreach (ROOT_AE3_UsbSlot slot : m_aUsbSlots)
-		{
-			if (slot && slot.m_Prop)
-			{
-				SCR_EntityHelper.DeleteEntityAndChildren(slot.m_Prop);
-				slot.m_Prop = null;
-			}
-		}
 	}
 
 	//------------------------------------------------------------------------------------------------

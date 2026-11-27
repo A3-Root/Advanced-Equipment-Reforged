@@ -9,6 +9,7 @@ GenericEntity : "{7F671B405CDBF0A2}Prefabs/Props/Airport/GeneratorAirfield_US_01
    }
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB11635CB8}" {
+   m_vPowerPort 0 0.6 0
   }
   ROOT_AE3_DeviceComponent "{6AF041BB11635CC9}" {
    m_eType GENERATOR
@@ -29,6 +30,7 @@ GenericEntity : "{7F671B405CDBF0A2}Prefabs/Props/Airport/GeneratorAirfield_US_01
    m_bMains 0
    m_bRequiresExternal 0
    m_bStartOn 0
+   m_fCableLength 25
   }
   SCR_EditableEntityComponent "{6AF041BB11635C86}" : "{996046FE206C699A}Prefabs/Editor/Components/Default_SCR_EditableEntityComponent.ct" {
    m_UIInfo SCR_EditableEntityUIInfo "{6AF041BB11635C99}" {
@@ -59,6 +61,15 @@ GenericEntity : "{7F671B405CDBF0A2}Prefabs/Props/Airport/GeneratorAirfield_US_01
     }
    }
    additionalActions {
+    ROOT_AE3_ConnectPowerAction "{6AF635AC118B0872}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF635AC118B0813}" {
+      Name "ROOT_AE3_TakePowerCable"
+     }
+     m_bSource 1
+    }
     ROOT_AE3_PowerAction "{6AF041BB11635F5A}" {
      ParentContextList {
       "ae3"

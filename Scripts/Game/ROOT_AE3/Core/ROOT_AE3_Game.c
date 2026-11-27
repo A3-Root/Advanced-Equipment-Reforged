@@ -15,6 +15,7 @@ modded class ArmaReforgerScripted
 		ROOT_AE3_SystemModuleComponent.Reset();
 		ROOT_AE3_Intel.Reset();
 		ROOT_AE3_Cctv.Reset();
+		ROOT_AE3_CableHand.Reset();
 		ROOT_AE3_Job.Reset();
 		ROOT_AE3_Net.Reset();
 		ROOT_AE3_ComputerComponent.Reset();

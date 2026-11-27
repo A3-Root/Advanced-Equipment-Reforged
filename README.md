@@ -11,7 +11,7 @@ Equipment (Arma 3) 2.1.0.8. No dependencies besides Arma Reforger.
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_PortableServer.et` | Headless computer on mains (150 W), remote access (SSH) on, inventory item (3x2, 25 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_Router.et` | Router, inventory item (2x1, 0.8 kg), 100 m wireless range, internal battery |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_UsbStick.et` | Flash drive with its own filesystem, inventory item (1x1, 0.02 kg) |
-| `Prefabs/ROOT_AE3/Devices/ROOT_AE3_NetworkCable.et` | Network cable 15 m, inventory item (1x1, 0.5 kg); variants 5 m (0.2 kg) and 30 m (0.9 kg) |
+| `Prefabs/ROOT_AE3/Devices/ROOT_AE3_NetworkCable.et` | Network cable 15 m, inventory item (1x1, 0.1 kg); variants 5 m (0.05 kg) and 30 m (0.2 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_BatteryPack.et` | Battery 0.6 kWh, recharges at 300 W, inventory item (2x2, 12 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_SolarPanel.et` | 150 W peak, output by sun elevation and panel tilt, 0.4 kWh buffer |
 | `Prefabs/ROOT_AE3/Power/ROOT_AE3_Generator_*.et` | Generators on vanilla models: portable 5 kW / 5 L / 1.5 L/h, military and airfield 100-400 kW |
@@ -31,9 +31,11 @@ The 3x2 inventory slot is added by `Scripts/Game/ROOT_AE3/Inventory/ROOT_AE3_Slo
 
 ## Player actions
 
-Use terminal, Use desktop (place a laptop to use it), Power on / Shut down, Standby / Wake up, Open / Close lid, Plug into power source
-(6 m), Plug network cable... (needs a network cable item: form with the routers within the longest carried cable and the
-cable length; the cable item is used up) / Unplug network cable (the cable item goes back to the inventory), Insert (first drive in the inventory) / Eject (highest occupied port; the desktop Volumes app ejects any port) flash drive, Refuel (drains a carried fuel container,
+Use terminal, Use desktop (place a laptop to use it), Power on / Shut down, Standby / Wake up, Open / Close lid,
+Take power cable (generator, battery, solar panel) then Plug power cable into ... (a device that uses power) / Unplug
+power cable, Plug in network cable (needs a carried network cable item; the longest is used) then Plug network cable
+into ... (computer to router, router to router; the cable item is used up) / Unplug network cable (the cable item goes
+back to the inventory), Insert (first drive in the inventory) / Eject (highest occupied port; the desktop Volumes app ejects any port) flash drive, Refuel (drains a carried fuel container,
 such as a jerry can),
 Check status, Rename. The server checks that the player is alive and within 5 m for actions; sessions start within 4 m.
 Laptop, router, battery and flash drive are picked up and placed like other items. Picking up a laptop keeps its
@@ -46,9 +48,16 @@ The inventory shows a device's name ("<name> (Laptop Black)"), hostname, battery
 Rename (placed devices: action) sets the name (printable ASCII, 32 characters, empty =
 default); the Game Master action "Rename device" and `ROOT_AE3_API.SetDeviceName` do the same. Names are saved by
 persistence.
-A plugged flash drive sits in its port on the model. Plugged network cables and power links are drawn as cables between
-the ports on every client (sagging with the slack, resting on the ground). A cable pulled beyond its length unplugs and
-drops the cable item at the device; Game Master, World Editor and script links need no item (length: distance + 2 m).
+A plugged flash drive sits in its port on the model and stays attached while the laptop is carried. Cables plug in two
+steps: the first action puts one end in the device and the other end in the player's hand (drawn to the right hand);
+the second action on the other device fails while the devices are farther apart than the cable. The held end drops
+when the player walks farther than the cable from the first device, dies, leaves or no longer carries the network cable.
+Plugged network cables and power links are drawn as cables between the ports on every client (sagging with the slack,
+resting on the ground). A cable pulled beyond its length unplugs; a network cable item drops at the device. Power cable
+length per source: `ROOT_AE3_PowerComponent.m_fCableLength` (airfield generators 25 m, military generator 20 m,
+portable generators 15 m, solar panel 10 m, battery 5 m), Game Master action "Power cable length",
+`ROOT_AE3_API.SetPowerCableLength`. Game Master, World Editor and script links need no item (length: the longer of the
+source cable and the distance + 2 m).
 
 ## armaOS terminal
 
@@ -109,8 +118,8 @@ login, hostname, interface mode, add file (permissions, Caesar / columnar encryp
 add directory, add email, mail address, chat handle, add web page, browser history, image, calendar event,
 install games, static IP, interface access (identity IDs / factions / names), user transfer speed, transfer speed, battery level, fuel, router
 name and password (SSID, password, SSH allow list), connect to network (router list with distance, wireless or
-cable, ignore range), power on / off, standby, crash, connect power / selection to router (select the source or
-router with the devices), disconnect, open interface as root, save / restore computer (list of saves). The form
+cable, ignore range), power source (sources within 500 m with distance, or none), power cable length, power on / off,
+standby, crash, connect power / selection to router (select the source or router with the devices), disconnect, open interface as root, save / restore computer (list of saves). The form
 shows the current values of the first selected device (from the server) with text, multiline, password, on / off,
 choice and permission (owner / everyone r w x) fields.
 Each action shows a notification with the number of devices it changed and the first error. "Open interface as root"
@@ -190,7 +199,7 @@ practice seats, bots), EWO (mode, pack prefabs, energy, range, source range, dra
 `InstallCommand`, `AddMailAddress`, `AddEmail`, `SetChatHandle`, `RegisterWebpage`, `RegisterSite`,
 `AddBrowserHistory`, `AddCalendarEvent`, `RemoveCalendarEvent`, `RegisterCamera`, `AddGames`, `HostGameWithBots`, `ConnectPower`,
 `DisconnectPower`, `ConnectNetwork`, `DisconnectNetwork`, `SetPowerState`, `CrashDevice`, `SetBatteryLevel`,
-`SetFuel`, `SetTransferSpeed`, `GetAddress`, `SaveComputer`, `RestoreComputer`, `RegisterGuiCommand`, `SetInterfaceMode`, `SetUiStyle`, `SetInterfaceAccess`, `SetStaticIp`, `SetMainsPowered`,
+`SetFuel`, `SetPowerCableLength`, `SetTransferSpeed`, `GetAddress`, `SaveComputer`, `RestoreComputer`, `RegisterGuiCommand`, `SetInterfaceMode`, `SetUiStyle`, `SetInterfaceAccess`, `SetStaticIp`, `SetMainsPowered`,
 `GetPowerState`, `GetBatteryLevel`, `GetFuel`, `AddAccessCondition` / `RemoveAccessCondition` (`ROOT_AE3_AccessCondition`),
 `AddConnectCondition` / `RemoveConnectCondition`
 (`ROOT_AE3_ConnectCondition`), `AddRangeModifier` / `RemoveRangeModifier` (`ROOT_AE3_RangeModifier`); client:

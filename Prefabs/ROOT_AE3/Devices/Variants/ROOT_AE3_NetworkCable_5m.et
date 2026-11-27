@@ -26,7 +26,7 @@ GenericEntity : "{E09D16B3CAD616CF}Prefabs/ROOT_AE3/Devices/ROOT_AE3_NetworkCabl
      Name "#ROOT_AE3-Item_NetworkCable_5m_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
-     Weight 0.2
+     Weight 0.05
     }
    }
   }

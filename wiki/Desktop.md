@@ -23,8 +23,11 @@ Large / Medium / Small: taskbar button "Size" or F11; per player (`$profile:ROOT
   lists and links; images and videos on the page are links.
 - Windows: drag by the title bar; drop on the top edge to maximize, on the left or right edge to fill that half;
   double click the title bar to maximize or restore; resize from the bottom right corner. Ctrl+W closes.
-- Taskbar: start button, pinned Files / Browser / Email / Terminal, open windows (click to focus or minimize,
-  right click to close), clock. Start menu: search box (Enter opens the first match), power menu.
+- Taskbar: start button, search, pinned Files / Browser / Email / Terminal, open windows (click to focus or minimize,
+  right click to close), window size, tray (flash drive, network, power and battery; click opens the quick panel),
+  clock (opens Calendar), show desktop (right edge: minimize or restore all windows). Quick panel: network, power and
+  storage state, Network, My Computer, Terminal, Theme, Window size, Settings, Standby, Shut down, Sign out.
+  Start menu: search box (Enter opens the first match), power menu.
 - Open / Save dialog (Notepad, Photos, Remote Access): places (Home, This computer, Drives, Temp), Up, New folder,
   click selects, double click opens a folder or picks a file, file name field; Enter accepts, Backspace goes up,
   Esc cancels.

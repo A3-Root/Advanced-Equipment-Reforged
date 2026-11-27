@@ -23,7 +23,7 @@ MetaFileClass {
    GeometryParams {
     GeometryParam UCX_ROOT_AE3_NetworkCable {
      SurfaceProperties {
-      "{536BF67B2052B869}material/metal.gamemat"
+      "{DFAD927815FE1E61}Common/Materials/Game/Gadgets/gadget_plastic.gamemat"
      }
      Mass 0
      Margin 0

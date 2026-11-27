@@ -1,77 +1,69 @@
-//! Plugs the device into the nearest power source within reach, or unplugs it.
+//! Power cable, in two steps (ROOT_AE3_CableHand). Source side (m_bSource: generators, batteries, solar panels):
+//! "Take power cable" (cable length ROOT_AE3_PowerComponent.m_fCableLength). Device side: "Plug power cable into ..."
+//! while a power cable is held (fails while the source is farther away than the cable), "Unplug power cable" when
+//! plugged in.
 class ROOT_AE3_ConnectPowerAction : ROOT_AE3_UserActionBase
 {
-	[Attribute("6", desc: "Cable length in m")]
-	protected float m_fReach;
+	[Attribute("0", desc: "Source side: takes the power cable of this device (generator, battery, solar panel)")]
+	protected bool m_bSource;
 
 	//------------------------------------------------------------------------------------------------
-	protected float m_fLastScan = -10;
-	protected bool m_bLastFound;
-
-	//------------------------------------------------------------------------------------------------
-	//! Cached once per second for the action menu.
-	protected bool HasNearest(IEntity owner)
+	protected bool Holding(IEntity owner)
 	{
-		float now = GetGame().GetWorld().GetWorldTime() / 1000.0;
-		if (now - m_fLastScan > 1)
-		{
-			m_fLastScan = now;
-			m_bLastFound = Nearest(owner) != null;
-		}
-
-		return m_bLastFound;
+		return ROOT_AE3_CableHand.LocalKind() == ROOT_AE3_CableHand.POWER && ROOT_AE3_CableHand.LocalDevice() == owner;
 	}
 
 	//------------------------------------------------------------------------------------------------
-	protected ROOT_AE3_PowerComponent Nearest(IEntity owner)
+	protected bool Finishing(IEntity owner)
 	{
-		ROOT_AE3_PowerComponent self = ROOT_AE3_PowerComponent.Of(owner);
-		ROOT_AE3_PowerComponent best;
-		float bestDist = m_fReach;
-		foreach (ROOT_AE3_DeviceComponent d : ROOT_AE3_Manager.Get().GetDevices())
-		{
-			if (!d || d.GetOwner() == owner || ROOT_AE3_Util.IsCarried(d.GetOwner()))
-				continue;
-
-			ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(d.GetOwner());
-			if (!p || !p.IsProvider() || p.GetProvider() == self)
-				continue;
-
-			float dist = vector.Distance(owner.GetOrigin(), d.GetOwner().GetOrigin());
-			if (dist <= bestDist)
-			{
-				best = p;
-				bestDist = dist;
-			}
-		}
-
-		return best;
+		return ROOT_AE3_CableHand.LocalKind() == ROOT_AE3_CableHand.POWER && ROOT_AE3_CableHand.LocalDevice() != owner;
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override bool CanBeShownScript(IEntity user)
 	{
-		if (ROOT_AE3_Util.IsDestroyed(GetOwner()))
+		if (ROOT_AE3_Util.IsDestroyed(GetOwner()) || !IsPlaced(GetOwner()))
 			return false;
 
 		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(GetOwner());
-		return p && IsPlaced(GetOwner()) && !p.IsMains() && (p.GetRole() == ROOT_AE3_EPowerRole.CONSUMER || p.GetRole() == ROOT_AE3_EPowerRole.BATTERY);
+		if (!p || p.IsMains())
+			return false;
+
+		if (m_bSource)
+			return p.IsProvider() && !Finishing(GetOwner());
+
+		if (p.IsProvider() && Holding(GetOwner()))
+			return false;
+
+		return p.GetRole() == ROOT_AE3_EPowerRole.CONSUMER || p.GetRole() == ROOT_AE3_EPowerRole.BATTERY;
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override bool CanBePerformedScript(IEntity user)
 	{
-		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(GetOwner());
+		IEntity owner = GetOwner();
+		if (m_bSource || Holding(owner))
+			return true;
+
+		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(owner);
+		if (Finishing(owner))
+		{
+			IEntity child, parent;
+			string reason = ROOT_AE3_CableHand.Check(ROOT_AE3_CableHand.POWER, ROOT_AE3_CableHand.LocalDevice(), owner, ROOT_AE3_CableHand.LocalLength(), child, parent);
+			if (!reason.IsEmpty())
+			{
+				SetCannotPerformReason(reason);
+				return false;
+			}
+
+			return true;
+		}
+
 		if (p.HasProvider())
 			return true;
 
-		if (!HasNearest(GetOwner()))
-		{
-			SetCannotPerformReason("No power source in reach");
-			return false;
-		}
-
-		return true;
+		SetCannotPerformReason("Take a power cable from a generator, battery or solar panel");
+		return false;
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -80,27 +72,64 @@ class ROOT_AE3_ConnectPowerAction : ROOT_AE3_UserActionBase
 		if (!IsAuthority(pOwnerEntity) || !InReach(pOwnerEntity, pUserEntity))
 			return;
 
+		int playerId = GetGame().GetPlayerManager().GetPlayerIdFromControlledEntity(pUserEntity);
+		ROOT_AE3_HeldCable held = ROOT_AE3_CableHand.GetHeld(playerId);
 		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(pOwnerEntity);
-		if (p.GetProvider())
+		string reason;
+		if (held && held.m_iKind == ROOT_AE3_CableHand.POWER && held.m_Device == pOwnerEntity)
 		{
-			p.Disconnect();
+			ROOT_AE3_CableHand.Drop(playerId, "Power cable put back into " + ROOT_AE3_CableHand.Name(pOwnerEntity) + ".");
 			return;
 		}
 
-		ROOT_AE3_PowerComponent src = Nearest(pOwnerEntity);
-		string reason = "No power source in reach.";
-		if (!src || !p.ConnectTo(src, reason))
-			Report(pUserEntity, reason);
+		if (m_bSource)
+		{
+			if (!ROOT_AE3_CableHand.Take(pUserEntity, ROOT_AE3_CableHand.POWER, pOwnerEntity, reason))
+				Report(pUserEntity, reason);
+
+			return;
+		}
+
+		if (held && held.m_iKind == ROOT_AE3_CableHand.POWER)
+		{
+			if (!ROOT_AE3_CableHand.Plug(pUserEntity, pOwnerEntity, reason))
+				Report(pUserEntity, reason);
+
+			return;
+		}
+
+		if (p.GetProvider())
+			p.Disconnect();
 	}
 
 	//------------------------------------------------------------------------------------------------
 	override bool GetActionNameScript(out string outName)
 	{
-		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(GetOwner());
+		IEntity owner = GetOwner();
+		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(owner);
+		if (Holding(owner))
+		{
+			outName = "Put power cable back";
+			return true;
+		}
+
+		if (m_bSource)
+		{
+			outName = string.Format("Take power cable (%1 m)", p.GetCableLength());
+			return true;
+		}
+
+		if (Finishing(owner))
+		{
+			float dist = vector.Distance(ROOT_AE3_CableHand.LocalDevice().GetOrigin(), owner.GetOrigin());
+			outName = string.Format("Plug power cable into %1 (%2 / %3 m)", ROOT_AE3_CableHand.Name(owner), Math.Ceil(dist), ROOT_AE3_CableHand.LocalLength());
+			return true;
+		}
+
 		if (p.HasProvider())
-			outName = "Unplug power";
+			outName = "Unplug power cable";
 		else
-			outName = "Plug into power source";
+			outName = "Plug in power cable";
 
 		return true;
 	}

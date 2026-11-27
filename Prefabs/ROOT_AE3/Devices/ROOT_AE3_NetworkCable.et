@@ -47,7 +47,7 @@ GenericEntity : "{C95E11C60810F432}Prefabs/Items/Core/Item_Base.et" {
      Name "#ROOT_AE3-Item_NetworkCable_Name"
     }
     ItemPhysAttributes ItemPhysicalAttributes PhysicalAttributes {
-     Weight 0.5
+     Weight 0.1
      SizeSetupStrategy Manual
      ItemDimensions 17 17 3
      ItemVolume 300

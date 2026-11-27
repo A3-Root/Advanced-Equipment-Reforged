@@ -252,6 +252,7 @@ class ROOT_AE3_Client
 			case ROOT_AE3_EMsg.SCREEN_INPUT: OnScreen(data); return;
 			case ROOT_AE3_EMsg.SOUND: ROOT_AE3_Sound.PlayLocal(data.ToInt()); return;
 			case ROOT_AE3_EMsg.EWO_STATE: ROOT_AE3_EwoPanel.OnState(data); return;
+			case ROOT_AE3_EMsg.CABLE_HAND: ROOT_AE3_CableHand.OnMessage(data); return;
 		}
 
 		if (op == ROOT_AE3_EMsg.NOTIFY && !m_Menu)

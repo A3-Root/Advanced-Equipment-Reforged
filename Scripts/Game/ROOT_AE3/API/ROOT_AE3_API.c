@@ -471,6 +471,17 @@ class ROOT_AE3_API
 	// Power and network ------------------------------------------------------------------------------
 
 	//------------------------------------------------------------------------------------------------
+	static bool SetPowerCableLength(IEntity source, float meters)
+	{
+		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(source);
+		if (!Replication.IsServer() || !p || !p.IsProvider())
+			return false;
+
+		p.SetCableLength(meters);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	static bool ConnectPower(IEntity consumer, IEntity source)
 	{
 		if (!Replication.IsServer())

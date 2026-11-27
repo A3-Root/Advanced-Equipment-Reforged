@@ -162,7 +162,7 @@ class ROOT_AE3_GuiRouter
 
 			case "tray":
 			{
-				Msg(s, rid, true, cmd, Tray(c));
+				Reply(s, rid, true, cmd, Tray(c));
 				return;
 			}
 
@@ -717,26 +717,39 @@ class ROOT_AE3_GuiRouter
 	}
 
 	//------------------------------------------------------------------------------------------------
-	static string Tray(ROOT_AE3_ComputerComponent c)
+	//! Taskbar tray: external power (0/1), battery percent (empty: none), address (empty: offline), network name,
+	//! wired (0/1), plugged flash drives.
+	static array<string> Tray(ROOT_AE3_ComputerComponent c)
 	{
-		string tray;
+		array<string> f = {"0", "", "", "", "0", "0"};
 		ROOT_AE3_PowerComponent p = c.GetPower();
 		if (p)
 		{
-			if (p.HasExternalPower())
-				tray += "AC ";
-
+			f[0] = ROOT_AE3_Util.BoolStr(p.HasExternalPower() || p.IsMains());
 			if (p.GetCapacityKWh() > 0)
-				tray += "Bat " + Math.Round(p.GetLevel() * 100).ToString() + "%  ";
+				f[1] = Math.Round(p.GetLevel() * 100).ToString();
 		}
 
 		ROOT_AE3_NetworkComponent n = c.GetNetwork();
-		if (n && !n.GetAddress().IsEmpty())
-			tray += "Net " + n.GetAddress();
-		else if (n)
-			tray += "Offline";
+		if (n)
+		{
+			f[2] = n.GetAddress();
+			if (n.GetParent())
+				f[3] = n.GetParent().GetSsid();
 
-		return tray;
+			ROOT_AE3_ConnectionComponent link = ROOT_AE3_ConnectionComponent.Of(c.GetOwner());
+			f[4] = ROOT_AE3_Util.BoolStr(link && link.GetNetPeer() != RplId.Invalid());
+		}
+
+		int drives;
+		for (int i = 0; i < c.GetUsbPortCount(); i++)
+		{
+			if (c.GetUsbDrive(i))
+				drives++;
+		}
+
+		f[5] = drives.ToString();
+		return f;
 	}
 
 	//------------------------------------------------------------------------------------------------

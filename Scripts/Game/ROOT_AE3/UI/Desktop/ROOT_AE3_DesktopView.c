@@ -18,11 +18,17 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected static const int ID_DLG_BG = 17;
 	protected static const int ID_MENU_BG = 18;
 	protected static const int ID_SIZE = 19;
+	protected static const int ID_SEARCHBAR = 20;
+	protected static const int ID_TRAY = 21;
+	protected static const int ID_CLOCK = 22;
+	protected static const int ID_SHOWDESK = 23;
+	protected static const int ID_QUICK_BG = 24;
 	protected static const int ID_ICON = 100;
 	protected static const int ID_MENU = 300;
 	protected static const int ID_POPUP = 400;
 	protected static const int ID_TASK = 500;
 	protected static const int ID_PIN = 600;
+	protected static const int ID_QUICK = 700;
 	protected static const int MI_OPEN = 1;
 	protected static const int MI_REFRESH = 2;
 	protected static const int MI_PERSONALIZE = 3;
@@ -53,9 +59,9 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected FrameWidget m_wPopup;
 	protected FrameWidget m_wDialog;
 	protected FrameWidget m_wToast;
+	protected FrameWidget m_wQuick;
 	protected TextWidget m_wClock;
 	protected TextWidget m_wDate;
-	protected TextWidget m_wTray;
 	protected EditBoxWidget m_wUser;
 	protected EditBoxWidget m_wPass;
 	protected EditBoxWidget m_wSearch;
@@ -81,7 +87,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected bool m_bWasTyping;
 	protected float m_fClockTimer;
 	protected float m_fToastTimer;
-	protected string m_sTray;
+	protected ref array<string> m_aTray = {};		//!< ROOT_AE3_GuiRouter.Tray fields
 	protected string m_sBuiltKey = "-";
 	protected ref ROOT_AE3_ForwardListener m_IconListener;
 	protected ref ROOT_AE3_ForwardListener m_TaskbarListener;
@@ -90,6 +96,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected ref ROOT_AE3_ForwardListener m_PopupListener;
 	protected ref ROOT_AE3_ForwardListener m_DialogListener;
 	protected ref ROOT_AE3_ForwardListener m_ToastListener;
+	protected ref ROOT_AE3_ForwardListener m_QuickListener;
 	protected ref ROOT_AE3_FilePicker m_Picker;
 	protected RplId m_DeviceId;		//!< Computer of the session the view was built for
 	protected static ref array<KeyCode> s_aKeys = {
@@ -313,6 +320,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		m_wDialog = null;
 		m_wToast = null;
 		m_wTaskbar = null;
+		m_wQuick = null;
 		m_iSelIcon = -1;
 		m_iSelFile = -1;
 		m_aDeskFiles.Clear();
@@ -338,6 +346,8 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		RestoreParked();
 		RefreshTaskbar();
 		PushMirror();
+		array<string> none = {};
+		ROOT_AE3_Client.Get().Request("tray", none, this);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -748,28 +758,56 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Tray state from the server ("tray"): external power, battery percent (-1 none), address, network name,
+	//! wired, USB drives.
+	protected string TrayField(int i)
+	{
+		if (i < m_aTray.Count())
+			return m_aTray[i];
+
+		return "";
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected bool TrayOnline()
+	{
+		return !TrayField(2).IsEmpty();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected int TrayBattery()
+	{
+		if (TrayField(1).IsEmpty())
+			return -1;
+
+		return TrayField(1).ToInt();
+	}
+
+	//------------------------------------------------------------------------------------------------
 	protected void TaskButton(float x, ROOT_AE3_Window w, string icon, int id)
 	{
 		Color bg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
-		if (w && w == m_Focus)
-			bg = ROOT_AE3_Theme.Hover();
+		if (w && w == m_Focus && !w.IsMinimized())
+			bg = ROOT_AE3_Theme.Select();
 
-		ROOT_AE3_UI.IconButton(m_wTaskbar, x, 4, 44, BAR_H - 8, icon, id, m_TaskbarListener, 26, null, bg);
+		ROOT_AE3_UI.IconButton(m_wTaskbar, x, 4, 44, BAR_H - 8, icon, id, m_TaskbarListener, 24, null, bg, ROOT_AE3_Theme.Hover());
 		if (!w)
 			return;
 
 		float iw = 6;
 		Color ic = ROOT_AE3_Theme.Muted();
-		if (w == m_Focus)
+		if (w == m_Focus && !w.IsMinimized())
 		{
-			iw = 16;
+			iw = 18;
 			ic = ROOT_AE3_Theme.Accent();
 		}
 
-		ROOT_AE3_UI.Rect(m_wTaskbar, x + (44 - iw) * 0.5, BAR_H - 6, iw, 3, ic);
+		ROOT_AE3_UI.Rect(m_wTaskbar, x + (44 - iw) * 0.5, BAR_H - 7, iw, 3, ic);
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Windows taskbar: start, search, pinned apps and open windows (left); window size, tray (network, power,
+	//! USB: quick panel), clock (calendar) and show desktop (right).
 	void RefreshTaskbar()
 	{
 		if (!m_wTaskbar)
@@ -777,25 +815,108 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		ROOT_AE3_UI.Clear(m_wTaskbar);
 		m_TaskbarListener = new ROOT_AE3_ForwardListener(this);
+		m_wClock = null;
+		m_wDate = null;
 		if (ROOT_AE3_Theme.IsTactical())
 		{
 			RefreshTaskbarTactical();
 			return;
 		}
 
+		Color clear = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
+		Color hover = ROOT_AE3_Theme.Hover();
 		ROOT_AE3_UI.Rect(m_wTaskbar, 0, 0, m_fW, BAR_H, ROOT_AE3_Theme.Taskbar());
 		ROOT_AE3_UI.Rect(m_wTaskbar, 0, 0, m_fW, 1, ROOT_AE3_Theme.Border());
-		Color startBg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
+		Color startBg = clear;
 		if (m_wMenu)
-			startBg = ROOT_AE3_Theme.Hover();
+			startBg = ROOT_AE3_Theme.Select();
 
-		ROOT_AE3_UI.IconButton(m_wTaskbar, 6, 4, 44, BAR_H - 8, "logo", ID_START, m_TaskbarListener, 28, null, startBg);
-		float x = 60;
+		ROOT_AE3_UI.IconButton(m_wTaskbar, 6, 4, 44, BAR_H - 8, "logo", ID_START, m_TaskbarListener, 26, null, startBg, hover);
+		float x = 56;
+		if (m_fW >= 960)
+		{
+			ROOT_AE3_UI.Hit(m_wTaskbar, x, 9, 210, BAR_H - 18, ID_SEARCHBAR, m_TaskbarListener, ROOT_AE3_Theme.Field(), hover);
+			ROOT_AE3_UI.Icon(m_wTaskbar, x + 12, 16, 16, "g_search", ROOT_AE3_Theme.Muted());
+			ROOT_AE3_UI.Text(m_wTaskbar, x + 36, 15, 166, 18, "Search apps", 13, ROOT_AE3_Theme.Muted());
+			x += 218;
+		}
+		else
+		{
+			ROOT_AE3_UI.IconButton(m_wTaskbar, x, 4, 44, BAR_H - 8, "g_search", ID_SEARCHBAR, m_TaskbarListener, 18, null, clear, hover);
+			x += 48;
+		}
+
+		ROOT_AE3_UI.Rect(m_wTaskbar, x, 12, 1, BAR_H - 24, ROOT_AE3_Theme.Border());
+		x += 8;
+
+		// Right side, from the edge inwards.
+		ROOT_AE3_UI.Hit(m_wTaskbar, m_fW - 8, 0, 8, BAR_H, ID_SHOWDESK, m_TaskbarListener, clear, hover);
+		ROOT_AE3_UI.Rect(m_wTaskbar, m_fW - 9, 12, 1, BAR_H - 24, ROOT_AE3_Theme.Border());
+		float cx = m_fW - 104;
+		Color clockBg = clear;
+		ROOT_AE3_UI.Hit(m_wTaskbar, cx, 4, 92, BAR_H - 8, ID_CLOCK, m_TaskbarListener, clockBg, hover);
+		m_wClock = ROOT_AE3_UI.Text(m_wTaskbar, cx, 7, 92, 18, "", 14, ROOT_AE3_Theme.Text(), false, false, 1);
+		m_wDate = ROOT_AE3_UI.Text(m_wTaskbar, cx, 25, 92, 16, "", 12, ROOT_AE3_Theme.Muted(), false, false, 1);
+
+		int bat = TrayBattery();
+		bool usb = TrayField(5).ToInt() > 0;
+		float tw = 16 + 28 + 28;
+		if (bat >= 0)
+			tw += 34;
+
+		if (usb)
+			tw += 28;
+
+		float tx = cx - 4 - tw;
+		Color trayBg = clear;
+		if (m_wQuick)
+			trayBg = ROOT_AE3_Theme.Select();
+
+		ROOT_AE3_UI.Hit(m_wTaskbar, tx, 4, tw, BAR_H - 8, ID_TRAY, m_TaskbarListener, trayBg, hover);
+		float ix = tx + 8;
+		if (usb)
+		{
+			ROOT_AE3_UI.Icon(m_wTaskbar, ix + 4, 15, 18, "drive");
+			ix += 28;
+		}
+
+		string netIcon = "g_wifi";
+		if (TrayField(4) == "1")
+			netIcon = "network";
+
+		Color netTint = ROOT_AE3_Theme.Text();
+		if (!TrayOnline())
+			netTint = ROOT_AE3_Theme.Muted();
+
+		ROOT_AE3_UI.Icon(m_wTaskbar, ix + 4, 15, 18, netIcon, netTint);
+		if (!TrayOnline())
+			ROOT_AE3_UI.Rect(m_wTaskbar, ix + 16, 28, 6, 6, ROOT_AE3_Theme.Danger());
+
+		ix += 28;
+		string powIcon = "g_battery";
+		if (TrayField(0) == "1")
+			powIcon = "g_plug";
+
+		Color powTint = ROOT_AE3_Theme.Text();
+		if (bat >= 0 && bat <= 15 && TrayField(0) != "1")
+			powTint = ROOT_AE3_Theme.Danger();
+
+		ROOT_AE3_UI.Icon(m_wTaskbar, ix + 4, 15, 18, powIcon, powTint);
+		ix += 28;
+		if (bat >= 0)
+			ROOT_AE3_UI.Text(m_wTaskbar, ix - 4, 15, 40, 18, bat.ToString() + "%", 12, ROOT_AE3_Theme.Text());
+
+		ROOT_AE3_UI.IconButton(m_wTaskbar, tx - 40, 4, 36, BAR_H - 8, "g_max", ID_SIZE, m_TaskbarListener, 16, null, clear, hover);
+		float limit = tx - 48;
+
 		array<typename> pinned = {};
 		GetPinned(pinned);
 		array<ROOT_AE3_Window> shown = {};
-		foreach (int k, typename t : pinned)
+		foreach (typename t : pinned)
 		{
+			if (x + 44 > limit)
+				break;
+
 			ROOT_AE3_Window w = FirstWindowOf(t);
 			if (w)
 			{
@@ -816,25 +937,23 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			if (shown.Contains(w2))
 				continue;
 
-			if (x > m_fW - 300)
+			if (x + 44 > limit)
 				break;
 
 			TaskButton(x, w2, w2.m_App.GetIcon(), ID_TASK + i);
 			x += 48;
 		}
 
-		m_wTray = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 470, 16, 290, 18, m_sTray, 13, ROOT_AE3_Theme.Muted(), false, false, 2);
-		ROOT_AE3_UI.Button(m_wTaskbar, m_fW - 172, 9, 44, 30, "Size", ID_SIZE, m_TaskbarListener, ROOT_AE3_UI.Rgb(0, 0, 0, 0), ROOT_AE3_Theme.Text(), 12, ROOT_AE3_Theme.Hover());
-		m_wClock = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 120, 6, 108, 18, "", 14, ROOT_AE3_Theme.Text(), false, false, 2);
-		m_wDate = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 120, 25, 108, 18, "", 12, ROOT_AE3_Theme.Text(), false, false, 2);
 		UpdateClock();
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Tactical taskbar: menu button, text tabs of pinned apps and windows, status readout, clock.
+	//! Tactical taskbar: menu and search, text tabs of pinned apps and windows, status segments (network,
+	//! power, USB: quick panel), size, clock (calendar), show desktop.
 	protected void RefreshTaskbarTactical()
 	{
 		Color ink = ROOT_AE3_Theme.Accent();
+		Color clear = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
 		ROOT_AE3_UI.Rect(m_wTaskbar, 0, 0, m_fW, BAR_H, ROOT_AE3_Theme.Taskbar());
 		ROOT_AE3_UI.Rect(m_wTaskbar, 0, 0, m_fW, 1, ink);
 		Color startBg = ROOT_AE3_Theme.Panel();
@@ -845,24 +964,69 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			startFg = ROOT_AE3_Theme.OnAccent();
 		}
 
-		ROOT_AE3_UI.Button(m_wTaskbar, 6, 8, 84, BAR_H - 16, "Menu", ID_START, m_TaskbarListener, startBg, startFg, 14);
-		float x = 98;
+		ROOT_AE3_UI.Button(m_wTaskbar, 6, 8, 76, BAR_H - 16, "Menu", ID_START, m_TaskbarListener, startBg, startFg, 14);
+		ROOT_AE3_UI.Button(m_wTaskbar, 88, 8, 44, BAR_H - 16, "/", ID_SEARCHBAR, m_TaskbarListener, ROOT_AE3_Theme.Panel(), ink, 14);
+		float x = 140;
+
+		// Right side, from the edge inwards.
+		ROOT_AE3_UI.Hit(m_wTaskbar, m_fW - 8, 0, 8, BAR_H, ID_SHOWDESK, m_TaskbarListener, clear, ROOT_AE3_Theme.Hover());
+		ROOT_AE3_UI.Rect(m_wTaskbar, m_fW - 9, 10, 1, BAR_H - 20, ink);
+		float cx = m_fW - 100;
+		ROOT_AE3_UI.Hit(m_wTaskbar, cx, 4, 88, BAR_H - 8, ID_CLOCK, m_TaskbarListener, clear, ROOT_AE3_Theme.Hover());
+		m_wClock = ROOT_AE3_UI.Text(m_wTaskbar, cx, 7, 88, 18, "", 14, ink, true, false, 1);
+		m_wDate = ROOT_AE3_UI.Text(m_wTaskbar, cx, 25, 88, 16, "", 12, ROOT_AE3_Theme.Muted(), true, false, 1);
+
+		string net = "NET OFF";
+		if (TrayOnline())
+			net = "NET " + TrayField(2);
+
+		string pow = "PWR";
+		if (TrayField(0) == "1")
+			pow += " EXT";
+
+		if (TrayBattery() >= 0)
+			pow += " " + TrayField(1) + "%";
+
+		string status = net + "  " + pow;
+		if (TrayField(5).ToInt() > 0)
+			status += "  USB " + TrayField(5);
+
+		float sw = 24 + status.Length() * 8;
+		float sx = cx - 6 - sw;
+		Color statusBg = clear;
+		if (m_wQuick)
+			statusBg = ROOT_AE3_Theme.Select();
+
+		ROOT_AE3_UI.Hit(m_wTaskbar, sx, 6, sw, BAR_H - 12, ID_TRAY, m_TaskbarListener, statusBg, ROOT_AE3_Theme.Hover());
+		ROOT_AE3_UI.Text(m_wTaskbar, sx, 15, sw, 18, status, 13, ROOT_AE3_Theme.Text(), true, false, 1);
+		ROOT_AE3_UI.Button(m_wTaskbar, sx - 58, 10, 52, 28, "Size", ID_SIZE, m_TaskbarListener, ROOT_AE3_Theme.Panel(), ROOT_AE3_Theme.Text(), 12);
+		float limit = sx - 64;
+
 		array<typename> pinned = {};
 		GetPinned(pinned);
 		array<ROOT_AE3_Window> shown = {};
 		foreach (typename t : pinned)
 		{
 			ROOT_AE3_Window w = FirstWindowOf(t);
+			string title;
+			int id;
 			if (w)
 			{
 				shown.Insert(w);
-				x += TaskTab(x, w, w.m_App.GetTitle(), ID_TASK + m_aWindows.Find(w));
+				title = w.m_App.GetTitle();
+				id = ID_TASK + m_aWindows.Find(w);
 			}
 			else
 			{
 				ROOT_AE3_App app = ROOT_AE3_App.Cast(t.Spawn());
-				x += TaskTab(x, null, app.GetTitle(), ID_PIN + m_aApps.Find(t));
+				title = app.GetTitle();
+				id = ID_PIN + m_aApps.Find(t);
 			}
+
+			if (x + TabWidth(title) > limit)
+				break;
+
+			x += TaskTab(x, w, title, id);
 		}
 
 		foreach (int i, ROOT_AE3_Window w2 : m_aWindows)
@@ -870,35 +1034,44 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			if (shown.Contains(w2))
 				continue;
 
-			if (x > m_fW - 520)
+			if (x + TabWidth(w2.m_App.GetTitle()) > limit)
 				break;
 
 			x += TaskTab(x, w2, w2.m_App.GetTitle(), ID_TASK + i);
 		}
 
-		m_wTray = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 520, 15, 330, 18, m_sTray, 13, ROOT_AE3_Theme.Muted(), true, false, 2);
-		ROOT_AE3_UI.Button(m_wTaskbar, m_fW - 180, 10, 52, 28, "Size", ID_SIZE, m_TaskbarListener, ROOT_AE3_Theme.Panel(), ROOT_AE3_Theme.Text(), 12);
-		m_wClock = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 120, 6, 108, 18, "", 14, ink, true, false, 2);
-		m_wDate = ROOT_AE3_UI.Text(m_wTaskbar, m_fW - 120, 25, 108, 18, "", 12, ROOT_AE3_Theme.Muted(), true, false, 2);
 		UpdateClock();
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Tactical taskbar tab: upper case title, underline for open windows; returns the width used.
-	protected float TaskTab(float x, ROOT_AE3_Window w, string title, int id)
+	protected static string TabLabel(string title)
 	{
 		string label = title;
 		label.ToUpper();
 		if (label.Length() > 10)
 			label = label.Substring(0, 10);
 
-		float tw = 26 + label.Length() * 9;
+		return label;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected static float TabWidth(string title)
+	{
+		return 30 + TabLabel(title).Length() * 9;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Tactical taskbar tab: upper case title, underline for open windows; returns the width used.
+	protected float TaskTab(float x, ROOT_AE3_Window w, string title, int id)
+	{
+		string label = TabLabel(title);
+		float tw = TabWidth(title) - 4;
 		Color fg = ROOT_AE3_Theme.Muted();
 		if (w)
 			fg = ROOT_AE3_Theme.Text();
 
 		Color bg = ROOT_AE3_UI.Rgb(0, 0, 0, 0);
-		if (w && w == m_Focus)
+		if (w && w == m_Focus && !w.IsMinimized())
 			bg = ROOT_AE3_Theme.Select();
 
 		ROOT_AE3_UI.Hit(m_wTaskbar, x, 6, tw, BAR_H - 12, id, m_TaskbarListener, bg, ROOT_AE3_Theme.Hover());
@@ -913,14 +1086,196 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	protected void UpdateClock()
 	{
 		string now = ROOT_AE3_Util.Now();
-		if (m_wClock && now.Length() >= 16)
+		if (m_wClock && m_wDate && now.Length() >= 16)
 		{
 			m_wClock.SetText(now.Substring(11, 5));
 			m_wDate.SetText(now.Substring(0, 10));
 		}
+	}
 
-		if (m_wTray)
-			m_wTray.SetText(m_sTray);
+	//------------------------------------------------------------------------------------------------
+	//! Minimizes every window; when none is open, restores them.
+	protected void ShowDesktop()
+	{
+		bool any;
+		foreach (ROOT_AE3_Window w : m_aWindows)
+		{
+			if (!w.IsMinimized())
+				any = true;
+		}
+
+		foreach (ROOT_AE3_Window w2 : m_aWindows)
+		{
+			w2.SetMinimized(any);
+		}
+
+		if (any)
+			SetFocusWindow(null);
+
+		RefreshTaskbar();
+	}
+
+	// Quick panel -----------------------------------------------------------------------------------
+
+	//------------------------------------------------------------------------------------------------
+	//! Panel above the tray: user, network, power and USB state, shortcuts and power buttons.
+	protected void ToggleQuick()
+	{
+		if (m_wQuick)
+		{
+			CloseQuick();
+			return;
+		}
+
+		CloseStart();
+		CloseMenu();
+		bool tac = ROOT_AE3_Theme.IsTactical();
+		float w = Math.Min(360, m_fW - 16);
+		float h = Math.Min(372, m_fH - BAR_H - 16);
+		float x = m_fW - w - 8;
+		float y = m_fH - BAR_H - h - 8;
+		m_QuickListener = new ROOT_AE3_ForwardListener(this);
+		m_wQuick = ROOT_AE3_UI.Frame(m_wRoot, 0, 0, m_fW, m_fH - BAR_H, false);
+		m_wQuick.SetZOrder(100001);
+		ROOT_AE3_UI.Rect(m_wQuick, 0, 0, m_fW, m_fH - BAR_H, ROOT_AE3_UI.Rgb(0, 0, 0, 0), ID_QUICK_BG, m_QuickListener);
+		ROOT_AE3_UI.Shadow(m_wQuick, x, y, w, h, 12);
+		Color edge;
+		if (tac)
+			edge = ROOT_AE3_Theme.Accent();
+
+		ROOT_AE3_UI.Box(m_wQuick, x, y, w, h, ROOT_AE3_Theme.Panel(), edge);
+		ROOT_AE3_UI.Rect(m_wQuick, x + 1, y + 1, w - 2, h - 2, ROOT_AE3_UI.Rgb(0, 0, 0, 0), ID_QUICK + 99, m_QuickListener);
+
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		ROOT_AE3_UI.Icon(m_wQuick, x + 16, y + 14, 32, "user");
+		ROOT_AE3_UI.Text(m_wQuick, x + 58, y + 14, w - 70, 18, c.m_sUser, 15, ROOT_AE3_Theme.Text(), tac);
+		ROOT_AE3_UI.Text(m_wQuick, x + 58, y + 33, w - 70, 16, c.m_sHostname, 12, ROOT_AE3_Theme.Muted(), tac);
+		ROOT_AE3_UI.Rect(m_wQuick, x + 12, y + 58, w - 24, 1, ROOT_AE3_Theme.Border());
+
+		string net = "Not connected";
+		string netIcon = "g_wifi";
+		if (TrayField(4) == "1")
+			netIcon = "network";
+
+		if (TrayOnline())
+		{
+			string via = "Wi-Fi";
+			if (TrayField(4) == "1")
+				via = "Cable";
+
+			net = via;
+			if (!TrayField(3).IsEmpty())
+				net += " - " + TrayField(3);
+
+			net += "  " + TrayField(2);
+		}
+
+		int bat = TrayBattery();
+		string pow = "No power information";
+		if (TrayField(0) == "1")
+			pow = "External power";
+		else if (bat >= 0)
+			pow = "On battery";
+
+		if (bat >= 0)
+			pow += " - battery " + bat.ToString() + "%";
+
+		string usb = "No flash drive";
+		int drives = TrayField(5).ToInt();
+		if (drives == 1)
+			usb = "1 flash drive";
+		else if (drives > 1)
+			usb = drives.ToString() + " flash drives";
+
+		float ry = y + 70;
+		QuickRow(x + 16, ry, w - 32, netIcon, "Network", net);
+		ry += 40;
+		QuickRow(x + 16, ry, w - 32, "g_battery", "Power", pow);
+		if (bat >= 0)
+		{
+			Color fill = ROOT_AE3_Theme.Accent();
+			if (bat <= 15)
+				fill = ROOT_AE3_Theme.Danger();
+
+			ROOT_AE3_UI.Rect(m_wQuick, x + 44, ry + 34, w - 60, 4, ROOT_AE3_Theme.Field());
+			ROOT_AE3_UI.Rect(m_wQuick, x + 44, ry + 34, (w - 60) * bat / 100.0, 4, fill);
+		}
+
+		ry += 44;
+		QuickRow(x + 16, ry, w - 32, "drive", "Storage", usb);
+		ry += 44;
+
+		array<string> labels = {"Network", "My Computer", "Terminal", "Theme: " + ROOT_AE3_Theme.Name(c.m_sTheme.ToInt()), "Window size", "Settings"};
+		array<string> icons = {"network", "computer", "terminal", "photos", "g_max", "settings"};
+		float tw = (w - 32 - 16) / 3;
+		float th = 54;
+		foreach (int i, string label : labels)
+		{
+			int col = i % 3;
+			int row = i / 3;
+			float tx = x + 16 + col * (tw + 8);
+			float ty = ry + row * (th + 8);
+			ROOT_AE3_UI.Hit(m_wQuick, tx, ty, tw, th, ID_QUICK + i, m_QuickListener, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Hover());
+			ROOT_AE3_UI.Icon(m_wQuick, tx + (tw - 18) * 0.5, ty + 8, 18, icons[i]);
+			ROOT_AE3_UI.Text(m_wQuick, tx + 2, ty + 32, tw - 4, 16, label, 11, ROOT_AE3_Theme.Text(), tac, false, 1);
+		}
+
+		float by = y + h - 46;
+		ROOT_AE3_UI.Rect(m_wQuick, x + 1, by - 8, w - 2, 1, ROOT_AE3_Theme.Border());
+		float bw = (w - 32 - 16) / 3;
+		ROOT_AE3_UI.Button(m_wQuick, x + 16, by, bw, 32, "Standby", ID_QUICK + 10, m_QuickListener, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 13, ROOT_AE3_Theme.Hover());
+		ROOT_AE3_UI.Button(m_wQuick, x + 24 + bw, by, bw, 32, "Shut down", ID_QUICK + 11, m_QuickListener, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 13, ROOT_AE3_Theme.Hover());
+		ROOT_AE3_UI.Button(m_wQuick, x + 32 + bw * 2, by, bw, 32, "Sign out", ID_QUICK + 12, m_QuickListener, ROOT_AE3_Theme.Button(), ROOT_AE3_Theme.Text(), 13, ROOT_AE3_Theme.Hover());
+		RefreshTaskbar();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void QuickRow(float x, float y, float w, string icon, string label, string value)
+	{
+		bool tac = ROOT_AE3_Theme.IsTactical();
+		ROOT_AE3_UI.Icon(m_wQuick, x, y + 6, 20, icon);
+		ROOT_AE3_UI.Text(m_wQuick, x + 28, y, w - 28, 16, label, 12, ROOT_AE3_Theme.Muted(), tac);
+		ROOT_AE3_UI.Text(m_wQuick, x + 28, y + 16, w - 28, 18, value, 13, ROOT_AE3_Theme.Text(), tac);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void CloseQuick()
+	{
+		if (!m_wQuick)
+			return;
+
+		m_wQuick.RemoveFromHierarchy();
+		m_wQuick = null;
+		RefreshTaskbar();
+	}
+
+	//------------------------------------------------------------------------------------------------
+	protected void OnQuick(int index)
+	{
+		ROOT_AE3_Client c = ROOT_AE3_Client.Get();
+		array<string> none = {};
+		if (index == 3)
+		{
+			string next = ((c.m_sTheme.ToInt() + 1) % 3).ToString();
+			array<string> args = {"theme", next};
+			c.Request("sys_set", args, this);
+			CloseQuick();
+			ApplyPrefs(next, c.m_sWallpaper);
+			return;
+		}
+
+		CloseQuick();
+		switch (index)
+		{
+			case 0: OpenApp(ROOT_AE3_AppNetwork); return;
+			case 1: OpenApp(ROOT_AE3_AppMyComputer); return;
+			case 2: c.Send(ROOT_AE3_EMsg.TERM_KEY, "MODE:0"); return;
+			case 4: CycleSize(); return;
+			case 5: OpenApp(ROOT_AE3_AppSettings); return;
+			case 10: c.Request("standby", none, this); return;
+			case 11: c.Request("shutdown", none, this); return;
+			case 12: c.Request("signout", none, this); return;
+		}
 	}
 
 	// Start menu ------------------------------------------------------------------------------------
@@ -932,6 +1287,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		{
 			CloseStart();
 			return;
+		}
+
+		if (m_wQuick)
+		{
+			m_wQuick.RemoveFromHierarchy();
+			m_wQuick = null;
 		}
 
 		float w = Math.Min(620, m_fW - 12);
@@ -1335,6 +1696,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return true;
 		}
 
+		if (m_wQuick)
+		{
+			CloseQuick();
+			return true;
+		}
+
 		return false;
 	}
 
@@ -1603,8 +1970,12 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 
 		if (cmd == "tray" && ok)
 		{
-			m_sTray = ROOT_AE3_App.Arg(payload, 0);
-			UpdateClock();
+			string before = ROOT_AE3_Codec.Join(m_aTray);
+			m_aTray.Clear();
+			m_aTray.Copy(payload);
+			if (ROOT_AE3_Codec.Join(m_aTray) != before)
+				RefreshTaskbar();
+
 			return;
 		}
 
@@ -1878,8 +2249,20 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			return true;
 		}
 
-		if (id == ID_START + 1000)
+		if (id == ID_START + 1000 || id == ID_QUICK + 99)
 			return true;
+
+		if (id == ID_QUICK_BG)
+		{
+			CloseQuick();
+			return true;
+		}
+
+		if (id >= ID_QUICK && id <= ID_QUICK + 12)
+		{
+			OnQuick(id - ID_QUICK);
+			return true;
+		}
 
 		if (id >= ID_MENU && id < ID_MENU + m_aApps.Count())
 		{
@@ -1956,6 +2339,17 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			}
 
 			case ID_START: ToggleMenu(); return true;
+			case ID_SEARCHBAR:
+			{
+				if (!m_wMenu)
+					ToggleMenu();
+
+				return true;
+			}
+
+			case ID_TRAY: ToggleQuick(); return true;
+			case ID_CLOCK: OpenApp(ROOT_AE3_AppCalendar); return true;
+			case ID_SHOWDESK: ShowDesktop(); return true;
 			case ID_SIZE: CycleSize(); return true;
 			case ID_POWER:
 			{

@@ -12,6 +12,7 @@ GenericEntity {
    Object "{460B761B275F1C18}Assets/Props/Military/Generators/GeneratorFloodlight_01/GeneratorFloodlight_01.xob"
   }
   ROOT_AE3_ConnectionComponent "{6AF041BB11637FF1}" {
+   m_vPowerPort 0 0.4 0
   }
   ROOT_AE3_DeviceComponent "{6AF041BB11637F06}" {
    m_eType LAMP

@@ -78,9 +78,12 @@
 - Setting `m_sDesktopWebImageProxy` (System module action "Web image proxy"): web images load as base64 through `wsrv.nl` by default.
 - Editor previews for the airfield and military generators.
 - Closed sessions keep the open desktop windows and unsaved text on the client for the same computer and user.
-- Network cable items 5 m, 15 m and 30 m (inventory, arsenal, Game Master); plugging asks for the router and cable length.
+- Network cable items 5 m, 15 m and 30 m (inventory, arsenal, Game Master).
 - Plugged network cables and power links are drawn between device ports on every client.
 - Desktop styles Windows and Tactical per computer: Game Master attribute "Desktop style", World Editor attribute, setting `m_iDesktopStyle`, `ROOT_AE3_API.SetUiStyle`.
+- Two-step cable plugging: network cable from a device to a router (or router to router), power cable from a generator, battery or solar panel to a device; the held end is drawn to the player's hand.
+- Power cable length per source (`m_fCableLength`), Game Master actions "Power source" and "Power cable length", `ROOT_AE3_API.SetPowerCableLength`.
+- Taskbar search, tray (flash drive, network, power), quick panel, clock opening Calendar and show desktop.
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -141,6 +144,12 @@
 - Inventory "Use" on a carried laptop opens it directly; waking from standby shows no "Starting..." note.
 - Map app (setting on by default): only the computer, its router, routers linked to it and devices connected to it.
 - Game Master slider attributes no longer log "Incompatible parameter" (vanilla slider change handler).
+- Cable lines are visible (the cable entity was spawned without the visible flag).
+- Flash drive props attach in the port (child transform was taken as a world transform) and stay attached while the laptop is carried.
+- Network cable weights: 5 m 0.05 kg, 15 m 0.1 kg, 30 m 0.2 kg.
+- Network cable collider uses the gadget plastic surface (wrong game material reference).
+- Generators, solar panel and battery take power cables; generators and the floodlight have power port positions.
 
 ### Removed
+- Power plug into the nearest source within 6 m (replaced by the power cable taken from the source).
 - Plain base laptop, router, battery pack, solar panel and portable server from Game Master and arsenals (3 variants each remain).
