@@ -769,6 +769,16 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 	}
 
 	//------------------------------------------------------------------------------------------------
+	protected int TrayInt(int i)
+	{
+		string v = TrayField(i);
+		if (v.IsEmpty())
+			return 0;
+
+		return v.ToInt();
+	}
+
+	//------------------------------------------------------------------------------------------------
 	protected bool TrayOnline()
 	{
 		return !TrayField(2).IsEmpty();
@@ -780,7 +790,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		if (TrayField(1).IsEmpty())
 			return -1;
 
-		return TrayField(1).ToInt();
+		return TrayInt(1);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -859,7 +869,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 		m_wDate = ROOT_AE3_UI.Text(m_wTaskbar, cx, 25, 92, 16, "", 12, ROOT_AE3_Theme.Muted(), false, false, 1);
 
 		int bat = TrayBattery();
-		bool usb = TrayField(5).ToInt() > 0;
+		bool usb = TrayInt(5) > 0;
 		float tw = 16 + 28 + 28;
 		if (bat >= 0)
 			tw += 34;
@@ -988,7 +998,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			pow += " " + TrayField(1) + "%";
 
 		string status = net + "  " + pow;
-		if (TrayField(5).ToInt() > 0)
+		if (TrayInt(5) > 0)
 			status += "  USB " + TrayField(5);
 
 		float sw = 24 + status.Length() * 8;
@@ -1181,7 +1191,7 @@ class ROOT_AE3_DesktopView : ROOT_AE3_GuiReplyHandler
 			pow += " - battery " + bat.ToString() + "%";
 
 		string usb = "No flash drive";
-		int drives = TrayField(5).ToInt();
+		int drives = TrayInt(5);
 		if (drives == 1)
 			usb = "1 flash drive";
 		else if (drives > 1)

@@ -15,7 +15,7 @@ Equipment (Arma 3) 2.1.0.8. No dependencies besides Arma Reforger.
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_BatteryPack.et` | Battery 0.6 kWh, recharges at 300 W, inventory item (2x2, 12 kg) |
 | `Prefabs/ROOT_AE3/Devices/ROOT_AE3_SolarPanel.et` | 150 W peak, output by sun elevation and panel tilt, 0.4 kWh buffer |
 | `Prefabs/ROOT_AE3/Power/ROOT_AE3_Generator_*.et` | Generators on vanilla models: portable 5 kW / 5 L / 1.5 L/h, military and airfield 100-400 kW |
-| `Prefabs/ROOT_AE3/Power/ROOT_AE3_Floodlight.et` | Lamp, 150 W, lit while powered |
+| `Prefabs/ROOT_AE3/Power/ROOT_AE3_Floodlight.et` | Lamp, 150 W, lit while powered; built-in generator: 10 L tank, 0.5 L/h (runs without a power source while it has fuel) |
 
 Solar panels switch on and off like generators. Flash drives take files from the World Editor
 (`ROOT_AE3_UsbDriveComponent` files), the Game Master (add file / directory / image) and the script API. A drive
@@ -80,7 +80,7 @@ Root login is off by default; users in `/etc/sudoers` use `sudo` / `su`. While `
 
 Two styles per computer: Windows (icons, tool bars, start menu grid; themes Dark, Light, Olive) and Tactical (monospace,
 outlined controls, bracketed titles, map grid background, text taskbar and program list; themes Green, Amber, Night).
-The style comes from the Game Master device attribute "Desktop style", `ROOT_AE3_ComputerComponent.m_iUiStyle`,
+The style (civilian: Windows, military: Tactical) comes from the Game Master device attribute or panel action "Desktop style", `ROOT_AE3_ComputerComponent.m_iUiStyle`,
 `ROOT_AE3_API.SetUiStyle` or the setting `m_iDesktopStyle`; open sessions switch at once.
 Sign-in screen, plain black background, wallpapers 1-5, an image file or a web address, themes, windows (drag, snap to the top or a side edge, resize
 from the corner), taskbar with pinned apps, start menu with search, right-click menus, dialogs, Open / Save file
@@ -126,10 +126,10 @@ Each action shows a notification with the number of devices it changed and the f
 opens the desktop as root for the Game Master without range or access checks (filesystem browser); the previous
 login is restored when the Game Master closes it.
 
-Device attributes (category "Advanced Equipment"): powered on, battery level, fuel, root login, interface mode,
+Device attributes (category "Advanced Equipment"): powered on, battery level, fuel, fuel use (L/h, 0 = no fuel used), root login, interface mode,
 SSH server, router range, transfer speed, accept connections, external SSH, desktop style. Game settings (category "Advanced Equipment"):
 boot and shutdown time, root login at terminal, sudoers act as root, any login, log out on session end,
-default interface, desktop theme, desktop style, window size, file browsing, screen on models, router range and multiplier,
+default interface, desktop theme, desktop style (civilian Windows or military Tactical), window size, file browsing, screen on models, router range and multiplier,
 network transfer speed, games, EWO mode / energy / range / drain / charge / recharge / source range. The same
 attributes are on the AE3 System module. Game setting changes are sent to all players.
 Attributes: `Configs/Editor/AttributeLists/Edit.conf`, `Scripts/Game/ROOT_AE3/Editor/ROOT_AE3_EditorAttributes.c`.
@@ -174,7 +174,7 @@ mission header or defaults apply. Its settings, including Game Master changes, a
 | --- | --- |
 | `ROOT_AE3_ComputerComponent` | interface mode, terminal / desktop access (identity IDs, faction keys, player names), hostname, root login, root password, users (name, password, sudoer), sudoers, install commands / games / crypto and crack, USB ports |
 | `ROOT_AE3_SetupComponent` | files and directories, mail addresses, mails, chat handle, web pages, browser history, calendar (with location), wallpaper (0 black, 1-5) |
-| `ROOT_AE3_PowerComponent` | role, draw on / standby, output, capacity, recharge, fuel tank, burn rate, mains, external only, on at start, start level, start fuel, buffer output, solar panel tilt |
+| `ROOT_AE3_PowerComponent` | role, draw on / standby, output, capacity, recharge, fuel tank (consumers with a tank run on it without a source), burn rate, mains, external only, on at start, start level, start fuel, buffer output, solar panel tilt |
 | `ROOT_AE3_NetworkComponent` | router: SSID, gateway, range, multiplier, accept clients, password, external SSH, allow list, speed; client: static IP, speed, SSH |
 | `ROOT_AE3_ConnectionComponent` | power source and router by entity name (cable links), network and power port position and direction |
 | `ROOT_AE3_DeviceComponent` | type, name, hidden (not on the Map app, no player rename) |

@@ -1,28 +1,23 @@
-//! Client: a cable drawn as a tube between two ports (procedural mesh on a local, not replicated entity).
-//! Each end has a plug; the cable sags with its slack (cable length minus distance) and rests on the ground.
+//! Client: a cable drawn between two points from local, not replicated segment entities (ROOT_AE3_CableSegment.xob,
+//! 0.25 m along +Z, scaled to fit). The cable sags with its slack (cable length minus distance) and rests on the ground.
 class ROOT_AE3_CableView
 {
-	protected static const int SIDES = 6;
-	protected static const int CURVE = 46;					//!< Points of the hanging part
-	protected static const int RINGS = 52;					//!< CURVE + 3 plug rings at each end
-	protected static const float PLUG_LEN = 0.025;
-	protected static const float PLUG_R = 0.007;
+	protected static const ResourceName MODEL = "{94B4C52A99D8F7B0}Assets/ROOT_AE3/ROOT_AE3_CableSegment/ROOT_AE3_CableSegment.xob";
+	protected static const float SEG_LEN = 0.25;
+	protected static const int MAX_SEGMENTS = 160;
 	protected static const float LEAD = 0.06;				//!< Straight part out of the port
 
-	protected IEntity m_Entity;
+	protected ref array<IEntity> m_aSegments = {};
 	protected ref Resource m_Res;
-	protected MeshObject m_Mesh;
-	protected ResourceName m_Material;
-	protected float m_fRadius;
+	protected string m_sRemap;
 	protected vector m_vA;
 	protected vector m_vB;
 	protected float m_fLen = -1;
 
 	//------------------------------------------------------------------------------------------------
-	void ROOT_AE3_CableView(ResourceName material, float radius)
+	void ROOT_AE3_CableView(ResourceName material)
 	{
-		m_Material = material;
-		m_fRadius = radius;
+		m_sRemap = string.Format("$remap 'AE3_Plastic_Dark' '%1';", material);
 	}
 
 	//------------------------------------------------------------------------------------------------
@@ -34,151 +29,128 @@ class ROOT_AE3_CableView
 	//------------------------------------------------------------------------------------------------
 	void Destroy()
 	{
-		if (m_Entity)
-			SCR_EntityHelper.DeleteEntityAndChildren(m_Entity);
+		foreach (IEntity e : m_aSegments)
+		{
+			if (e)
+				delete e;
+		}
 
-		m_Entity = null;
-		m_Mesh = null;
+		m_aSegments.Clear();
 		m_Res = null;
 		m_fLen = -1;
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! a, b: port points; aDir, bDir: unit directions out of the ports; len: cable length in m.
-	//! Rebuilds only when an end moved more than 2 cm or the length changed.
+	//! a, b: end points; aDir, bDir: unit directions out of the ports; len: cable length in m.
+	//! Moves the segments only when an end moved more than 2 cm or the length changed.
 	void Update(vector a, vector aDir, vector b, vector bDir, float len)
 	{
-		if (m_Entity && vector.DistanceSq(a, m_vA) < 0.0004 && vector.DistanceSq(b, m_vB) < 0.0004 && float.AlmostEqual(len, m_fLen))
+		if (!m_aSegments.IsEmpty() && vector.DistanceSq(a, m_vA) < 0.0004 && vector.DistanceSq(b, m_vB) < 0.0004 && float.AlmostEqual(len, m_fLen))
 			return;
 
 		m_vA = a;
 		m_vB = b;
 		m_fLen = len;
 		array<vector> pts = {};
-		array<float> radii = {};
-		Points(a, aDir, b, bDir, len, pts, radii);
-		Build(a, pts, radii);
+		Points(a, aDir, b, bDir, len, pts);
+		Place(pts);
 	}
 
 	//------------------------------------------------------------------------------------------------
-	protected void Points(vector a, vector aDir, vector b, vector bDir, float len, notnull array<vector> pts, notnull array<float> radii)
+	protected void Points(vector a, vector aDir, vector b, vector bDir, float len, notnull array<vector> pts)
 	{
-		vector a1 = a + aDir * PLUG_LEN;
-		vector b1 = b + bDir * PLUG_LEN;
 		vector s = a + aDir * LEAD;
 		vector e = b + bDir * LEAD;
-		pts.Insert(a);
-		radii.Insert(PLUG_R);
-		pts.Insert(a1);
-		radii.Insert(PLUG_R);
-		pts.Insert(a1);
-		radii.Insert(m_fRadius);
-
 		float chord = vector.Distance(s, e);
 		float slack = Math.Max(0, len - chord - LEAD * 2);
 		float sag = Math.Sqrt(3 * chord * slack / 8);
+		float arc = chord + slack;
+		int n = Math.ClampInt(Math.Ceil(arc / SEG_LEN), 2, MAX_SEGMENTS - 2);
 		BaseWorld world = GetGame().GetWorld();
-		for (int i = 0; i < CURVE; i++)
+		pts.Insert(a);
+		for (int i = 0; i <= n; i++)
 		{
-			float t = i / (CURVE - 1.0);
+			float t = i / (n * 1.0);
 			vector p = s + (e - s) * t;
 			p[1] = p[1] - 4 * sag * t * (1 - t);
-			float ground = world.GetSurfaceY(p[0], p[2]) + m_fRadius;
+			float ground = world.GetSurfaceY(p[0], p[2]) + 0.005;
 			if (p[1] < ground)
 				p[1] = ground;
 
 			pts.Insert(p);
-			radii.Insert(m_fRadius);
 		}
 
-		pts.Insert(b1);
-		radii.Insert(m_fRadius);
-		pts.Insert(b1);
-		radii.Insert(PLUG_R);
 		pts.Insert(b);
-		radii.Insert(PLUG_R);
 	}
 
 	//------------------------------------------------------------------------------------------------
-	//! Rings around each point; triangles in both windings (seen from inside and outside).
-	protected void Build(vector origin, notnull array<vector> pts, notnull array<float> radii)
+	//! One segment entity per pair of points, oriented along it and scaled to its length.
+	protected void Place(notnull array<vector> pts)
 	{
-		vector verts[312];
-		float uvs[624];
-		int indices[3672];
-		vector up = "0 1 0";
-		int n = pts.Count();
-		for (int i = 0; i < n; i++)
+		if (!m_Res)
 		{
-			vector prev = pts[Math.Max(i - 1, 0)];
-			vector next = pts[Math.Min(i + 1, n - 1)];
-			vector t = next - prev;
-			if (t.LengthSq() < 0.000001)
-				t = pts[n - 1] - pts[0];
-
-			t.Normalize();
-			vector side = t * up;
-			if (side.LengthSq() < 0.000001)
-				side = t * "1 0 0";
-
-			side.Normalize();
-			vector bin = side * t;
-			for (int k = 0; k < SIDES; k++)
-			{
-				float ang = k * Math.PI2 / SIDES;
-				int v = i * SIDES + k;
-				verts[v] = pts[i] - origin + (side * Math.Cos(ang) + bin * Math.Sin(ang)) * radii[i];
-				uvs[v * 2] = k / (SIDES * 1.0);
-				uvs[v * 2 + 1] = i * 0.1;
-			}
+			m_Res = Resource.Load(MODEL);
+			if (!m_Res || !m_Res.IsValid())
+				return;
 		}
 
-		int ii;
-		for (int r = 0; r < n - 1; r++)
-		{
-			for (int k = 0; k < SIDES; k++)
-			{
-				int k2 = (k + 1) % SIDES;
-				int v00 = r * SIDES + k;
-				int v01 = r * SIDES + k2;
-				int v10 = (r + 1) * SIDES + k;
-				int v11 = (r + 1) * SIDES + k2;
-				indices[ii] = v00; ii++;
-				indices[ii] = v10; ii++;
-				indices[ii] = v11; ii++;
-				indices[ii] = v11; ii++;
-				indices[ii] = v01; ii++;
-				indices[ii] = v00; ii++;
-				indices[ii] = v00; ii++;
-				indices[ii] = v11; ii++;
-				indices[ii] = v10; ii++;
-				indices[ii] = v11; ii++;
-				indices[ii] = v00; ii++;
-				indices[ii] = v01; ii++;
-			}
-		}
-
-		if (!m_Entity)
-		{
-			m_Entity = GetGame().SpawnEntity(GenericEntity, GetGame().GetWorld());
-			if (m_Entity)
-				m_Entity.SetFlags(EntityFlags.VISIBLE, false);
-
-			int numVerts[] = {RINGS * SIDES};
-			int numIndices[] = {(RINGS - 1) * SIDES * 12};
-			string materials[] = {m_Material};
-			m_Res = MeshObject.Create(1, numVerts, numIndices, materials, 0);
-			if (m_Res && m_Res.IsValid())
-				m_Mesh = m_Res.GetResource().ToMeshObject();
-		}
-
-		if (!m_Entity || !m_Mesh)
+		VObject obj = m_Res.GetResource().ToVObject();
+		if (!obj)
 			return;
 
-		m_Mesh.UpdateVerts(0, verts, uvs);
-		m_Mesh.UpdateIndices(0, indices);
-		m_Entity.SetOrigin(origin);
-		m_Entity.SetObject(m_Mesh, "");
-		m_Entity.Update();
+		BaseWorld world = GetGame().GetWorld();
+		int count = pts.Count() - 1;
+		while (m_aSegments.Count() > count)
+		{
+			IEntity last = m_aSegments[m_aSegments.Count() - 1];
+			m_aSegments.Remove(m_aSegments.Count() - 1);
+			if (last)
+				delete last;
+		}
+
+		while (m_aSegments.Count() < count)
+		{
+			IEntity seg = GetGame().SpawnEntity(GenericEntity, world);
+			if (!seg)
+				return;
+
+			seg.SetObject(obj, m_sRemap);
+			seg.SetFlags(EntityFlags.VISIBLE, false);
+			m_aSegments.Insert(seg);
+		}
+
+		vector up = "0 1 0";
+		for (int i = 0; i < count; i++)
+		{
+			vector p0 = pts[i];
+			vector d = pts[i + 1] - p0;
+			float l = d.Length();
+			IEntity seg = m_aSegments[i];
+			if (!seg)
+				continue;
+
+			if (l < 0.001)
+			{
+				seg.ClearFlags(EntityFlags.VISIBLE, false);
+				continue;
+			}
+
+			seg.SetFlags(EntityFlags.VISIBLE, false);
+			vector z = d * (1 / l);
+			vector x = up * z;
+			if (x.LengthSq() < 0.000001)
+				x = "1 0 0" * z;
+
+			x.Normalize();
+			vector y = z * x;
+			vector mat[4];
+			mat[0] = x;
+			mat[1] = y;
+			mat[2] = z;
+			mat[3] = p0;
+			seg.SetWorldTransform(mat);
+			seg.SetScale(l / SEG_LEN);
+			seg.Update();
+		}
 	}
 }

@@ -586,6 +586,18 @@ class ROOT_AE3_API
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Fuel use in L/h while running of a generator or a device with a fuel tank (0 = no fuel used).
+	static bool SetFuelUse(IEntity device, float lph)
+	{
+		ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(device);
+		if (!Replication.IsServer() || !p || p.GetFuelCapacity() <= 0)
+			return false;
+
+		p.SetBurnRate(lph);
+		return true;
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Transfer speed in KB/s of a router or device (0 = default).
 	static bool SetTransferSpeed(IEntity device, float kbps)
 	{

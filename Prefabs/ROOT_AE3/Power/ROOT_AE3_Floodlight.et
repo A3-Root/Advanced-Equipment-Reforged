@@ -27,15 +27,15 @@ GenericEntity {
    m_fOutputW 0
    m_fCapacityKWh 0
    m_fRechargeW 0
-   m_fFuelCapacityL 0
-   m_fBurnLph 0
+   m_fFuelCapacityL 10
+   m_fBurnLph 0.5
    m_bMains 0
    m_bRequiresExternal 1
    m_bStartOn 0
   }
   RigidBody "{6AF041BB11637CB5}" {
-   Mass 100
    LayerPreset "BuildingFireView"
+   Mass 100
    ResponseIndex "HugeDestructible"
    ModelGeometry 1
    Static 1
@@ -83,6 +83,14 @@ GenericEntity {
     }
    }
    additionalActions {
+    ROOT_AE3_RefuelAction "{6AF6407411800BB1}" {
+     ParentContextList {
+      "ae3"
+     }
+     UIInfo UIInfo "{6AF6407411800B91}" {
+      Name "ROOT_AE3_RefuelAction"
+     }
+    }
     ROOT_AE3_PowerAction "{6AF041BB11637E4D}" {
      ParentContextList {
       "ae3"

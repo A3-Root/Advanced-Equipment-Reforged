@@ -29,8 +29,8 @@ class ROOT_AE3_StatusAction : ROOT_AE3_UserActionBase
 			if (p.GetCapacityKWh() > 0)
 				text += string.Format("\nBattery: %1%%", Math.Round(p.GetLevel() * 100));
 
-			if (p.GetRole() == ROOT_AE3_EPowerRole.GENERATOR)
-				text += string.Format("\nFuel: %1 / %2 L", ROOT_AE3_Util.FormatFloat(p.GetFuel(), 1), Math.Round(p.GetFuelCapacity()));
+			if (p.GetFuelCapacity() > 0)
+				text += string.Format("\nFuel: %1 / %2 L (%3 L/h)", ROOT_AE3_Util.FormatFloat(p.GetFuel(), 1), Math.Round(p.GetFuelCapacity()), ROOT_AE3_Util.FormatFloat(p.GetBurnRate(), 1));
 
 			if (p.IsProvider())
 				text += string.Format("\nLoad: %1 / %2 W", Math.Round(p.GetLoadW()), Math.Round(p.GetOutputW()));

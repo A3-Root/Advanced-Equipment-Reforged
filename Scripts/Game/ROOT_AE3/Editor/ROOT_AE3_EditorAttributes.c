@@ -70,10 +70,19 @@ class ROOT_AE3_EditorAttr
 
 			case "fuel":
 			{
-				if (!p || p.GetRole() != ROOT_AE3_EPowerRole.GENERATOR || p.GetFuelCapacity() <= 0)
+				if (!p || p.GetFuelCapacity() <= 0)
 					return false;
 
 				value = Math.Round(p.GetFuel() / p.GetFuelCapacity() * 100);
+				return true;
+			}
+
+			case "fuel_use":
+			{
+				if (!p || p.GetFuelCapacity() <= 0)
+					return false;
+
+				value = p.GetBurnRate();
 				return true;
 			}
 
@@ -192,6 +201,7 @@ class ROOT_AE3_EditorAttr
 			}
 
 			case "battery": ROOT_AE3_API.SetBatteryLevel(e, value / 100); break;
+			case "fuel_use": ROOT_AE3_API.SetFuelUse(e, value); break;
 			case "fuel":
 			{
 				if (p)

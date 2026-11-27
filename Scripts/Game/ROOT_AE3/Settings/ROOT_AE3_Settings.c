@@ -111,7 +111,7 @@ class ROOT_AE3_Settings
 	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Default desktop theme", enums: { ParamEnum("Dark", "0"), ParamEnum("Light", "1"), ParamEnum("Olive", "2") }, category: "Desktop")]
 	int m_iDesktopDefaultTheme;
 
-	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Default desktop style of computers", enums: { ParamEnum("Windows", "0"), ParamEnum("Tactical", "1") }, category: "Desktop")]
+	[Attribute("0", uiwidget: UIWidgets.ComboBox, desc: "Default desktop style of computers without their own style", enums: { ParamEnum("Civilian (Windows)", "0"), ParamEnum("Military (Tactical)", "1") }, category: "Desktop")]
 	int m_iDesktopStyle;
 
 	[Attribute("1", desc: "Photos, wallpapers and the Browser may load web addresses (pages, images, videos); each client downloads them", category: "Desktop")]

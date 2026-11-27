@@ -41,10 +41,10 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	[Attribute("50", desc: "Recharge power in W of the battery", params: "0 100000 1", category: "Power")]
 	protected float m_fRechargeW;
 
-	[Attribute("0", desc: "Fuel tank in L (generator)", params: "0 10000 0.1", category: "Power")]
+	[Attribute("0", desc: "Fuel tank in L (generator; consumer: built-in generator, runs without a power source while it has fuel)", params: "0 10000 0.1", category: "Power")]
 	protected float m_fFuelCapacityL;
 
-	[Attribute("0", desc: "Fuel use in L/h while running (generator)", params: "0 1000 0.01", category: "Power")]
+	[Attribute("0", desc: "Fuel use in L/h while running (generator, consumer with a fuel tank; 0 = no fuel used)", params: "0 1000 0.01", category: "Power")]
 	protected float m_fBurnLph;
 
 	[Attribute("0", desc: "Solar panel: tilt of the cells in degrees from horizontal, towards the front of the model", params: "0 90 1", category: "Power")]
@@ -486,6 +486,34 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	}
 
 	//------------------------------------------------------------------------------------------------
+	//! Fuel use in L/h while running (generator, consumer with its own tank); 0 = no fuel used.
+	float GetBurnRate()
+	{
+		return m_fBurnLph;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Authority.
+	void SetBurnRate(float lph)
+	{
+		m_fBurnLph = Math.Max(0, lph);
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Consumer with its own fuel tank (built-in generator, m_fFuelCapacityL > 0).
+	bool HasOwnFuel()
+	{
+		return m_eRole == ROOT_AE3_EPowerRole.CONSUMER && m_fFuelCapacityL > 0;
+	}
+
+	//------------------------------------------------------------------------------------------------
+	//! Own tank has fuel, or the device uses none (fuel use 0).
+	protected bool OwnFuelLeft()
+	{
+		return HasOwnFuel() && (m_fFuelL > 0 || m_fBurnLph <= 0);
+	}
+
+	//------------------------------------------------------------------------------------------------
 	//! Authority: replicates the level when it moved by more than the threshold.
 	void SyncLevel(bool force = false)
 	{
@@ -529,7 +557,7 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	//! True when the device can draw energy now.
 	bool HasEnergy()
 	{
-		if (m_bExternal || m_bMains)
+		if (m_bExternal || m_bMains || OwnFuelLeft())
 			return true;
 
 		if (m_bRequiresExternal)
@@ -728,6 +756,24 @@ class ROOT_AE3_PowerComponent : ScriptComponent
 	//! Authority, called by the power system.
 	void Simulate_Consume(float dt)
 	{
+		if (HasOwnFuel() && !m_bExternal && !m_bMains)
+		{
+			if (m_iState == ROOT_AE3_EPowerState.ON && m_fBurnLph > 0)
+			{
+				m_fFuelL = Math.Max(0, m_fFuelL - m_fBurnLph * dt / 3600.0);
+				if (Math.AbsFloat(m_fFuelL - m_fSyncedFuel) >= 0.05 || m_fFuelL <= 0)
+				{
+					m_fSyncedFuel = m_fFuelL;
+					Replication.BumpMe();
+				}
+			}
+
+			if (!OwnFuelLeft() && m_iState != ROOT_AE3_EPowerState.OFF)
+				TurnOff();
+
+			return;
+		}
+
 		if (m_eRole == ROOT_AE3_EPowerRole.CONSUMER && !m_bExternal && m_fCapacityKWh > 0 && !m_bRequiresExternal)
 		{
 			float use = GetConsumerDrawW();

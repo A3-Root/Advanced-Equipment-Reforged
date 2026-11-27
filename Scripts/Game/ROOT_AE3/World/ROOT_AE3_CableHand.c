@@ -378,9 +378,9 @@ class ROOT_AE3_CableHand
 		if (!s_View)
 		{
 			if (s_iKind == POWER)
-				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.POWER_MATERIAL, ROOT_AE3_ConnectionComponent.POWER_RADIUS);
+				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.POWER_MATERIAL);
 			else
-				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.NET_MATERIAL, ROOT_AE3_ConnectionComponent.NET_RADIUS);
+				s_View = new ROOT_AE3_CableView(ROOT_AE3_ConnectionComponent.NET_MATERIAL);
 		}
 
 		float len = Math.Max(vector.Distance(a, hand) + 0.4, Math.Min(s_fLength, vector.Distance(a, hand) * 1.15 + 0.3));

@@ -79,7 +79,7 @@ class ROOT_AE3_ComputerComponent : ScriptComponent
 	[RplProp(onRplName: "OnScreenRpl")]
 	protected int m_iDesign = -1;
 
-	[Attribute("-1", uiwidget: UIWidgets.ComboBox, desc: "Desktop style", enums: { ParamEnum("Setting", "-1"), ParamEnum("Windows", "0"), ParamEnum("Tactical", "1") }, category: "armaOS")]
+	[Attribute("-1", uiwidget: UIWidgets.ComboBox, desc: "Desktop style", enums: { ParamEnum("Setting", "-1"), ParamEnum("Civilian (Windows)", "0"), ParamEnum("Military (Tactical)", "1") }, category: "armaOS")]
 	protected int m_iUiStyle;
 
 	protected ref ROOT_AE3_Filesystem m_Fs;

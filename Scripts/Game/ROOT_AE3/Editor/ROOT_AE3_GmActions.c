@@ -39,6 +39,7 @@ class ROOT_AE3_GmActions
 			"standby", "Standby", "Power",
 			"battery", "Battery level", "Power",
 			"fuel", "Fuel", "Power",
+			"ui_style", "Desktop style (civilian / military)", "System",
 			"power_source", "Power source", "Power",
 			"power_cable", "Power cable length", "Power",
 			"connect_power", "Connect power (selection)", "Power",
@@ -363,6 +364,14 @@ class ROOT_AE3_GmActions
 
 			case "battery": F(fields, ROOT_AE3_EGmField.TEXT, "Charge in percent 0-100", Math.Round(p.GetLevel() * 100).ToString()); return;
 			case "fuel": F(fields, ROOT_AE3_EGmField.TEXT, "Fuel in liters", p.GetFuel().ToString()); return;
+			case "ui_style":
+			{
+				array<string> uv = {"-1", "0", "1"};
+				array<string> ul = {"Mission setting", "Civilian (Windows)", "Military (Tactical)"};
+				Choice(fields, "Desktop style", uv, ul, c.GetUiStyleRaw().ToString());
+				return;
+			}
+
 			case "power_cable": F(fields, ROOT_AE3_EGmField.TEXT, "Length in m of the power cable players take from this source", p.GetCableLength().ToString()); return;
 			case "power_source":
 			{
@@ -489,7 +498,7 @@ class ROOT_AE3_GmActions
 				return "module";
 
 			case "battery": return "battery";
-			case "fuel": return "generator";
+			case "fuel": return "fuel";
 			case "power_source": return "consumer";
 			case "power_cable": return "source";
 			case "router": return "router";
@@ -523,6 +532,12 @@ class ROOT_AE3_GmActions
 			{
 				ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(e);
 				return p && p.GetRole() == ROOT_AE3_EPowerRole.GENERATOR;
+			}
+
+			case "fuel":
+			{
+				ROOT_AE3_PowerComponent p = ROOT_AE3_PowerComponent.Of(e);
+				return p && p.GetFuelCapacity() > 0;
 			}
 
 			case "consumer":
@@ -779,6 +794,7 @@ class ROOT_AE3_GmActions
 			case "battery": return R(ROOT_AE3_API.SetBatteryLevel(e, V(v, 0).ToFloat() / 100));
 			case "fuel": return R(ROOT_AE3_API.SetFuel(e, V(v, 0).ToFloat()));
 			case "power_cable": return R(ROOT_AE3_API.SetPowerCableLength(e, V(v, 0).ToFloat()));
+			case "ui_style": return R(ROOT_AE3_API.SetUiStyle(e, V(v, 0).ToInt()));
 			case "power_source":
 			{
 				if (V(v, 0).IsEmpty())

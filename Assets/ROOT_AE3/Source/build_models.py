@@ -1,6 +1,6 @@
 # Builds the Advanced Equipment device models in Blender and exports one FBX per model.
 # Run inside Blender (Text Editor or blender --background --python build_models.py [-- model ...]).
-# Model names after "--" build only those (laptop, router, usb, battery, solar, server, cable).
+# Model names after "--" build only those (laptop, router, usb, battery, solar, server, cable, segment).
 # Conventions: meters, Z up in Blender (exported Y up), origin at the bottom center,
 # collision meshes prefixed UCX_ (convex), screen material AE3_Screen uses UV 0-1 for the render target.
 import bpy
@@ -385,6 +385,16 @@ def cable(M):
     export(col, name)
 
 
+def cable_segment(M):
+    """Cable piece for cable lines: 0.25 m from the origin along Reforger +Z (Blender -Y), radius 5 mm, no collider."""
+    name = "ROOT_AE3_CableSegment"
+    col = new_coll(name)
+    o = cyl("segment", 0.005, 0.25, (0, -0.125, 0), M["plastic"], col, rot=(math.radians(90), 0, 0), verts=8)
+    o.name = name
+    uv_box(o)
+    export(col, name, lod_ratio=1)
+
+
 BUILDERS = {
     "laptop": lambda M: (laptop(M, True), laptop(M, False)),
     "router": router,
@@ -393,6 +403,7 @@ BUILDERS = {
     "solar": solar,
     "server": server,
     "cable": cable,
+    "segment": cable_segment,
 }
 
 

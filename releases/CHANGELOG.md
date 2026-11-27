@@ -84,6 +84,8 @@
 - Two-step cable plugging: network cable from a device to a router (or router to router), power cable from a generator, battery or solar panel to a device; the held end is drawn to the player's hand.
 - Power cable length per source (`m_fCableLength`), Game Master actions "Power source" and "Power cable length", `ROOT_AE3_API.SetPowerCableLength`.
 - Taskbar search, tray (flash drive, network, power), quick panel, clock opening Calendar and show desktop.
+- Floodlight built-in generator (10 L, 0.5 L/h): devices with a fuel tank run without a power source; Game Master attribute "Fuel use" (0 = no fuel used), `ROOT_AE3_API.SetFuelUse`, Refuel and fuel slider on them.
+- Desktop style civilian (Windows) / military (Tactical): Game Master panel action "Desktop style" and the Advanced Equipment settings attribute "Desktop style".
 
 ### Changed
 - Device variants recolour the body material (router, battery pack, portable server).
@@ -144,11 +146,12 @@
 - Inventory "Use" on a carried laptop opens it directly; waking from standby shows no "Starting..." note.
 - Map app (setting on by default): only the computer, its router, routers linked to it and devices connected to it.
 - Game Master slider attributes no longer log "Incompatible parameter" (vanilla slider change handler).
-- Cable lines are visible (the cable entity was spawned without the visible flag).
 - Flash drive props attach in the port (child transform was taken as a world transform) and stay attached while the laptop is carried.
 - Network cable weights: 5 m 0.05 kg, 15 m 0.1 kg, 30 m 0.2 kg.
 - Network cable collider uses the gadget plastic surface (wrong game material reference).
 - Generators, solar panel and battery take power cables; generators and the floodlight have power port positions.
+- Taskbar no longer stops with "Wrong parameter value" before the first tray update.
+- Cable lines are built from segment entities (`ROOT_AE3_CableSegment.xob`) instead of a procedural mesh, which crashed Workbench when drawn.
 
 ### Removed
 - Power plug into the nearest source within 6 m (replaced by the power cable taken from the source).
