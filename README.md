@@ -1,13 +1,8 @@
 # Advanced Equipment Reforged (AER)
 
-Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Port of
-[Advanced Equipment Revamped](https://github.com/y0014984/Advanced-Equipment) (Arma 3).
+Interactive laptops, servers, routers, flash drives, cables and an electrical grid for Arma Reforger. Port of [Advanced Equipment Revamped](https://github.com/y0014984/Advanced-Equipment) (Arma 3).
 
-A laptop runs armaOS: a terminal (command line), a desktop (windows and apps), or both. Computers have users,
-passwords, a permission-based filesystem, mail, chat, web pages, a calendar, CCTV, games and network tools. Routers
-build wireless and cabled networks; generators, batteries and solar panels power the devices through cables players
-carry and plug in. Game Masters and mission makers add intel, accounts and links in game, in the World Editor or by
-script.
+A laptop runs armaOS: a terminal (command line), a desktop (windows and apps), or both. Computers have users, passwords, a permission-based filesystem, mail, chat, web pages, a calendar, CCTV, games and network tools. Routers build wireless and cabled networks; generators, batteries and solar panels power the devices through cables players carry and plug in. Game Masters and mission makers add intel, accounts and links in game, in the World Editor or by script.
 
 ## Requirements
 
@@ -15,8 +10,7 @@ script.
 
 ## Installation
 
-Subscribe to the addon in the Arma Reforger Workshop and enable it for the scenario, or add it to the server
-`config.json` mods list. To build from source, open `addon.gproj` in Arma Reforger Tools.
+Subscribe to the addon in the Arma Reforger Workshop and enable it for the scenario, or add it to the server `config.json` mods list. To build from source, open `addon.gproj` in Arma Reforger Tools.
 
 ## What it adds
 
@@ -66,8 +60,7 @@ blue and yellow. All are in the Game Master Edit list, the World Editor and the 
 
 ### Script API
 
-`ROOT_AE3_API` adds users, files, mail, web pages, links and power states, registers custom programs and desktop apps,
-and raises events for logins, commands, file changes and device setup.
+`ROOT_AE3_API` adds users, files, mail, web pages, links and power states, registers custom programs and desktop apps, and raises events for logins, commands, file changes and device setup.
 
 ## Documentation
 
@@ -82,20 +75,15 @@ The full documentation is in the [wiki](wiki/Home.md).
 
 ## Reporting issues
 
-Use the [issue tracker](https://github.com/A3-Root/Advanced-Equipment-Reforged/issues). Include the addon version,
-the game version, singleplayer / hosted / dedicated, the loaded addons, steps to reproduce and the relevant part of
-`console.log` / `script.log`.
+Use the [issue tracker](https://github.com/A3-Root/Advanced-Equipment-Reforged/issues). Include the addon version, the game version, singleplayer / hosted / dedicated, the loaded addons, steps to reproduce and the relevant part of `console.log` / `script.log`.
 
 ## Contributing
 
-Pull requests are welcome. Keep changes to one fix or feature and update the wiki and `releases/CHANGELOG.md`
-(one line per change) with them. Before submitting, the project must compile without script errors or warnings in
-Arma Reforger Tools (Workbench). Resource GUIDs and `.meta` files are created by Workbench only.
+Pull requests are welcome. Keep changes to one fix or feature and update the wiki and `releases/CHANGELOG.md` (one line per change) with them. Before submitting, the project must compile without script errors or warnings in Arma Reforger Tools (Workbench). 
 
 ## Credits
 
-Advanced Equipment for Arma 3 by Root, y0014984 and Wasserstoff with JulesVerner and the translation contributors
-(see the original `AUTHORS`). Reforger port by Root (see `AUTHORS`).
+A3-Root (a. xMidnightSnowx / Root)
 
 ## License
 
